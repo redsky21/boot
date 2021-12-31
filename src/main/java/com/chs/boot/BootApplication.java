@@ -14,7 +14,7 @@ public class BootApplication {
     }
     @GetMapping("/hello")
     public String hello(){
-        return "미연아 사랑해!!222";
+        return "미연아 사랑해!!미치도록";
     }
 
 }
