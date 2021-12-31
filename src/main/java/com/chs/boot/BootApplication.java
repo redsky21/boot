@@ -14,7 +14,7 @@ public class BootApplication {
     }
     @GetMapping("/hello")
     public String hello(){
-        return "Hello AWS";
+        return "Hello AWS2";
     }
 
 }
