@@ -12,4 +12,5 @@ public class PubGridDTO {
     private String headerStyle;
     private String formatString;
     private String groupDataField;
+    private String sumFlag;
 }

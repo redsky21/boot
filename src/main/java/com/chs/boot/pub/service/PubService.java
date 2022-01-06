@@ -8,10 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class PubService {
@@ -26,6 +28,41 @@ public class PubService {
         String columnLayoutText = makeColumnLayoutText(pubBaseDTO.getGridItemList());
         return "";
     }
+
+    private String makeFooterLayoutText(List<PubGridDTO> pubGridDTOList) {
+        StringBuilder headerStringBuilder = new StringBuilder("");
+        List<PubGridDTO> realColumnList = new ArrayList<>();
+        if (getListSize(pubGridDTOList) > 0) {
+            for(PubGridDTO pubGridDTO: pubGridDTOList ){
+                if ( isCheckRealColumn(pubGridDTO,pubGridDTOList) ){
+                    realColumnList.add(pubGridDTO);
+                }
+            }
+            List<PubGridDTO> sumGridDTOList = pubGridDTOList.stream().filter(pubGridDTO ->
+                 pubGridDTO.getSumFlag().equals("Y")
+            ).collect(Collectors.toList());
+
+            if( getListSize(sumGridDTOList) >0){
+
+            }
+        }
+        return headerStringBuilder.toString();
+    }
+
+    private Boolean isCheckRealColumn(PubGridDTO pubGridDTO,List<PubGridDTO> pubGridDTOList){
+        Boolean isCheckRealColumn = true;
+        if(!isEmpty(pubGridDTO.getDataField())){
+            for(PubGridDTO pubGridDTO1: pubGridDTOList ){
+                if(!isEmpty(pubGridDTO1.getDataField())){
+                    if( pubGridDTO.getDataField().equals(pubGridDTO1.getDataField())){
+                        return false;
+                    }
+                }
+            }
+        }
+        return isCheckRealColumn;
+    }
+
 
     private String makeColumnLayoutText(List<PubGridDTO> pubGridDTOList) {
         StringBuilder headerStringBuilder = new StringBuilder("");
