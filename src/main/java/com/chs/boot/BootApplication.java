@@ -1,11 +1,19 @@
 package com.chs.boot;
 
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.OffsetDateTimeSerializer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 @SpringBootApplication
 @RestController
@@ -15,15 +23,17 @@ public class BootApplication {
     public static void main(String[] args) {
         SpringApplication.run(BootApplication.class, args);
     }
+
     @GetMapping("/hello")
-    public String hello(){
+    public String hello() {
         return "goodstart";
     }
 
     @PostMapping("/hello2")
 //    @CrossOrigin("*")
-    public String hello2(){
-        return "goodstart2";
+    public LocalDateTime hello2() {
+        return LocalDateTime.now();
     }
+
 
 }

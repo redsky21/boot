@@ -1,0 +1,54 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chs.boot.sample.mapper.StudentMapper">
+    <select id="findList" resultType="com.chs.boot.sample.model.Student">
+        SELECT
+            id,
+            name,
+            code,
+            save_date as 'saveDate'
+
+
+        FROM student
+    </select>
+
+    <select id="findOneByCode" parameterType="String" resultType="com.chs.boot.sample.model.Student">
+        SELECT
+            id,
+            name,
+            code,
+            save_date as 'saveDate'
+
+
+
+        FROM student
+        WHERE code = #{code}
+    </select>
+
+    <insert id="save" parameterType="com.chs.boot.sample.model.Student">
+        INSERT INTO student (
+            name,
+            code,
+            save_date
+        ) VALUES (
+                     #{name},
+                     #{code},
+                     #{saveDate}
+                 )
+    </insert>
+
+    <update id="update" parameterType="com.chs.boot.sample.model.Student">
+        UPDATE student
+        SET
+            name = #{name},
+            code = #{code},
+            save_date = #{saveDate}
+        WHERE id = #{id}
+    </update>
+
+    <delete id = "deleteById" parameterType="int">
+        DELETE FROM student WHERE id = #{id}
+    </delete>
+</mapper>
