@@ -5,9 +5,16 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 4
-    url: jdbc:mariadb://redsky21-db1.cb1vehi7zfck.ap-northeast-2.rds.amazonaws.com:3306/redsky21_db1
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: jdbc:log4jdbc:mariadb://redsky21-db1.cb1vehi7zfck.ap-northeast-2.rds.amazonaws.com:3306/redsky21_db1
     username: admin
     password: chae2121!
 
+logging:
+  level:
+    root: info
+
 mybatis:
   mapper-locations: mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
