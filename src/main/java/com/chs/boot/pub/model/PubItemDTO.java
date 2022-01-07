@@ -10,4 +10,5 @@ public class PubItemDTO {
     private String type;
     private String compClass;
     private String compId;
+    private String placeholder;
 }

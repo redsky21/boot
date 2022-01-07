@@ -64,7 +64,9 @@ public class PubService {
 
             } else if (conditionDTO.getType().equals("Radio")) {
 
-            } else if (conditionDTO.getType().equals("Input")) {
+            } else if (conditionDTO.getType().equals("TextField")) {
+                returnStringBuilder.append(getTextFieldString(conditionDTO, 5L));
+
 
             } else if (conditionDTO.getType().equals("Checkbox")) {
                 returnStringBuilder.append(getCheckGroupStartString(conditionDTO, 5L));
@@ -87,6 +89,69 @@ public class PubService {
         }
         return returnStringBuilder.toString();
     }
+
+    private String getTextFieldString(PubItemDTO pubItemDTO, Long tabIndex) {
+        int tabInx = (tabIndex == null ? 0 : tabIndex.intValue());
+        StringBuilder returnStringBuilder = new StringBuilder("");
+        if (!isEmpty(pubItemDTO.getLabel())) {
+            returnStringBuilder.append(getDtString(pubItemDTO.getLabel(), tabIndex));
+        }
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx));
+        returnStringBuilder.append("<dd>");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("<div class=\"formWrap\">");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append("<input");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("type=\"text\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("name=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getName()) ? "" : pubItemDTO.getName());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("value=\"\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("class=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("placeholder=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getPlaceholder()) ? "" :pubItemDTO.getPlaceholder());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("id=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append("\"");
+
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append("/>");
+
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("</div>");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx));
+        returnStringBuilder.append("</dd>");
+        return returnStringBuilder.toString();
+    }
+
 
     private String getCheckFieldString(PubItemDTO pubItemDTO, Long tabIndex, Long checkIndex) {
         int tabInx = (tabIndex == null ? 0 : tabIndex.intValue());
