@@ -31,7 +31,41 @@ public class PubService {
         String makeBodyTopText = makeBodyTopText();
         String makeContentTopText = makeContentTopText();
         String makeSearchCondition = makeSearchCondition(pubBaseDTO.getSearchItemList(), pubBaseDTO.getSearchButtonList());
-        return "";
+        String makeGridHeaderText = makeGridHeaderText();
+        String makeGridButtonText = makeGridButtonText(pubBaseDTO.getGridButtonList());
+        String makeContentBottomText = makeContentBottomText();
+        String returnString = headerConstText+getNewLineString()
+                +scriptTopText+getNewLineString()
+                +columnLayoutText+getNewLineString()
+                +makeFooterLayoutText+getNewLineString()
+                +makeConstHeaderBottomText+getNewLineString()
+                +makeBodyTopText+getNewLineString()
+                +makeContentTopText+getNewLineString()
+                +makeSearchCondition+getNewLineString()
+                +makeGridHeaderText+getNewLineString()
+                +makeGridButtonText+getNewLineString()
+                +makeContentBottomText+getNewLineString()
+                ;
+        return returnString;
+    }
+
+
+
+    private String makeGridButtonText(List<PubItemDTO> gridButtonList){
+        StringBuilder returnStringBuilder = new StringBuilder("");
+        if (getListSize(gridButtonList) > 0) {
+            returnStringBuilder.append(getNewLineString());
+            returnStringBuilder.append(getTabString(4));
+            returnStringBuilder.append("<div class=\"formGroup\">");
+            gridButtonList.stream().forEach(gridButtonAtom->{
+                returnStringBuilder.append(getAtomButtonString(gridButtonAtom,5L));
+            });
+
+            returnStringBuilder.append(getNewLineString());
+            returnStringBuilder.append(getTabString(4));
+            returnStringBuilder.append("</div>");
+        }
+        return returnStringBuilder.toString();
     }
 
     private String makeSearchCondition(List<PubItemDTO> searchItemList, List<PubItemDTO> searchButtonList) {
@@ -44,12 +78,70 @@ public class PubService {
             returnStringBuilder.append("\t\t\t\t<dl>");
             returnStringBuilder.append(getSearchItemString(searchItemList));
             returnStringBuilder.append(getNewLineString());
-            returnStringBuilder.append("\t\t\t\t</dl>\n");
+            returnStringBuilder.append("\t\t\t\t</dl>");
+        }
+
+        if (getListSize(searchButtonList) > 0) {
+            returnStringBuilder.append(getNewLineString());
+            returnStringBuilder.append(getTabString(4));
+            returnStringBuilder.append("<div class=\"btnGroup right\">");
+            searchButtonList.stream().forEach(searchButtonAtom->{
+                returnStringBuilder.append(getAtomButtonString(searchButtonAtom,5L));
+            });
+
+            returnStringBuilder.append(getNewLineString());
+            returnStringBuilder.append(getTabString(4));
+            returnStringBuilder.append("</div>");
         }
 
         if (getListSize(searchItemList) > 0 || getListSize(searchButtonList) > 0) {
-            returnStringBuilder.append("\t\t\t</div>\n");
+            returnStringBuilder.append(getNewLineString());
+            returnStringBuilder.append(getTabString(3));
+            returnStringBuilder.append("</div>");
+            returnStringBuilder.append(getNewLineString());
         }
+
+        return returnStringBuilder.toString();
+    }
+
+    private String getAtomButtonString(PubItemDTO pubItemDTO, Long tabIndex) {
+        int tabInx = (tabIndex == null ? 0 : tabIndex.intValue());
+        StringBuilder returnStringBuilder = new StringBuilder("");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx ));
+        returnStringBuilder.append("<button type=\"button\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("name=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getName()) ? "" : pubItemDTO.getName());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("class=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("id=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append("\"");
+
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append(">");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append(isEmpty(pubItemDTO.getLabel()) ? "" :pubItemDTO.getLabel());
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx ));
+        returnStringBuilder.append("</button>");
+
 
         return returnStringBuilder.toString();
     }
@@ -85,9 +177,58 @@ public class PubService {
                 returnStringBuilder.append(getCheckGroupEndString(conditionDTO, 5L));
 
             } else if (conditionDTO.getType().equals("Button")) {
+                returnStringBuilder.append(getButtonString(conditionDTO, 5L));
 
             }
         }
+        return returnStringBuilder.toString();
+    }
+
+    private String getButtonString(PubItemDTO pubItemDTO, Long tabIndex) {
+        int tabInx = (tabIndex == null ? 0 : tabIndex.intValue());
+        StringBuilder returnStringBuilder = new StringBuilder("");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx));
+        returnStringBuilder.append("<dd>");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("<button type=\"button\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append("name=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getName()) ? "" : pubItemDTO.getName());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append("class=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append("id=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append("\"");
+
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append(">");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append(isEmpty(pubItemDTO.getLabel()) ? "" :pubItemDTO.getLabel());
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("</button>");
+
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx));
+        returnStringBuilder.append("</dd>");
         return returnStringBuilder.toString();
     }
 
@@ -436,7 +577,7 @@ public class PubService {
                                 if (isFirst.get()) {
                                     headerStringBuilder.append("\t\t\tcolSpan: \"");
                                     headerStringBuilder.append(inx.get());
-                                    headerStringBuilder.append(",\n\t\t},\n");
+                                    headerStringBuilder.append("\",\n\t\t},\n");
                                     isFirst.set(false);
 //                                inx.set(0L);
                                 }
@@ -630,6 +771,19 @@ public class PubService {
         return headerStringBuilder.toString();
     }
 
+    private String makeGridHeaderText() {
+        PubTemplateDO conditionDO = new PubTemplateDO();
+        StringBuilder headerStringBuilder = new StringBuilder("");
+        conditionDO.setTmpType("gridHeader");
+        List<PubTemplateDO> list = retrieveTemplateSource(conditionDO);
+        list.stream().forEach((pubTemplateDO -> {
+            headerStringBuilder.append(pubTemplateDO.getHtmlText());
+            headerStringBuilder.append("\n");
+        }));
+        return headerStringBuilder.toString();
+    }
+
+
     private String makeConstHeaderBottomText() {
         PubTemplateDO conditionDO = new PubTemplateDO();
         StringBuilder headerStringBuilder = new StringBuilder("");
@@ -655,7 +809,20 @@ public class PubService {
         return headerStringBuilder.toString();
     }
 
+    private String makeContentBottomText() {
+        PubTemplateDO conditionDO = new PubTemplateDO();
+        StringBuilder headerStringBuilder = new StringBuilder("");
+        conditionDO.setTmpType("contentBottom");
+        List<PubTemplateDO> list = retrieveTemplateSource(conditionDO);
+        list.stream().forEach((pubTemplateDO -> {
+            headerStringBuilder.append(pubTemplateDO.getHtmlText());
+            headerStringBuilder.append("\n");
+        }));
+        return headerStringBuilder.toString();
+    }
+
     public List<PubTemplateDO> retrieveTemplateSource(PubTemplateDO pubTemplateDO) {
         return pubMapper.retrieveTemplateSource(pubTemplateDO);
     }
+
 }
