@@ -195,8 +195,9 @@ public class PubService {
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 4));
-        returnStringBuilder.append("id=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "datepicker" : pubItemDTO.getCompId());
+        returnStringBuilder.append("id=\"datepicker");
+//        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "datepicker" : pubItemDTO.getCompId());
+
         returnStringBuilder.append("\"");
 
         returnStringBuilder.append(getNewLineString());
