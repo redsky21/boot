@@ -61,6 +61,7 @@ public class PubService {
             if (conditionDTO.getType().equals("DatePicker")) {
                 returnStringBuilder.append(getDateFieldString(conditionDTO, 5L));
             } else if (conditionDTO.getType().equals("Select")) {
+                returnStringBuilder.append(getSelectString(conditionDTO, 5L));
 
             } else if (conditionDTO.getType().equals("Radio")) {
 
@@ -87,6 +88,71 @@ public class PubService {
 
             }
         }
+        return returnStringBuilder.toString();
+    }
+
+    private String getSelectString(PubItemDTO pubItemDTO, Long tabIndex) {
+        int tabInx = (tabIndex == null ? 0 : tabIndex.intValue());
+        StringBuilder returnStringBuilder = new StringBuilder("");
+        if (!isEmpty(pubItemDTO.getLabel())) {
+            returnStringBuilder.append(getDtString(pubItemDTO.getLabel(), tabIndex));
+        }
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx));
+        returnStringBuilder.append("<dd>");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("<div class=\"formWrap\">");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append("<select");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("name=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getName()) ? "" : pubItemDTO.getName());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("class=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append("\"");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("id=\"");
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append("\"");
+
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append(">");
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 3));
+        returnStringBuilder.append("<option>전체</option>");
+
+        for(int inx =0; inx < 3 ; inx++){
+            returnStringBuilder.append(getNewLineString());
+            returnStringBuilder.append(getTabString(tabInx + 3));
+            String optString = (isEmpty(pubItemDTO.getLabel())?"option"+inx:pubItemDTO.getLabel()+inx);
+            returnStringBuilder.append("<option>"+optString+"</option>");
+
+        }
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 2));
+        returnStringBuilder.append("</select>");
+
+
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx + 1));
+        returnStringBuilder.append("</div>");
+        returnStringBuilder.append(getNewLineString());
+        returnStringBuilder.append(getTabString(tabInx));
+        returnStringBuilder.append("</dd>");
         return returnStringBuilder.toString();
     }
 
