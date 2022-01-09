@@ -15,15 +15,18 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 public class PubController {
+
     @Autowired
     PubService pubService;
 
     @PostMapping(path = "/generateHtml", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void generateHtml(@RequestBody PubBaseDTO pubBaseDTO,HttpServletResponse response) throws IOException {
+    public void generateHtml(@RequestBody PubBaseDTO pubBaseDTO, HttpServletResponse response)
+        throws IOException {
         String htmlFileString = pubService.getHtmlString(pubBaseDTO);
         byte[] fileByte = htmlFileString.getBytes(StandardCharsets.UTF_8);
         response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; fileName=\"" + URLEncoder.encode("tmp.html", "UTF-8")+"\";");
+        response.setHeader("Content-Disposition",
+            "attachment; fileName=\"" + URLEncoder.encode("tmp.html", "UTF-8") + "\";");
         response.setHeader("Content-Transfer-Encoding", "binary");
 
         response.getOutputStream().write(fileByte);
