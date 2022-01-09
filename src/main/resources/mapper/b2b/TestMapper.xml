@@ -1,0 +1,12 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chs.boot.b2b.mapper.TestMapper">
+  <select id="getDb2Dual" resultType="java.lang.String">
+    SELECT 'DB2'
+    FROM DUAL
+  </select>
+
+
+</mapper>
