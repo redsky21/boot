@@ -26,7 +26,7 @@ public class BootApplication {
 
     @GetMapping("/hello")
     public String hello() {
-        return "goodstart";
+        return "goodstart3";
     }
 
     @PostMapping("/hello2")
