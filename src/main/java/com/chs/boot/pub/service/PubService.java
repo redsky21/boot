@@ -645,7 +645,7 @@ public class PubService {
                         if (isSumColumn(realColumn, sumGridDTOList)) {
                             if (isFirst.get()) {
                                 headerStringBuilder.append("\t\t\tcolSpan: \"");
-                                headerStringBuilder.append(inx.get());
+                                headerStringBuilder.append(inx.get()-1);
                                 headerStringBuilder.append("\",\n\t\t},\n");
                                 isFirst.set(false);
 //                                inx.set(0L);
