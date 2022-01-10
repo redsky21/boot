@@ -29,7 +29,7 @@
     IS_GENERATED,
     GENERATION_EXPRESSION
     FROM information_schema.columns
-    WHERE COLUMNS.table_name=#{tableName}
+    WHERE upper(table_name)=upper(#{tableName})
 
   </select>
 

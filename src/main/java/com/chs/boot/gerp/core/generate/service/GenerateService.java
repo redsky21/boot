@@ -14,7 +14,7 @@ public class GenerateService {
     B2bGenerateMapper b2bGenerateMapper;
 
     public List<SchemaColumnVO> retrieveColumnSchema(
-        SchemaColumnConditionVO schemaColumnConditionVO, String dataSetName) {
+        SchemaColumnConditionVO schemaColumnConditionVO) {
         List<SchemaColumnVO> result = b2bGenerateMapper.retrieveColumnSchema(
             schemaColumnConditionVO);
         return result;
