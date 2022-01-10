@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @MapperScan(value = {"com.chs.boot.pub",
-    "com.chs.boot.sample"}, sqlSessionFactoryRef = "coreSqlSessionFactory")
+    "com.chs.boot.sample",
+    "com.chs.boot.gerp.core"
+}, sqlSessionFactoryRef = "coreSqlSessionFactory")
 
 @EnableTransactionManagement
 

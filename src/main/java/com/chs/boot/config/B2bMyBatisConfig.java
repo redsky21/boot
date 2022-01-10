@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@MapperScan(value = "com.chs.boot.b2b", sqlSessionFactoryRef = "b2bSqlSessionFactory")
+@MapperScan(value = "com.chs.boot.gerp.b2b", sqlSessionFactoryRef = "b2bSqlSessionFactory")
 @EnableTransactionManagement
 
 public class B2bMyBatisConfig {

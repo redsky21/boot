@@ -1,4 +1,4 @@
-package com.chs.boot.b2b.mapper;
+package com.chs.boot.gerp.b2b.mapper;
 
 import com.chs.boot.pub.model.PubTemplateDO;
 import java.util.List;
