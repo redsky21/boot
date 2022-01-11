@@ -52,6 +52,7 @@ jobs:
           host: ${{ secrets.REDSKY_HOME_IP }}
           username: ${{ secrets.REDSKY_HOME_ID }}
 #          key: ${{ secrets.REMOTE_SSH_KEY }}
+          password: ${{ secrets.REDSKY_HOME_PW }}
           port: ${{ secrets.REDSKY_HOME_PORT }}
           source: ./$GITHUB_SHA.zip
           target: ${{ secrets.REDSKY_HOME_FOLDER }}
