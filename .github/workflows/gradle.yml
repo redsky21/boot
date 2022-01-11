@@ -45,3 +45,13 @@ jobs:
 
       - name: Code Deploy
         run: aws deploy create-deployment --application-name testapp --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name dev --s3-location bucket=redsky210-deploy,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
+
+      - name: Upload to redsky home
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REDSKY_HOME_IP }}
+          username: ${{ secrets.REDSKY_HOME_ID }}
+#          key: ${{ secrets.REMOTE_SSH_KEY }}
+          port: ${{ secrets.REDSKY_HOME_PORT }}
+          source: ./$GITHUB_SHA.zip
+          target: ${{ secrets.REDSKY_HOME_FOLDER }}
