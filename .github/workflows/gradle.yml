@@ -61,4 +61,4 @@ jobs:
           password: ${{ secrets.REDSKY_HOME_PW }}
           port: ${{ secrets.REDSKY_HOME_PORT }}
           source: "deploy.tar"
-          target: /$GITHUB_SHA/${{ secrets.REDSKY_HOME_FOLDER }}
+          target: ${{ secrets.REDSKY_HOME_FOLDER }}/$GITHUB_SHA
