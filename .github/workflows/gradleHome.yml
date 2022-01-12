@@ -29,9 +29,11 @@ jobs:
         run: ./gradlew build
         shell: bash
 
-      - name: Make zip file
-          run: zip -qq -r ./$GITHUB_SHA.zip .
-          shell: bash
+      - name: Make tar
+        run: |
+          mkdir ../build
+          cp -TR . ../build
+          tar -cvf deploy.tar ../build/
 
       - name: Upload to redsky home
         uses: appleboy/scp-action@master
