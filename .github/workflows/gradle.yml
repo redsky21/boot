@@ -78,5 +78,10 @@ jobs:
             tar -xvf boot.tar
             cd build
             rm *.zip
+            rm -rf build
+            ./gradlew build
+            sh redskydeploy.sh
+
+
 
 
