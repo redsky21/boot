@@ -32,7 +32,7 @@ public class BootApplication {
 
     @GetMapping("/hello")
     public String hello() {
-        return "goodstart3";
+        return "goodstart34";
     }
 
     @PostMapping("/hello2")
