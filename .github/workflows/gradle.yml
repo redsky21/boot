@@ -71,5 +71,5 @@ jobs:
           password: ${{ secrets.REDSKY_HOME_PW }}
           port: ${{ secrets.REDSKY_HOME_PORT }}
           script: |
-            whoami
+            cd ${{ secrets.REDSKY_HOME_FOLDER }}
             ls -al
