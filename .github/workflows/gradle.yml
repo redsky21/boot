@@ -77,7 +77,6 @@ jobs:
             rm -rf build
             tar -xvf boot.tar
             cd build
-            ls -al
             rm *.zip
             gradle bootRun
 
