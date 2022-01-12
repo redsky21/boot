@@ -64,12 +64,12 @@ jobs:
           target: ${{ secrets.REDSKY_HOME_FOLDER }}
 
       - name: redsky home deploy
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.REDSKY_HOME_IP }}
-            username: ${{ secrets.REDSKY_HOME_ID }}
-            password: ${{ secrets.REDSKY_HOME_PW }}
-            port: ${{ secrets.REDSKY_HOME_PORT }}
-            script: |
-              whoami
-              ls -al
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REDSKY_HOME_IP }}
+          username: ${{ secrets.REDSKY_HOME_ID }}
+          password: ${{ secrets.REDSKY_HOME_PW }}
+          port: ${{ secrets.REDSKY_HOME_PORT }}
+          script: |
+            whoami
+            ls -al
