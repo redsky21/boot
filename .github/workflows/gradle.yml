@@ -72,5 +72,6 @@ jobs:
           port: ${{ secrets.REDSKY_HOME_PORT }}
           script: |
             cd ${{ secrets.REDSKY_HOME_FOLDER }}
+            cp deploy.tar ${{ secrets.REDSKY_HOME_BOOT_FOLDER }}/boot.tar
+            cd ${{ secrets.REDSKY_HOME_BOOT_FOLDER }}
             ls -al
-            echo $GITHUB_SHA
