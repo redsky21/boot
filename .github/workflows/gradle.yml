@@ -74,4 +74,11 @@ jobs:
             cd ${{ secrets.REDSKY_HOME_FOLDER }}
             cp deploy.tar ${{ secrets.REDSKY_HOME_BOOT_FOLDER }}/boot.tar
             cd ${{ secrets.REDSKY_HOME_BOOT_FOLDER }}
+            rm -rf build
+            tar -xvf boot.tar
+            cd build
             ls -al
+            rm *.zip
+            gradle bootRun
+
+

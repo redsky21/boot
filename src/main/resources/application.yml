@@ -9,6 +9,9 @@ spring:
     url: jdbc:log4jdbc:mariadb://redsky21-db1.cb1vehi7zfck.ap-northeast-2.rds.amazonaws.com:3306/redsky21_db1
     username: admin
     password: ENC(ygFNq7EQhAmpEamBGAqudiERJjmFX4mr)
+  pid:
+    file: springboot-app.pid
+
 
 jasypt:
   encryptor:
