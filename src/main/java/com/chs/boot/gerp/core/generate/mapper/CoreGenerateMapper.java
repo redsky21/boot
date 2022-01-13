@@ -8,6 +8,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface CoreGenerateMapper {
 
-    List<ConvertDataTypeVO> getConvertDataType(SchemaColumnConditionVO schemaColumnConditionVO);
+    List<ConvertDataTypeVO> getConvertDataType();
 
 }
