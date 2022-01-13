@@ -25,8 +25,10 @@ public class GenerateService {
         return result;
     }
 
-    public String getVOColumnString(List<CoreColumnVO> coreColumnVOList){
+    public String getVOColumnString(List<CoreColumnVO> coreColumnVOList, int tabInx) {
+        StringBuilder returnString = new StringBuilder("");
 
+        return returnString.toString();
     }
 
 }
