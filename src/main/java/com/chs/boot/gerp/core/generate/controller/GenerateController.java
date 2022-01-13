@@ -12,15 +12,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class GenerateController {
+
     @Autowired
     GenerateService generateService;
 
     @PostMapping("/gerp/gen/hello")
     public void hello(String good) {
-   }
+    }
 
-   @PostMapping("/gerp/gen/retrieveColumnSchema")
-    public List<SchemaColumnVO> retrieveColumnSchema (@RequestBody SchemaColumnConditionVO schemaColumnConditionVO){
+    @PostMapping("/gerp/gen/retrieveColumnSchema")
+    public List<SchemaColumnVO> retrieveColumnSchema(
+        @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
         return generateService.retrieveColumnSchema(schemaColumnConditionVO);
-   }
+    }
 }
