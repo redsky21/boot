@@ -1,9 +1,12 @@
 package com.chs.boot.gerp.core.generate.controller;
 
+import static com.chs.boot.common.util.MyBatisUtil.isEmpty;
+
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
 import com.chs.boot.gerp.core.generate.service.GenerateService;
 import java.util.List;
+import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,9 +24,11 @@ public class GenerateController {
     }
 
     @PostMapping("/gerp/gen/getEoString")
-    public List<SchemaColumnVO> retrieveColumnSchema(
+    public String getEOString(
         @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
-        return generateService.getEOString(schemaColumnConditionVO.getTableName(),isEmpty());
+        String eoName = CaseUtils.toCamelCase(schemaColumnConditionVO.getTableName(),false,'_');
+        return generateService.getEOString("a.b.c.d",schemaColumnConditionVO.getTableName(),eoName);
+
     }
 
     @PostMapping("/gerp/gen/retrieveColumnSchema")

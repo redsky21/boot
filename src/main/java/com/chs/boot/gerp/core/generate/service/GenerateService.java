@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,9 @@ public class GenerateService {
     @Autowired
     CoreGenerateMapper coreGenerateMapper;
 
-    public String getEOString(String tableName, String eoName) {
+
+
+    public String getEOString(String packageName, String tableName, String eoInstanceName) {
         String returnString = "";
         //1 get EO Template
         String templateString = getTemplateSqlStmtString("EO");
@@ -51,6 +54,10 @@ public class GenerateService {
 
         //2 get Replace String
         String replaceString = getVOColumnString(coreColumnVOList,1);
+        //3 eo name replace
+        returnString = templateString.replace("//@EONameHere",eoInstanceName);
+        returnString = returnString.replace("//@GenHere",replaceString);
+        returnString = returnString.replace("//@PackageNameHere",packageName);
         return returnString;
     }
 
@@ -91,9 +98,9 @@ public class GenerateService {
                 returnString.append(tabString);
                 returnString.append("private ");
                 returnString.append(isNotNullAndEmpty(dataTypeMap.get(coreColumnVO.getDataType()))
-                    ? coreColumnVO.getDataType() : "String");
+                    ? dataTypeMap.get(coreColumnVO.getDataType()) : "String");
                 returnString.append(" ");
-                returnString.append(coreColumnVO.getColumnName());
+                returnString.append(CaseUtils.toCamelCase(coreColumnVO.getColumnName(),false,'_'));
                 returnString.append(";");
                 returnString.append(getNewLineString());
             });

@@ -10,7 +10,7 @@
 <!--retrieveTepGenTemplate-->
   <select id="retrieveTepGenTemplate" resultType="com.chs.boot.gerp.core.generate.model.TepGenTemplateEO">
     SELECT *
-    FROM tep_data_type
-    WHERE template_type = #{template_type}
+    FROM tep_gen_template
+    WHERE template_type = #{templateType}
   </select>
 </mapper>
