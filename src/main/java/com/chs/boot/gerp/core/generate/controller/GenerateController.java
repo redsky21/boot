@@ -26,8 +26,9 @@ public class GenerateController {
     @PostMapping("/gerp/gen/getEoString")
     public String getEOString(
         @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
-        String eoName = CaseUtils.toCamelCase(schemaColumnConditionVO.getTableName(),false,'_');
-        return generateService.getEOString("a.b.c.d",schemaColumnConditionVO.getTableName(),eoName);
+
+        generateService.makeEOFile("a.b.c.d",schemaColumnConditionVO.getTableName());
+        return"1";
 
     }
 

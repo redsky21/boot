@@ -12,6 +12,12 @@ import com.chs.boot.gerp.core.generate.mapper.CoreGenerateMapper;
 import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.CoreColumnVO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,8 +36,42 @@ public class GenerateService {
     CoreGenerateMapper coreGenerateMapper;
 
 
+    public String makeEOFile(String packageName, String tableName){
+        String eoClassName = CaseUtils.toCamelCase(tableName,true,'_')+"EO";
+        String eoString = getEOString(packageName,tableName,eoClassName);
+        String fileName = eoClassName+".java";
+        createFile(packageName,fileName,eoString);
+        return eoClassName;
+    }
 
-    public String getEOString(String packageName, String tableName, String eoInstanceName) {
+    public void createFile(String packageName, String fileName, String fileContents) {
+        File mainDir = new File("c:" + File.separatorChar + "chsWorkNew");
+        //한폴더에 몰자
+        String[] g = packageName.split("[.]");
+        String strDir = g[g.length - 1];
+        String dirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir;
+        if (!mainDir.isDirectory()) {
+            mainDir.mkdir();
+        }
+        File dir = new File(dirName);
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+        Path filePath = Paths.get(dirName, File.separatorChar + fileName);
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+
+        try {
+            fw = new FileWriter(filePath.toString(), false);
+            bw = new BufferedWriter(fw);
+            bw.write(fileContents);
+            bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getEOString(String packageName, String tableName, String eoClassName) {
         String returnString = "";
         //1 get EO Template
         String templateString = getTemplateSqlStmtString("EO");
@@ -53,11 +93,11 @@ public class GenerateService {
         }
 
         //2 get Replace String
-        String replaceString = getVOColumnString(coreColumnVOList,1);
+        String replaceString = getVOColumnString(coreColumnVOList, 1);
         //3 eo name replace
-        returnString = templateString.replace("//@EONameHere",eoInstanceName);
-        returnString = returnString.replace("//@GenHere",replaceString);
-        returnString = returnString.replace("//@PackageNameHere",packageName);
+        returnString = templateString.replace("//@EONameHere", eoClassName);
+        returnString = returnString.replace("//@GenHere", replaceString);
+        returnString = returnString.replace("//@PackageNameHere", packageName);
         return returnString;
     }
 
@@ -100,7 +140,8 @@ public class GenerateService {
                 returnString.append(isNotNullAndEmpty(dataTypeMap.get(coreColumnVO.getDataType()))
                     ? dataTypeMap.get(coreColumnVO.getDataType()) : "String");
                 returnString.append(" ");
-                returnString.append(CaseUtils.toCamelCase(coreColumnVO.getColumnName(),false,'_'));
+                returnString.append(
+                    CaseUtils.toCamelCase(coreColumnVO.getColumnName(), false, '_'));
                 returnString.append(";");
                 returnString.append(getNewLineString());
             });
