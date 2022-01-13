@@ -7,6 +7,10 @@
     SELECT maria_Data_type, java_Data_type
     FROM tep_data_type
   </select>
-
-
+<!--retrieveTepGenTemplate-->
+  <select id="retrieveTepGenTemplate" resultType="com.chs.boot.gerp.core.generate.model.TepGenTemplateEO">
+    SELECT *
+    FROM tep_data_type
+    WHERE template_type = #{template_type}
+  </select>
 </mapper>

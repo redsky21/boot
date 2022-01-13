@@ -20,6 +20,12 @@ public class GenerateController {
     public void hello(String good) {
     }
 
+    @PostMapping("/gerp/gen/getEoString")
+    public List<SchemaColumnVO> retrieveColumnSchema(
+        @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
+        return generateService.getEOString(schemaColumnConditionVO.getTableName(),isEmpty());
+    }
+
     @PostMapping("/gerp/gen/retrieveColumnSchema")
     public List<SchemaColumnVO> retrieveColumnSchema(
         @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {

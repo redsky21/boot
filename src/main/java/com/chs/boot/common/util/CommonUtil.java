@@ -182,6 +182,11 @@ public class CommonUtil {
     	{
     		return false;
     	}
+		else if(obj instanceof List){
+			if( ((List<?>) obj).size()==0){
+				return false;
+			}
+		}
     	else
     	{
     		String str = obj.toString();
@@ -195,6 +200,7 @@ public class CommonUtil {
     		}
 
     	}
+		return true;
     }
 
     /**

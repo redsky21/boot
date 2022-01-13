@@ -11,6 +11,8 @@ import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
 import com.chs.boot.gerp.core.generate.mapper.CoreGenerateMapper;
 import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.CoreColumnVO;
+import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,17 +28,44 @@ public class GenerateService {
     @Autowired
     CoreGenerateMapper coreGenerateMapper;
 
-    public String getEOString(){
+    public String getEOString(String tableName, String eoName) {
         String returnString = "";
+        //1 get EO Template
+        String templateString = getTemplateSqlStmtString("EO");
+        //2 get Column Info
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
 
+        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(
+            schemaColumnConditionVO);
+        List<CoreColumnVO> coreColumnVOList = new ArrayList<>();
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            schemaColumnVOList.stream().forEach(schemaColumnVO -> {
+
+                coreColumnVOList.add(CoreColumnVO.builder().dataType(schemaColumnVO.getDataType())
+                    .columnName(schemaColumnVO.getColumnName()).build()
+
+                );
+            });
+        }
+
+        //2 get Replace String
+        String replaceString = getVOColumnString(coreColumnVOList,1);
         return returnString;
     }
 
-    private String getTemplateSqlStmtString(String templateType){
+    private String getTemplateSqlStmtString(String templateType) {
         String returnString = "";
-
+        TepGenTemplateEO conditionEO = new TepGenTemplateEO();
+        conditionEO.setTemplateType(templateType);
+        List<TepGenTemplateEO> tepGenTemplateEOList = coreGenerateMapper.retrieveTepGenTemplate(
+            conditionEO);
+        if (isNotNullAndEmpty(tepGenTemplateEOList)) {
+            returnString = tepGenTemplateEOList.get(0).getTemplateSqlStmt();
+        }
         return returnString;
-    };
+    }
+
 
     public List<SchemaColumnVO> retrieveColumnSchema(
         SchemaColumnConditionVO schemaColumnConditionVO) {
