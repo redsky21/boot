@@ -5,7 +5,9 @@ import com.chs.boot.pub.model.PubBaseDTO;
 import com.chs.boot.pub.model.PubGridDTO;
 import com.chs.boot.pub.model.PubItemDTO;
 import com.chs.boot.pub.model.PubTemplateDO;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PubService {
+
     @Autowired
     PubMapper pubMapper;
     @Autowired
@@ -30,35 +33,100 @@ public class PubService {
         String makeConstHeaderBottomText = makeConstHeaderBottomText();
         String makeBodyTopText = makeBodyTopText();
         String makeContentTopText = makeContentTopText();
-        String makeSearchCondition = makeSearchCondition(pubBaseDTO.getSearchItemList(), pubBaseDTO.getSearchButtonList());
+        String makeSearchCondition = makeSearchCondition(pubBaseDTO.getSearchItemList(),
+            pubBaseDTO.getSearchButtonList());
         String makeGridHeaderText = makeGridHeaderText();
         String makeGridButtonText = makeGridButtonText(pubBaseDTO.getGridButtonList());
         String makeContentBottomText = makeContentBottomText();
-        String returnString = headerConstText+getNewLineString()
-                +scriptTopText+getNewLineString()
-                +columnLayoutText+getNewLineString()
-                +makeFooterLayoutText+getNewLineString()
-                +makeConstHeaderBottomText+getNewLineString()
-                +makeBodyTopText+getNewLineString()
-                +makeContentTopText+getNewLineString()
-                +makeSearchCondition+getNewLineString()
-                +makeGridHeaderText+getNewLineString()
-                +makeGridButtonText+getNewLineString()
-                +makeContentBottomText+getNewLineString()
-                ;
+        String returnString = headerConstText + getNewLineString()
+            + scriptTopText + getNewLineString()
+            + columnLayoutText + getNewLineString()
+            + makeFooterLayoutText + getNewLineString()
+            + makeConstHeaderBottomText + getNewLineString()
+            + makeBodyTopText + getNewLineString()
+            + makeContentTopText + getNewLineString()
+            + makeSearchCondition + getNewLineString()
+            + makeGridHeaderText + getNewLineString()
+            + makeGridButtonText + getNewLineString()
+            + makeContentBottomText + getNewLineString();
+        //testData 추가
+        String testDataList = getTestDataString(pubBaseDTO.getTestDataList(),
+            pubBaseDTO.getGridItemList());
+        if(!isEmpty(testDataList)){
+            returnString = returnString.replace("var gridData = [];//replace here","var gridData ="+testDataList+";");
+        }
+        return returnString;
+    }
+
+    private String getTestDataString(List<LinkedHashMap<String, Object>> testDataList,
+        List<PubGridDTO> gridItemList) {
+        String returnString = "";
+        HashMap<String, String> gridItemMap = new HashMap<>();
+        if (getListSize(gridItemList) > 0) {
+            gridItemList.stream().forEach(pubGridDTO -> {
+                if (!isEmpty(pubGridDTO.getDataField())) {
+                    gridItemMap.put(pubGridDTO.getDataField(),
+                        isEmpty(pubGridDTO.getDataType()) == null ? "string"
+                            : pubGridDTO.getDataType());
+                }
+            });
+        }
+
+        if (!isEmpty(testDataList)) {
+            List<LinkedHashMap<String, Object>> tmpResultList = new ArrayList<>();
+            testDataList.stream().forEach(testData -> {
+//                testData.remove("rowId");
+//                tmpResultList.add(testData);
+                LinkedHashMap<String, Object> linkedHashMap = new LinkedHashMap<>();
+                for (String key : testData.keySet()) {
+                    if (!key.equals("rowId")) {
+                        String dataType = gridItemMap.get(key);
+                        Object val = testData.get(key);
+                        if (!isEmpty(dataType) && dataType.equals("numeric")
+                            && val instanceof String) {
+                            try {
+                                int k = ((String) val).indexOf(".");
+                                if( k < 0 ){
+                                    Long a = Long.parseLong((String) val);
+                                    linkedHashMap.put(key,a);
+                                }
+                                else{
+                                    linkedHashMap.put(key, Double.parseDouble((String) val));
+                                }
+
+
+
+                            } catch (Exception e) {
+                                linkedHashMap.put(key, 0);
+                            }
+
+                        } else {
+                            linkedHashMap.put(key, val);
+                        }
+
+                    }
+
+                }
+                tmpResultList.add(linkedHashMap);
+            });
+            try {
+                returnString = objectMapper.writeValueAsString(tmpResultList);
+            } catch (JsonProcessingException e) {
+                returnString = "";
+            }
+        }
         return returnString;
     }
 
 
-
-    private String makeGridButtonText(List<PubItemDTO> gridButtonList){
+    private String makeGridButtonText(List<PubItemDTO> gridButtonList) {
         StringBuilder returnStringBuilder = new StringBuilder("");
         if (getListSize(gridButtonList) > 0) {
             returnStringBuilder.append(getNewLineString());
             returnStringBuilder.append(getTabString(4));
             returnStringBuilder.append("<div class=\"formGroup\">");
-            gridButtonList.stream().forEach(gridButtonAtom->{
-                returnStringBuilder.append(getAtomButtonString(gridButtonAtom,5L));
+            gridButtonList.stream().forEach(gridButtonAtom -> {
+                returnStringBuilder.append(getAtomButtonString(gridButtonAtom, 5L));
             });
 
             returnStringBuilder.append(getNewLineString());
@@ -68,7 +136,8 @@ public class PubService {
         return returnStringBuilder.toString();
     }
 
-    private String makeSearchCondition(List<PubItemDTO> searchItemList, List<PubItemDTO> searchButtonList) {
+    private String makeSearchCondition(List<PubItemDTO> searchItemList,
+        List<PubItemDTO> searchButtonList) {
         StringBuilder returnStringBuilder = new StringBuilder("");
         if (getListSize(searchItemList) > 0 || getListSize(searchButtonList) > 0) {
             returnStringBuilder.append("\t\t\t<div class=\"inquiryBox dtShort type02\">\n");
@@ -85,8 +154,8 @@ public class PubService {
             returnStringBuilder.append(getNewLineString());
             returnStringBuilder.append(getTabString(4));
             returnStringBuilder.append("<div class=\"btnGroup right\">");
-            searchButtonList.stream().forEach(searchButtonAtom->{
-                returnStringBuilder.append(getAtomButtonString(searchButtonAtom,5L));
+            searchButtonList.stream().forEach(searchButtonAtom -> {
+                returnStringBuilder.append(getAtomButtonString(searchButtonAtom, 5L));
             });
 
             returnStringBuilder.append(getNewLineString());
@@ -108,7 +177,7 @@ public class PubService {
         int tabInx = (tabIndex == null ? 0 : tabIndex.intValue());
         StringBuilder returnStringBuilder = new StringBuilder("");
         returnStringBuilder.append(getNewLineString());
-        returnStringBuilder.append(getTabString(tabInx ));
+        returnStringBuilder.append(getTabString(tabInx));
         returnStringBuilder.append("<button type=\"button\"");
 
         returnStringBuilder.append(getNewLineString());
@@ -120,15 +189,15 @@ public class PubService {
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
         returnStringBuilder.append("class=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append(
+            isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
         returnStringBuilder.append("\"");
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
         returnStringBuilder.append("id=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" : pubItemDTO.getCompId());
         returnStringBuilder.append("\"");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
@@ -136,12 +205,11 @@ public class PubService {
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
-        returnStringBuilder.append(isEmpty(pubItemDTO.getLabel()) ? "" :pubItemDTO.getLabel());
+        returnStringBuilder.append(isEmpty(pubItemDTO.getLabel()) ? "" : pubItemDTO.getLabel());
 
         returnStringBuilder.append(getNewLineString());
-        returnStringBuilder.append(getTabString(tabInx ));
+        returnStringBuilder.append(getTabString(tabInx));
         returnStringBuilder.append("</button>");
-
 
         return returnStringBuilder.toString();
     }
@@ -166,10 +234,11 @@ public class PubService {
                 returnStringBuilder.append(getCheckFieldString(conditionDTO, 5L, (long) inx));
                 if (inx != (searchItemList.size() - 1)) {
                     while (!isEmpty(searchItemList.get(inx + 1).getType()) &&
-                            searchItemList.get(inx + 1).getType().equals("Checkbox")) {
+                        searchItemList.get(inx + 1).getType().equals("Checkbox")) {
                         inx++;
                         PubItemDTO innerConditionDTO = searchItemList.get(inx);
-                        returnStringBuilder.append(getCheckFieldString(innerConditionDTO, 5L, (long) inx));
+                        returnStringBuilder.append(
+                            getCheckFieldString(innerConditionDTO, 5L, (long) inx));
                     }
 
                 }
@@ -203,15 +272,15 @@ public class PubService {
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
         returnStringBuilder.append("class=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append(
+            isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
         returnStringBuilder.append("\"");
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
         returnStringBuilder.append("id=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" : pubItemDTO.getCompId());
         returnStringBuilder.append("\"");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
@@ -219,12 +288,11 @@ public class PubService {
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 3));
-        returnStringBuilder.append(isEmpty(pubItemDTO.getLabel()) ? "" :pubItemDTO.getLabel());
+        returnStringBuilder.append(isEmpty(pubItemDTO.getLabel()) ? "" : pubItemDTO.getLabel());
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
         returnStringBuilder.append("</button>");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx));
@@ -257,15 +325,15 @@ public class PubService {
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 3));
         returnStringBuilder.append("class=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append(
+            isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
         returnStringBuilder.append("\"");
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 3));
         returnStringBuilder.append("id=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" : pubItemDTO.getCompId());
         returnStringBuilder.append("\"");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
@@ -275,18 +343,18 @@ public class PubService {
         returnStringBuilder.append(getTabString(tabInx + 3));
         returnStringBuilder.append("<option>전체</option>");
 
-        for(int inx =0; inx < 3 ; inx++){
+        for (int inx = 0; inx < 3; inx++) {
             returnStringBuilder.append(getNewLineString());
             returnStringBuilder.append(getTabString(tabInx + 3));
-            String optString = (isEmpty(pubItemDTO.getLabel())?"option"+inx:pubItemDTO.getLabel()+inx);
-            returnStringBuilder.append("<option>"+optString+"</option>");
+            String optString = (isEmpty(pubItemDTO.getLabel()) ? "option" + inx
+                : pubItemDTO.getLabel() + inx);
+            returnStringBuilder.append("<option>" + optString + "</option>");
 
         }
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
         returnStringBuilder.append("</select>");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
@@ -329,26 +397,26 @@ public class PubService {
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 3));
         returnStringBuilder.append("class=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
+        returnStringBuilder.append(
+            isEmpty(pubItemDTO.getCompClass()) ? "" : pubItemDTO.getCompClass());
         returnStringBuilder.append("\"");
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 3));
         returnStringBuilder.append("placeholder=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getPlaceholder()) ? "" :pubItemDTO.getPlaceholder());
+        returnStringBuilder.append(
+            isEmpty(pubItemDTO.getPlaceholder()) ? "" : pubItemDTO.getPlaceholder());
         returnStringBuilder.append("\"");
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 3));
         returnStringBuilder.append("id=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" :pubItemDTO.getCompId());
+        returnStringBuilder.append(isEmpty(pubItemDTO.getCompId()) ? "" : pubItemDTO.getCompId());
         returnStringBuilder.append("\"");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
         returnStringBuilder.append("/>");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
@@ -376,7 +444,8 @@ public class PubService {
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
         returnStringBuilder.append("id=\"");
-        String itemId = isEmpty(pubItemDTO.getCompId()) ? "checkbox" + checkIndex : pubItemDTO.getCompId();
+        String itemId =
+            isEmpty(pubItemDTO.getCompId()) ? "checkbox" + checkIndex : pubItemDTO.getCompId();
         returnStringBuilder.append(itemId);
         returnStringBuilder.append("\"");
 
@@ -413,7 +482,8 @@ public class PubService {
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx));
         returnStringBuilder.append("<div class=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "checkGroup" : pubItemDTO.getCompClass());
+        returnStringBuilder.append(
+            isEmpty(pubItemDTO.getCompClass()) ? "checkGroup" : pubItemDTO.getCompClass());
         returnStringBuilder.append("\">");
         return returnStringBuilder.toString();
     }
@@ -442,7 +512,8 @@ public class PubService {
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
         returnStringBuilder.append("<div class=\"");
-        returnStringBuilder.append(isEmpty(pubItemDTO.getCompClass()) ? "dateWrap" : pubItemDTO.getCompClass());
+        returnStringBuilder.append(
+            isEmpty(pubItemDTO.getCompClass()) ? "dateWrap" : pubItemDTO.getCompClass());
         returnStringBuilder.append("\">");
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 3));
@@ -489,11 +560,9 @@ public class PubService {
         returnStringBuilder.append(getTabString(tabInx + 3));
         returnStringBuilder.append("></button>");
 
-
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 2));
         returnStringBuilder.append("</div>");
-
 
         returnStringBuilder.append(getNewLineString());
         returnStringBuilder.append(getTabString(tabInx + 1));
@@ -545,7 +614,7 @@ public class PubService {
                 }
             });
             List<PubGridDTO> sumGridDTOList = pubGridDTOList.stream().filter(pubGridDTO ->
-                    pubGridDTO.getSumFlag() != null && pubGridDTO.getSumFlag().equals("Y")
+                pubGridDTO.getSumFlag() != null && pubGridDTO.getSumFlag().equals("Y")
             ).collect(Collectors.toList());
 
             if (getListSize(sumGridDTOList) > 0) {
@@ -559,32 +628,32 @@ public class PubService {
                 AtomicReference<Boolean> isFirst = new AtomicReference<>(false);
                 realColumnList.stream().forEach(realColumn -> {
 
-                            inx.getAndSet(inx.get() + 1);
-                            if (inx.get() == 1) {
-                                isFirst.set(true);
-                                headerStringBuilder.append("\t\t{\n");
-                                headerStringBuilder.append("\t\t\tdataField: \"");
-                                headerStringBuilder.append(realColumn.getDataField());
-                                headerStringBuilder.append("\",\n");
-                                headerStringBuilder.append("\t\t\tpositionField: \"");
-                                headerStringBuilder.append(realColumn.getDataField());
-                                headerStringBuilder.append("\",\n");
-                                headerStringBuilder.append("\t\t\tlabelText: \"합계\",\n");
+                        inx.getAndSet(inx.get() + 1);
+                        if (inx.get() == 1) {
+                            isFirst.set(true);
+                            headerStringBuilder.append("\t\t{\n");
+                            headerStringBuilder.append("\t\t\tdataField: \"");
+                            headerStringBuilder.append(realColumn.getDataField());
+                            headerStringBuilder.append("\",\n");
+                            headerStringBuilder.append("\t\t\tpositionField: \"");
+                            headerStringBuilder.append(realColumn.getDataField());
+                            headerStringBuilder.append("\",\n");
+                            headerStringBuilder.append("\t\t\tlabelText: \"합계\",\n");
 
 
-                            }
-                            if (isSumColumn(realColumn, sumGridDTOList)) {
-                                if (isFirst.get()) {
-                                    headerStringBuilder.append("\t\t\tcolSpan: \"");
-                                    headerStringBuilder.append(inx.get());
-                                    headerStringBuilder.append("\",\n\t\t},\n");
-                                    isFirst.set(false);
-//                                inx.set(0L);
-                                }
-                                headerStringBuilder.append(sumFieldString(realColumn));
-
-                            }
                         }
+                        if (isSumColumn(realColumn, sumGridDTOList)) {
+                            if (isFirst.get()) {
+                                headerStringBuilder.append("\t\t\tcolSpan: \"");
+                                headerStringBuilder.append(inx.get()-1);
+                                headerStringBuilder.append("\",\n\t\t},\n");
+                                isFirst.set(false);
+//                                inx.set(0L);
+                            }
+                            headerStringBuilder.append(sumFieldString(realColumn));
+
+                        }
+                    }
                 );
                 headerStringBuilder.append("\t\t];");
             }
@@ -650,7 +719,8 @@ public class PubService {
 //                }
                 if (isEmpty(pubGridDTO.getGroupDataField())) {
                     headerStringBuilder.append("\t\t{\n");
-                    LinkedHashMap<String, Object> atomMap = objectMapper.convertValue(pubGridDTO, LinkedHashMap.class);
+                    LinkedHashMap<String, Object> atomMap = objectMapper.convertValue(pubGridDTO,
+                        LinkedHashMap.class);
                     atomMap.forEach((mapKey, mapVal) -> {
                         if (!isEmpty(mapVal) && !mapKey.equals("groupDataField")) {
                             headerStringBuilder.append("\t\t\t");
@@ -671,14 +741,17 @@ public class PubService {
                     AtomicReference<Long> matchCnt = new AtomicReference<>(0L);
                     pubGridDTOList.stream().forEach(innerPubGridDTO -> {
 
-                        if (!isEmpty(innerPubGridDTO.getGroupDataField()) && !isEmpty(pubGridDTO.getDataField())) {
-                            if (innerPubGridDTO.getGroupDataField().equals(pubGridDTO.getDataField())) {
+                        if (!isEmpty(innerPubGridDTO.getGroupDataField()) && !isEmpty(
+                            pubGridDTO.getDataField())) {
+                            if (innerPubGridDTO.getGroupDataField()
+                                .equals(pubGridDTO.getDataField())) {
                                 matchCnt.getAndSet(matchCnt.get() + 1);
                                 if (matchCnt.get() == 1) {
                                     headerStringBuilder.append("\t\t\tchildren :[\n");
                                 }
                                 headerStringBuilder.append("\t\t\t\t{\n");
-                                LinkedHashMap<String, Object> innerAtomMap = objectMapper.convertValue(innerPubGridDTO, LinkedHashMap.class);
+                                LinkedHashMap<String, Object> innerAtomMap = objectMapper.convertValue(
+                                    innerPubGridDTO, LinkedHashMap.class);
                                 innerAtomMap.forEach((mapKey, mapVal) -> {
                                     if (!isEmpty(mapVal) && !mapKey.equals("groupDataField")) {
                                         headerStringBuilder.append("\t\t\t\t\t");

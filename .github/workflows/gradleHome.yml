@@ -1,11 +1,11 @@
 on:
   push:
     branches:
-      - master
+      - home
 
-name: Deploy String boot to Amazon EC2
+name: Deploy boot to Home
 env:
-  PROJECT_NAME: action_codedeploy
+  PROJECT_NAME: action_homeDeploy
 
 jobs:
   deploy:
@@ -28,23 +28,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
         shell: bash
-
-      - name: Make zip file
-        run: zip -qq -r ./$GITHUB_SHA.zip .
-        shell: bash
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: AKIARE32FWKVLR2XPQI2
-          aws-secret-access-key: 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
-          aws-region: ap-northeast-2
-
-      - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://redsky210-deploy/$PROJECT_NAME/$GITHUB_SHA.zip
-
-      - name: Code Deploy
-        run: aws deploy create-deployment --application-name testapp --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name dev --s3-location bucket=redsky210-deploy,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
 
       - name: Make tar
         run: |
@@ -81,7 +64,3 @@ jobs:
             rm -rf build
             ./gradlew build
             sh redskydeploy.sh
-
-
-
-
