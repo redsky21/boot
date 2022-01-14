@@ -13,4 +13,65 @@
     FROM tep_gen_template
     WHERE template_type = #{templateType}
   </select>
+  
+  <select id="retrieveTepGenFileInfo" resultType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO"  parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO">
+
+    SELECT * FROM tep_gen_file_info
+
+    AND 1=1
+    <if test='fileSeq!=null'>AND file_seq=#{fileSeq}</if>
+    <if test='packageNo!=null'>AND package_no=#{packageNo}</if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(packageName)'>AND package_name=#{packageName}</if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileName)'>AND file_name=#{fileName}</if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileContents)'>AND file_contents=#{fileContents}</if>
+  </select>
+  <insert id="insertMulti" parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO">
+    INSERT INTO tep_gen_file_info
+    (
+    file_seq
+    ,package_no
+    ,package_name
+    ,file_name
+    ,file_contents
+    )
+    VALUES
+    <foreach separator="," item="item" collection="list">
+      (
+      #{item.fileSeq}
+      ,#{item.packageNo}
+      ,#{item.packageName}
+      ,#{item.fileName}
+      ,#{item.fileContents}
+      )
+    </foreach>
+  </insert>
+  <delete id="deleteMulti" parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO">
+    DELETE
+    FROM tep_gen_file_info
+    WHERE file_seq IN
+    <foreach item="item" collection="list" open="(" separator="," close=")">
+      #{item.fileSeq}
+    </foreach>
+  </delete>
+  <update id="updateMulti" parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO">
+    <foreach separator=";" item="item" collection="list">
+      UPDATE tep_gen_file_info
+      SET
+      package_no = #{item.packageNo}
+      ,package_name = #{item.packageName}
+      ,file_name = #{item.fileName}
+      ,file_contents = #{item.fileContents}
+      WHERE file_seq = #{item.fileSeq}
+    </foreach>
+  </update>
+  <select id="retrieveTepGenFileInfoByPk" parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO" resultType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO" >
+    SELECT
+      file_seq
+         ,package_no
+         ,package_name
+         ,file_name
+         ,file_contents
+    FROM tep_gen_file_info
+    WHERE file_seq = #{fileSeq}
+  </select>
 </mapper>

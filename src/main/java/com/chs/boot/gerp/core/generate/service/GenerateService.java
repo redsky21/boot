@@ -11,6 +11,7 @@ import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
 import com.chs.boot.gerp.core.generate.mapper.CoreGenerateMapper;
 import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.CoreColumnVO;
+import com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,11 +37,15 @@ public class GenerateService {
     CoreGenerateMapper coreGenerateMapper;
 
 
-    public String makeEOFile(String packageName, String tableName){
-        String eoClassName = CaseUtils.toCamelCase(tableName,true,'_')+"EO";
-        String eoString = getEOString(packageName,tableName,eoClassName);
-        String fileName = eoClassName+".java";
-        createFile(packageName,fileName,eoString);
+    public String makeEOFile(String packageName, String tableName) {
+        String eoClassName = CaseUtils.toCamelCase(tableName, true, '_') + "EO";
+        String eoString = getEOString(packageName, tableName, eoClassName);
+        String fileName = eoClassName + ".java";
+        createFile(packageName, fileName, eoString);
+        //file 생성정보
+        coreGenerateMapper.insertMulti(List.of(
+            TepGenFileInfoEO.builder().fileName(fileName).packageName(packageName)
+                .fileContents(eoString).build()));
         return eoClassName;
     }
 
