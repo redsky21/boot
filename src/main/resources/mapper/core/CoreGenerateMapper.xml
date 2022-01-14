@@ -3,27 +3,37 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.chs.boot.gerp.core.generate.mapper.CoreGenerateMapper">
-  <select id="getConvertDataType" resultType="com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO">
+  <select id="getConvertDataType"
+    resultType="com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO">
     SELECT maria_Data_type, java_Data_type
     FROM tep_data_type
   </select>
-<!--retrieveTepGenTemplate-->
-  <select id="retrieveTepGenTemplate" resultType="com.chs.boot.gerp.core.generate.model.TepGenTemplateEO">
+  <!--retrieveTepGenTemplate-->
+  <select id="retrieveTepGenTemplate"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenTemplateEO">
     SELECT *
     FROM tep_gen_template
     WHERE template_type = #{templateType}
   </select>
-  
-  <select id="retrieveTepGenFileInfo" resultType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO"  parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO">
+
+  <select id="retrieveTepGenFileInfo"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO">
 
     SELECT * FROM tep_gen_file_info
 
     AND 1=1
     <if test='fileSeq!=null'>AND file_seq=#{fileSeq}</if>
     <if test='packageNo!=null'>AND package_no=#{packageNo}</if>
-    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(packageName)'>AND package_name=#{packageName}</if>
-    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileName)'>AND file_name=#{fileName}</if>
-    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileContents)'>AND file_contents=#{fileContents}</if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(packageName)'>AND
+      package_name=#{packageName}
+    </if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileName)'>AND
+      file_name=#{fileName}
+    </if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileContents)'>AND
+      file_contents=#{fileContents}
+    </if>
   </select>
   <insert id="insertMulti" parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO">
     INSERT INTO tep_gen_file_info
@@ -64,14 +74,142 @@
       WHERE file_seq = #{item.fileSeq}
     </foreach>
   </update>
-  <select id="retrieveTepGenFileInfoByPk" parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO" resultType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO" >
-    SELECT
-      file_seq
-         ,package_no
-         ,package_name
-         ,file_name
-         ,file_contents
+  <select id="retrieveTepGenFileInfoByPk"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO">
+    SELECT file_seq
+         , package_no
+         , package_name
+         , file_name
+         , file_contents
     FROM tep_gen_file_info
     WHERE file_seq = #{fileSeq}
   </select>
+  <select id="retrieveTepGenMapperMethodInfo"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO">
+
+    SELECT * FROM tep_gen_mapper_method_info
+    WHERE 1=1
+
+    AND 1=1
+    <if test='methodSeq!=null'>AND method_seq=#{methodSeq}</if>
+    <if test='packageNo!=null'>AND package_no=#{packageNo}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(mapperPackageName)'>AND
+      mapper_package_name=#{mapperPackageName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(mapperXmlName)'>AND
+      mapper_xml_name=#{mapperXmlName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(mapperClassName)'>AND
+      mapper_class_name=#{mapperClassName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodAnnotationName)'>AND
+      method_annotation_name=#{methodAnnotationName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodReturnClassName)'>AND
+      method_return_class_name=#{methodReturnClassName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodName)'>AND
+      method_name=#{methodName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamClassName)'>AND
+      method_param_class_name=#{methodParamClassName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamInstantName)'>AND
+      method_param_instant_name=#{methodParamInstantName}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(xmlMethodType)'>AND
+      xml_method_type=#{xmlMethodType}
+    </if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(sqlStmt)'>AND sql_stmt=#{sqlStmt}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(tableName)'>AND table_name=#{tableName}
+    </if>
+  </select>
+  <insert id="insertMultiTepGenMapperMethodInfo"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO">
+    INSERT INTO tep_gen_mapper_method_info
+    (
+    method_seq
+    ,package_no
+    ,mapper_package_name
+    ,mapper_xml_name
+    ,mapper_class_name
+    ,method_annotation_name
+    ,method_return_class_name
+    ,method_name
+    ,method_param_class_Name
+    ,method_param_instant_Name
+    ,xml_method_type
+    ,sql_stmt
+    ,table_name
+    )
+    VALUES
+    <foreach separator="," item="item" collection="list">
+      (
+      #{item.methodSeq}
+      ,#{item.packageNo}
+      ,#{item.mapperPackageName}
+      ,#{item.mapperXmlName}
+      ,#{item.mapperClassName}
+      ,#{item.methodAnnotationName}
+      ,#{item.methodReturnClassName}
+      ,#{item.methodName}
+      ,#{item.methodParamClassName}
+      ,#{item.methodParamInstantName}
+      ,#{item.xmlMethodType}
+      ,#{item.sqlStmt}
+      ,#{item.tableName}
+      )
+    </foreach>
+  </insert>
+  <delete id="deleteMultiTepGenMapperMethodInfo"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO">
+    DELETE
+    FROM tep_gen_mapper_method_info
+    WHERE method_seq IN
+    <foreach item="item" collection="list" open="(" separator="," close=")">
+      #{item.methodSeq}
+    </foreach>
+  </delete>
+  <update id="updateMultiTepGenMapperMethodInfo"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO">
+    <foreach separator=";" item="item" collection="list">
+      UPDATE tep_gen_mapper_method_info
+      SET
+      package_no = #{item.packageNo}
+      ,mapper_package_name = #{item.mapperPackageName}
+      ,mapper_xml_name = #{item.mapperXmlName}
+      ,mapper_class_name = #{item.mapperClassName}
+      ,method_annotation_name = #{item.methodAnnotationName}
+      ,method_return_class_name = #{item.methodReturnClassName}
+      ,method_name = #{item.methodName}
+      ,method_param_class_Name = #{item.methodParamClassName}
+      ,method_param_instant_Name = #{item.methodParamInstantName}
+      ,xml_method_type = #{item.xmlMethodType}
+      ,sql_stmt = #{item.sqlStmt}
+      ,table_name = #{item.tableName}
+      WHERE method_seq = #{item.methodSeq}
+    </foreach>
+  </update>
+  <select id="retrieveTepGenMapperMethodInfoByPk"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO">
+    SELECT method_seq
+         , package_no
+         , mapper_package_name
+         , mapper_xml_name
+         , mapper_class_name
+         , method_annotation_name
+         , method_return_class_name
+         , method_name
+         , method_param_class_Name
+         , method_param_instant_Name
+         , xml_method_type
+         , sql_stmt
+         , table_name
+    FROM tep_gen_mapper_method_info
+    WHERE method_seq = #{methodSeq}
+  </select>
+
 </mapper>

@@ -5,6 +5,9 @@ import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
+import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
+import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
+import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import com.chs.boot.pub.model.PubTemplateDO;
 import java.util.List;
@@ -21,4 +24,10 @@ public interface CoreGenerateMapper {
     void updateMulti(List<TepGenFileInfoEO> tepGenFileInfoEOList);
     void deleteMulti(List<TepGenFileInfoEO> tepGenFileInfoEOList);
     TepGenFileInfoEO retrieveTepGenFileInfoByPk(TepGenFileInfoEO tepGenFileInfoEO);
+    List<TepGenMapperMethodInfoVO> retrieveTepGenMapperMethodInfo  (
+        TepGenMapperMethodInfoConditionVO tepGenMapperMethodInfoConditionVO);
+    void insertMultiTepGenMapperMethodInfo(List<TepGenMapperMethodInfoEO> tepGenMapperMethodInfoEOList);
+    void updateMultiTepGenMapperMethodInfo(List<TepGenMapperMethodInfoEO> tepGenMapperMethodInfoEOList);
+    void deleteMultiTepGenMapperMethodInfo(List<TepGenMapperMethodInfoEO> tepGenMapperMethodInfoEOList);
+    TepGenMapperMethodInfoEO retrieveTepGenMapperMethodInfoByPk(TepGenMapperMethodInfoEO tepGenMapperMethodInfoEO);
 }

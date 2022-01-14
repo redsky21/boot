@@ -27,7 +27,9 @@ public class GenerateController {
     public String getEOString(
         @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
 
-        generateService.makeEOFile("a.b.c.d",schemaColumnConditionVO.getTableName());
+        String eoName = generateService.makeEOFile("a.b.c.d",schemaColumnConditionVO.getTableName());
+        generateService.insertMapperMethodForTable(-1L,"a.b.c.d",schemaColumnConditionVO.getTableName(),
+            eoName);
         return"1";
 
     }

@@ -1,5 +1,7 @@
 package com.chs.boot.common.util;
 
+import static com.chs.boot.common.util.MyBatisUtil.isNotEmpty;
+
 public class StringUtil {
 
     public static String getNewLineString() {
@@ -19,7 +21,13 @@ public class StringUtil {
         arr[0] = Character.toUpperCase(arr[0]);
         return new String(arr);
     }
-
+    public static String lastIndexString(String str, String splitStr){
+        String returnString = "";
+        if(isNotEmpty(str)){
+            returnString = str.substring(str.lastIndexOf(splitStr)+1);
+        }
+        return returnString;
+    }
     public static String lowerCaseFirst(String val) {
         char[] arr = val.toCharArray();
         arr[0] = Character.toLowerCase(arr[0]);
