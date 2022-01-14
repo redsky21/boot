@@ -51,31 +51,137 @@ public class GenerateService {
         String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper.xml";
         String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + ".java";
         String methodAnnotationName = "@Transactional";
-        String methodName =
-            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         String methodParamClassName = "List<" + eoName + ">";
         String methodParamInstantName = lowerCaseFirst(eoName) + "List";
         //insert method 만들기
-        insertInsertMapperMethod(packageNo, packageName, tableName, eoName, methodName
-            , mapperPackageName, mapperXmlName, mapperClassName, methodAnnotationName,
+        insertInsertMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
+            mapperXmlName, mapperClassName, methodAnnotationName,
             methodParamClassName, methodParamInstantName);
         //update method 만들기
-        getUpdateString(packageName,tableName,eoName,methodName);
+        insertUpdateMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
+            mapperXmlName, mapperClassName, methodAnnotationName,
+            methodParamClassName, methodParamInstantName);
         //delete method 만들기
+        insertDeleteMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
+            mapperXmlName, mapperClassName, methodAnnotationName,
+            methodParamClassName, methodParamInstantName);
         //validation
 
         return mapperXmlFileName;
     }
 
-    private void insertInsertMapperMethod(Long packageNo, String packageName,
-        String tableName, String eoName, String methodName
-        , String mapperPackageName, String mapperXmlName, String mapperClassName,
+    private void insertDeleteMapperMethod(Long packageNo, String packageName,
+        String tableName, String eoName, String mapperPackageName, String mapperXmlName,
+        String mapperClassName,
         String methodAnnotationName, String methodParamClassName, String methodParamInstantName
     ) {
         //insert method 만들기
+        String methodName =
+            "deleteMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        String xmlMethodType = "delete";
+        String sqlStmt = getDeleteString(packageName, tableName, eoName, methodName);
 
+        coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
+            TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
+                .mapperXmlName(mapperXmlName)
+                .mapperClassName(mapperClassName)
+                .methodAnnotationName(methodAnnotationName)
+                .methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName)
+                .xmlMethodType(xmlMethodType)
+                .tableName(tableName)
+                .sqlStmt(sqlStmt).build()));
+    }
+
+
+    private String getDeleteString(String packageName,
+        String tableName, String eoName, String methodName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("MapperXmlDelete");
+//        String methodName =
+//            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        String eoFullPathName = packageName + "." + "model." + eoName;
+
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+
+        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(
+            schemaColumnConditionVO);
+        StringBuilder whereString = new StringBuilder("");
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            final int[] inx = {0};
+            whereString.append(getTabString(3));
+            whereString.append("(");
+            schemaColumnVOList.forEach(schemaColumnVO -> {
+
+                if (nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI")) {
+                    whereString.append(getNewLineString());
+                    whereString.append(getTabString(3));
+                    inx[0] = inx[0] + 1;
+                    if (inx[0] > 1) {
+                        whereString.append("AND ");
+                    }
+
+                    whereString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                    whereString.append(getTabString(1));
+                    whereString.append("=");
+                    whereString.append(getTabString(1));
+                    whereString.append("#{item.");
+                    whereString.append(
+                        CaseUtils.toCamelCase(
+                            schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
+                            false, '_'));
+                    whereString.append("}");
+                }
+            });
+            whereString.append(getNewLineString());
+            whereString.append(getTabString(3));
+            whereString.append(")");
+        }
+        returnString = templateString;
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@eoFullPathName", eoFullPathName);
+        returnString = returnString.replace("@tableName", tableName);
+        returnString = returnString.replace("@whereString", whereString.toString());
+
+        return returnString;
+    }
+
+    private void insertInsertMapperMethod(Long packageNo, String packageName,
+        String tableName, String eoName, String mapperPackageName, String mapperXmlName,
+        String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName
+    ) {
+        //insert method 만들기
+        String methodName =
+            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         String xmlMethodType = "insert";
         String sqlStmt = getInsertString(packageName, tableName, eoName, methodName);
+
+        coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
+            TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
+                .mapperXmlName(mapperXmlName)
+                .mapperClassName(mapperClassName)
+                .methodAnnotationName(methodAnnotationName)
+                .methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName)
+                .xmlMethodType(xmlMethodType)
+                .tableName(tableName)
+                .sqlStmt(sqlStmt).build()));
+    }
+
+    private void insertUpdateMapperMethod(Long packageNo, String packageName,
+        String tableName, String eoName, String mapperPackageName, String mapperXmlName,
+        String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName
+    ) {
+        //insert method 만들기
+        String methodName =
+            "updateMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        String xmlMethodType = "update";
+        String sqlStmt = getUpdateString(packageName, tableName, eoName, methodName);
 
         coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
             TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
@@ -104,8 +210,8 @@ public class GenerateService {
 
         List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(
             schemaColumnConditionVO);
-        StringBuilder matchString =  new StringBuilder("");
-        StringBuilder whereString =  new StringBuilder("");
+        StringBuilder matchString = new StringBuilder("");
+        StringBuilder whereString = new StringBuilder("");
         if (isNotNullAndEmpty(schemaColumnVOList)) {
             final int[] inx = {0};
             schemaColumnVOList.forEach(schemaColumnVO -> {
@@ -126,7 +232,7 @@ public class GenerateService {
                         false, '_'));
                 matchString.append("}");
 
-                if(nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI") ){
+                if (nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI")) {
                     whereString.append(getNewLineString());
                     whereString.append(getTabString(3));
                     whereString.append("AND ");
@@ -136,7 +242,8 @@ public class GenerateService {
                     whereString.append(getTabString(1));
                     whereString.append("#{item.");
                     whereString.append(
-                        CaseUtils.toCamelCase(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
+                        CaseUtils.toCamelCase(
+                            schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
                             false, '_'));
                     whereString.append("}");
                 }
@@ -151,6 +258,7 @@ public class GenerateService {
 
         return returnString;
     }
+
     private String getInsertString(String packageName,
         String tableName, String eoName, String methodName) {
         String returnString = "";
