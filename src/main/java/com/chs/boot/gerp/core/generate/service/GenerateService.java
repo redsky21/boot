@@ -60,8 +60,10 @@ public class GenerateService {
             , mapperPackageName, mapperXmlName, mapperClassName, methodAnnotationName,
             methodParamClassName, methodParamInstantName);
         //update method 만들기
+        getUpdateString(packageName,tableName,eoName,methodName);
         //delete method 만들기
         //validation
+
         return mapperXmlFileName;
     }
 
@@ -92,7 +94,7 @@ public class GenerateService {
     private String getUpdateString(String packageName,
         String tableName, String eoName, String methodName) {
         String returnString = "";
-        String templateString = getTemplateSqlStmtString("MapperXmlInsert");
+        String templateString = getTemplateSqlStmtString("MapperXmlUpdate");
 //        String methodName =
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         String eoFullPathName = packageName + "." + "model." + eoName;
@@ -110,7 +112,7 @@ public class GenerateService {
                 matchString.append(getNewLineString());
                 matchString.append(getTabString(3));
                 inx[0] = inx[0] + 1;
-                if (inx[0] > 0) {
+                if (inx[0] > 1) {
                     matchString.append(",");
 
                 }
@@ -124,24 +126,35 @@ public class GenerateService {
                         false, '_'));
                 matchString.append("}");
 
-                if(nullToEmpty(schemaColumnVO.getColumnKey()). )
-
-
+                if(nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI") ){
+                    whereString.append(getNewLineString());
+                    whereString.append(getTabString(3));
+                    whereString.append("AND ");
+                    whereString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                    whereString.append(getTabString(1));
+                    whereString.append("=");
+                    whereString.append(getTabString(1));
+                    whereString.append("#{item.");
+                    whereString.append(
+                        CaseUtils.toCamelCase(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
+                            false, '_'));
+                    whereString.append("}");
+                }
             });
         }
-//        returnString = templateString;
-//        returnString = returnString.replace("@methodName", methodName);
-//        returnString = returnString.replace("@eoFullPathName", eoFullPathName);
-//        returnString = returnString.replace("@tableName", tableName);
-//        returnString = returnString.replace("@columnName", columnName.toString());
-//        returnString = returnString.replace("@variableName", variableName.toString());
+        returnString = templateString;
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@eoFullPathName", eoFullPathName);
+        returnString = returnString.replace("@tableName", tableName);
+        returnString = returnString.replace("@matchString", matchString.toString());
+        returnString = returnString.replace("@whereString", whereString.toString());
 
         return returnString;
     }
     private String getInsertString(String packageName,
         String tableName, String eoName, String methodName) {
         String returnString = "";
-        String templateString = getTemplateSqlStmtString("MapperXmlUpdate");
+        String templateString = getTemplateSqlStmtString("MapperXmlInsert");
 //        String methodName =
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         String eoFullPathName = packageName + "." + "model." + eoName;
