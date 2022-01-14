@@ -2,6 +2,7 @@ package com.chs.boot.gerp.core.generate.service;
 
 import static com.chs.boot.common.util.CommonUtil.getListSize;
 import static com.chs.boot.common.util.CommonUtil.isNotNullAndEmpty;
+import static com.chs.boot.common.util.CommonUtil.nullToEmpty;
 import static com.chs.boot.common.util.StringUtil.getNewLineString;
 import static com.chs.boot.common.util.StringUtil.getTabString;
 import static com.chs.boot.common.util.StringUtil.lastIndexString;
@@ -46,7 +47,18 @@ public class GenerateService {
     public String insertMapperMethodForTable(Long packageNo, String packageName,
         String tableName, String eoName) {
         String mapperXmlFileName = "";
-        insertInsertMapperMethod(packageNo, packageName, tableName, eoName);
+        String mapperPackageName = packageName + ".mapper";
+        String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper.xml";
+        String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + ".java";
+        String methodAnnotationName = "@Transactional";
+        String methodName =
+            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        String methodParamClassName = "List<" + eoName + ">";
+        String methodParamInstantName = lowerCaseFirst(eoName) + "List";
+        //insert method 만들기
+        insertInsertMapperMethod(packageNo, packageName, tableName, eoName, methodName
+            , mapperPackageName, mapperXmlName, mapperClassName, methodAnnotationName,
+            methodParamClassName, methodParamInstantName);
         //update method 만들기
         //delete method 만들기
         //validation
@@ -54,17 +66,12 @@ public class GenerateService {
     }
 
     private void insertInsertMapperMethod(Long packageNo, String packageName,
-        String tableName, String eoName) {
+        String tableName, String eoName, String methodName
+        , String mapperPackageName, String mapperXmlName, String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName
+    ) {
         //insert method 만들기
 
-        String mapperPackageName = packageName + ".mapper";
-        String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper.xml";
-        String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + ".java";
-        String methodAnnotationName = "@Transactional";
-        String methodName =
-            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
-        String methodParamClassName = eoName;
-        String methodParamInstantName = lowerCaseFirst(methodParamClassName);
         String xmlMethodType = "insert";
         String sqlStmt = getInsertString(packageName, tableName, eoName, methodName);
 
@@ -82,7 +89,7 @@ public class GenerateService {
     }
 
 
-    private String getInsertString(String packageName,
+    private String getUpdateString(String packageName,
         String tableName, String eoName, String methodName) {
         String returnString = "";
         String templateString = getTemplateSqlStmtString("MapperXmlInsert");
@@ -90,6 +97,54 @@ public class GenerateService {
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         String eoFullPathName = packageName + "." + "model." + eoName;
 
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+
+        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(
+            schemaColumnConditionVO);
+        StringBuilder matchString =  new StringBuilder("");
+        StringBuilder whereString =  new StringBuilder("");
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            final int[] inx = {0};
+            schemaColumnVOList.forEach(schemaColumnVO -> {
+                matchString.append(getNewLineString());
+                matchString.append(getTabString(3));
+                inx[0] = inx[0] + 1;
+                if (inx[0] > 0) {
+                    matchString.append(",");
+
+                }
+                matchString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                matchString.append(getTabString(1));
+                matchString.append("=");
+                matchString.append(getTabString(1));
+                matchString.append("#{item.");
+                matchString.append(
+                    CaseUtils.toCamelCase(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
+                        false, '_'));
+                matchString.append("}");
+
+                if(nullToEmpty(schemaColumnVO.getColumnKey()). )
+
+
+            });
+        }
+//        returnString = templateString;
+//        returnString = returnString.replace("@methodName", methodName);
+//        returnString = returnString.replace("@eoFullPathName", eoFullPathName);
+//        returnString = returnString.replace("@tableName", tableName);
+//        returnString = returnString.replace("@columnName", columnName.toString());
+//        returnString = returnString.replace("@variableName", variableName.toString());
+
+        return returnString;
+    }
+    private String getInsertString(String packageName,
+        String tableName, String eoName, String methodName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("MapperXmlUpdate");
+//        String methodName =
+//            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        String eoFullPathName = packageName + "." + "model." + eoName;
         SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
         schemaColumnConditionVO.setTableName(tableName);
 
@@ -131,8 +186,6 @@ public class GenerateService {
 
         return returnString;
     }
-
-    ;
 
     public String makeEOFile(String packageName, String tableName) {
         String eoClassName = CaseUtils.toCamelCase(tableName, true, '_') + "EO";
@@ -205,7 +258,8 @@ public class GenerateService {
 
     private String getTemplateSqlStmtString(String templateType) {
         String returnString = "";
-        TepGenTemplateEO conditionEO = TepGenTemplateEO.builder().templateType(templateType).build();
+        TepGenTemplateEO conditionEO = TepGenTemplateEO.builder().templateType(templateType)
+            .build();
         List<TepGenTemplateEO> tepGenTemplateEOList = coreGenerateMapper.retrieveTepGenTemplate(
             conditionEO);
         if (isNotNullAndEmpty(tepGenTemplateEOList)) {
