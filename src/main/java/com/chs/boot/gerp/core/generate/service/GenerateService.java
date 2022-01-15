@@ -60,6 +60,7 @@ public class GenerateService {
         insertMapperMethodForTable(packageNo, packageName, tableName, eoName);
         makeMapperXml(packageNo, packageName);
         makeMapperJava(packageNo, packageName);
+        getSaveMethodString(packageNo,tableName,eoName,"save");
     }
 
 
@@ -75,7 +76,7 @@ public class GenerateService {
         String mapperXmlFileName = "";
         String mapperPackageName = packageName + ".mapper";
         String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper.xml";
-        String mapperClassName = upperCaseFirst(lastIndexString(packageName, "."))+ "Mapper";
+        String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper";
         String methodAnnotationName = "@Transactional";
         String methodParamClassName = "List<" + eoName + ">";
         String methodParamInstantName = lowerCaseFirst(eoName) + "List";
@@ -203,7 +204,8 @@ public class GenerateService {
     ) {
         //insert method 만들기
         String methodName =
-            "delete" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')+"List";
+            "delete" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "List";
         String xmlMethodType = "delete";
         String sqlStmt = getDeleteString(packageName, tableName, eoName, methodName);
 
@@ -277,6 +279,69 @@ public class GenerateService {
         return returnString;
     }
 
+    private void insertSaveServiceMethod(Long packageNo, String packageName,
+        String tableName, String eoName, String servicePackageName, String mapperXmlName,
+        String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName) {
+        String methodName =
+            "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "List";
+        String methodContents = getSaveMethodString(packageNo, tableName, eoName, methodName);
+    }
+
+    private String getSaveMethodString(Long packageNo,
+        String tableName, String eoName, String methodName) {
+        String returnString = "";
+        //@methodName
+        //@methodParamClassName
+        String methodParamClassName = eoName;
+        //@methodParamInstantName
+        String methodParamInstantName = lowerCaseFirst(eoName) + "List";
+        //@loopEOInstance
+        String loopEOInstance = lowerCaseFirst(eoName);
+        //@validationMethodName
+        String validationMethodName = "validation" + eoName;
+        //@mapperInstanceName
+        String mapperInstanceName = lowerCaseFirst(getMapperClassName(packageNo, tableName));
+        //@mapperDeleteMethodName
+        String mapperDeleteMethodName =getMapperMethodName(packageNo, tableName,"delete");
+        //@mapperUpdateMethodName
+        String mapperUpdateMethodName =getMapperMethodName(packageNo, tableName,"update");
+        //@mapperInsertMethodName
+        String mapperInsertMethodName =getMapperMethodName(packageNo, tableName,"insert");
+        String templateString = getTemplateSqlStmtString("ServiceSaveMethod");
+
+        templateString = templateString.replace("@methodName",methodName);
+        templateString = templateString.replace("@methodParamClassName",methodParamClassName);
+        templateString = templateString.replace("@methodParamInstantName",methodParamInstantName);
+        templateString = templateString.replace("@loopEOInstance",loopEOInstance);
+        templateString = templateString.replace("@validationMethodName",validationMethodName);
+        templateString = templateString.replace("@mapperInstanceName",mapperInstanceName);
+        templateString = templateString.replace("@mapperDeleteMethodName",mapperDeleteMethodName);
+        templateString = templateString.replace("@mapperUpdateMethodName",mapperUpdateMethodName);
+        templateString = templateString.replace("@mapperInsertMethodName",mapperInsertMethodName);
+
+        return templateString;
+    }
+
+    private String getMapperClassName(Long packageNo, String tableName) {
+        List<TepGenMapperMethodInfoVO> tepGenMapperMethodInfoVOList = coreGenerateMapper.retrieveTepGenMapperMethodInfo(
+            TepGenMapperMethodInfoConditionVO.builder().packageNo(packageNo).tableName(tableName)
+                .build());
+        return isNotNullAndEmpty(tepGenMapperMethodInfoVOList) ? tepGenMapperMethodInfoVOList.get(0)
+            .getMapperClassName() : "";
+    }
+
+    private String getMapperMethodName(Long packageNo, String tableName, String xmlMethodType) {
+        List<TepGenMapperMethodInfoVO> tepGenMapperMethodInfoVOList = coreGenerateMapper.retrieveTepGenMapperMethodInfo(
+            TepGenMapperMethodInfoConditionVO.builder().packageNo(packageNo).tableName(tableName)
+                .xmlMethodType(xmlMethodType)
+                .build());
+        return isNotNullAndEmpty(tepGenMapperMethodInfoVOList) ? tepGenMapperMethodInfoVOList.get(0)
+            .getMethodName() : "";
+    }
+
+
     private void insertInsertMapperMethod(Long packageNo, String packageName,
         String tableName, String eoName, String mapperPackageName, String mapperXmlName,
         String mapperClassName,
@@ -284,7 +349,8 @@ public class GenerateService {
     ) {
         //insert method 만들기
         String methodName =
-            "insert" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')+"List";
+            "insert" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "List";
         String xmlMethodType = "insert";
         String sqlStmt = getInsertString(packageName, tableName, eoName, methodName);
 
@@ -309,7 +375,8 @@ public class GenerateService {
     ) {
         //insert method 만들기
         String methodName =
-            "update" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')+"List";
+            "update" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "List";
         String xmlMethodType = "update";
         String sqlStmt = getUpdateString(packageName, tableName, eoName, methodName);
 
@@ -354,8 +421,7 @@ public class GenerateService {
                     matchString.append(getTabString(4));
                     matchString.append(",");
 
-                }
-                else{
+                } else {
                     matchString.append(getTabString(4));
                     matchString.append(" ");
                 }
@@ -371,7 +437,7 @@ public class GenerateService {
 
                 if (nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI")) {
                     whereInx[0] = whereInx[0] + 1;
-                    if(whereInx[0]>1){
+                    if (whereInx[0] > 1) {
                         whereString.append(getNewLineString());
                     }
                     whereString.append(getTabString(4));
@@ -417,14 +483,12 @@ public class GenerateService {
             final int[] inx = {0};
             schemaColumnVOList.forEach(schemaColumnVO -> {
 
-
                 inx[0] = inx[0] + 1;
                 if (inx[0] > 1) {
                     columnName.append(getNewLineString());
                     columnName.append(getTabString(3));
                     columnName.append(",");
-                }
-                else{
+                } else {
                     columnName.append(getTabString(3));
                     columnName.append(" ");
                 }
@@ -436,8 +500,7 @@ public class GenerateService {
                     variableName.append(getNewLineString());
                     variableName.append(getTabString(3));
                     variableName.append(",");
-                }
-                else{
+                } else {
                     variableName.append(getTabString(3));
                     variableName.append(" ");
                 }
@@ -526,7 +589,7 @@ public class GenerateService {
                     )).toString(), "");
 
             });
-            distinctMap.forEach((key,val)->
+            distinctMap.forEach((key, val) ->
                 returnString.append(getNewLineString()).append(key)
             );
         }
