@@ -5,6 +5,7 @@ import com.chs.boot.pub.model.PubBaseDTO;
 import com.chs.boot.pub.model.PubGridDTO;
 import com.chs.boot.pub.model.PubItemDTO;
 import com.chs.boot.pub.model.PubTemplateDO;
+import com.chs.boot.pub.model.PubWordDO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
@@ -495,6 +496,11 @@ public class PubService {
         returnStringBuilder.append(getTabString(tabInx));
         returnStringBuilder.append("</div>");
         return returnStringBuilder.toString();
+    }
+
+    public String retrievePubWord(PubWordDO pubWordDO){
+        List<PubWordDO> list = pubMapper.retrievePubWord(pubWordDO);
+        return list == null ? "" : list.get(0).getFieldName();
     }
 
     private String getDateFieldString(PubItemDTO pubItemDTO, Long tabIndex) {
