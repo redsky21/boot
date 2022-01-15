@@ -3,6 +3,9 @@ package com.chs.boot.gerp.core.generate.service;
 import static com.chs.boot.common.util.CommonUtil.getListSize;
 import static com.chs.boot.common.util.CommonUtil.isNotNullAndEmpty;
 import static com.chs.boot.common.util.CommonUtil.nullToEmpty;
+import static com.chs.boot.common.util.CommonUtil.replace;
+import static com.chs.boot.common.util.MyBatisUtil.isEmpty;
+import static com.chs.boot.common.util.MyBatisUtil.isNotEmpty;
 import static com.chs.boot.common.util.StringUtil.getNewLineString;
 import static com.chs.boot.common.util.StringUtil.getTabString;
 import static com.chs.boot.common.util.StringUtil.lastIndexString;
@@ -17,7 +20,9 @@ import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.CoreColumnVO;
 import com.chs.boot.gerp.core.generate.model.SequenceConditionVO;
 import com.chs.boot.gerp.core.generate.model.SequenceVO;
+import com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO;
+import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
@@ -53,8 +58,10 @@ public class GenerateService {
         String eoName = makeEOFile(packageNo, packageName, tableName);
         //2 insert mapper info
         insertMapperMethodForTable(packageNo, packageName, tableName, eoName);
-        makeMapperXml(packageNo,packageName);
+        makeMapperXml(packageNo, packageName);
+        makeMapperJava(packageNo, packageName);
     }
+
 
     public Long getNextVal(SequenceConditionVO sequenceConditionVO) {
         List<SequenceVO> sequenceVOList =
@@ -68,7 +75,7 @@ public class GenerateService {
         String mapperXmlFileName = "";
         String mapperPackageName = packageName + ".mapper";
         String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper.xml";
-        String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + ".java";
+        String mapperClassName = upperCaseFirst(lastIndexString(packageName, "."))+ "Mapper";
         String methodAnnotationName = "@Transactional";
         String methodParamClassName = "List<" + eoName + ">";
         String methodParamInstantName = lowerCaseFirst(eoName) + "List";
@@ -100,8 +107,8 @@ public class GenerateService {
     ) {
         //insert method 만들기
         String methodName =
-            "select" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
-                + "ByPk";
+            "retrieve" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "ListByPk";
         String xmlMethodType = "select";
         String sqlStmt = getSelectByPkString(packageName, tableName, eoName, methodName);
 
@@ -116,6 +123,7 @@ public class GenerateService {
                 .methodParamInstantName(methodParamInstantName)
                 .xmlMethodType(xmlMethodType)
                 .tableName(tableName)
+                .methodReturnClassName(methodParamClassName)
                 .sqlStmt(sqlStmt).build()));
     }
 
@@ -195,7 +203,7 @@ public class GenerateService {
     ) {
         //insert method 만들기
         String methodName =
-            "deleteMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+            "delete" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')+"List";
         String xmlMethodType = "delete";
         String sqlStmt = getDeleteString(packageName, tableName, eoName, methodName);
 
@@ -276,7 +284,7 @@ public class GenerateService {
     ) {
         //insert method 만들기
         String methodName =
-            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+            "insert" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')+"List";
         String xmlMethodType = "insert";
         String sqlStmt = getInsertString(packageName, tableName, eoName, methodName);
 
@@ -301,7 +309,7 @@ public class GenerateService {
     ) {
         //insert method 만들기
         String methodName =
-            "updateMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+            "update" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')+"List";
         String xmlMethodType = "update";
         String sqlStmt = getUpdateString(packageName, tableName, eoName, methodName);
 
@@ -337,13 +345,19 @@ public class GenerateService {
         StringBuilder whereString = new StringBuilder("");
         if (isNotNullAndEmpty(schemaColumnVOList)) {
             final int[] inx = {0};
+            final int[] whereInx = {0};
             schemaColumnVOList.forEach(schemaColumnVO -> {
-                matchString.append(getNewLineString());
-                matchString.append(getTabString(3));
+
                 inx[0] = inx[0] + 1;
                 if (inx[0] > 1) {
+                    matchString.append(getNewLineString());
+                    matchString.append(getTabString(4));
                     matchString.append(",");
 
+                }
+                else{
+                    matchString.append(getTabString(4));
+                    matchString.append(" ");
                 }
                 matchString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
                 matchString.append(getTabString(1));
@@ -356,8 +370,11 @@ public class GenerateService {
                 matchString.append("}");
 
                 if (nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI")) {
-                    whereString.append(getNewLineString());
-                    whereString.append(getTabString(3));
+                    whereInx[0] = whereInx[0] + 1;
+                    if(whereInx[0]>1){
+                        whereString.append(getNewLineString());
+                    }
+                    whereString.append(getTabString(4));
                     whereString.append("AND ");
                     whereString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
                     whereString.append(getTabString(1));
@@ -399,20 +416,30 @@ public class GenerateService {
         if (isNotNullAndEmpty(schemaColumnVOList)) {
             final int[] inx = {0};
             schemaColumnVOList.forEach(schemaColumnVO -> {
-                columnName.append(getNewLineString());
-                columnName.append(getTabString(3));
+
+
                 inx[0] = inx[0] + 1;
                 if (inx[0] > 1) {
+                    columnName.append(getNewLineString());
+                    columnName.append(getTabString(3));
                     columnName.append(",");
-
+                }
+                else{
+                    columnName.append(getTabString(3));
+                    columnName.append(" ");
                 }
                 columnName.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
 
-                variableName.append(getNewLineString());
-                variableName.append(getTabString(3));
+//                variableName.append(getNewLineString());
+//                variableName.append(getTabString(3));
                 if (inx[0] > 1) {
+                    variableName.append(getNewLineString());
+                    variableName.append(getTabString(3));
                     variableName.append(",");
-
+                }
+                else{
+                    variableName.append(getTabString(3));
+                    variableName.append(" ");
                 }
                 variableName.append("#{item.");
                 variableName.append(
@@ -471,8 +498,98 @@ public class GenerateService {
             xmlMapperTemplateString = xmlMapperTemplateString.replace("@mapperContents",
                 contentsStringBuilder.toString());
             createFile(packageName, mapperXmlName.get(), xmlMapperTemplateString);
+            //file 생성정보
+            coreGenerateMapper.insertMulti(List.of(
+                TepGenFileInfoEO.builder().fileName(mapperXmlName.get()).packageName(packageName)
+                    .packageNo(packageNo)
+                    .fileType("mapperXml")
+                    .fileContents(xmlMapperTemplateString).build()));
         }
         return mapperFileName;
+    }
+
+    private String getImportModelString(Long packageNo) {
+        StringBuilder returnString = new StringBuilder("");
+        List<TepGenFileInfoVO> tepGenFileInfoVOList = coreGenerateMapper.retrieveTepGenFileInfo(
+            TepGenFileInfoConditionVO.builder().packageNo(packageNo).
+                fileType("model").build());
+        HashMap<String, String> distinctMap = new HashMap<>();
+        if (tepGenFileInfoVOList != null) {
+            tepGenFileInfoVOList.stream().forEach(tepGenFileInfoVO ->
+            {
+//                returnString.append(getNewLineString())
+//                );
+                distinctMap.put((new StringBuilder().append("import ")
+                    .append(tepGenFileInfoVO.getPackageName())
+                    .append(".model.")
+                    .append(tepGenFileInfoVO.getFileName().replace(".java", ";")
+                    )).toString(), "");
+
+            });
+            distinctMap.forEach((key,val)->
+                returnString.append(getNewLineString()).append(key)
+            );
+        }
+
+        return returnString.toString();
+    }
+
+    public String makeMapperJava(Long packageNo, String packageName) {
+        String mapperJavaFileName = "";
+        List<TepGenMapperMethodInfoVO> tepGenMapperMethodInfoVOList = coreGenerateMapper.retrieveTepGenMapperMethodInfo(
+            TepGenMapperMethodInfoConditionVO.builder().packageNo(packageNo).build()
+        );
+        if (isNotNullAndEmpty(tepGenMapperMethodInfoVOList)) {
+            String mapperJavaString = getTemplateSqlStmtString("MapperJava");
+            StringBuilder contentsStringBuilder = new StringBuilder("");
+            AtomicReference<String> mapperPackage = new AtomicReference<>("");
+            AtomicReference<String> mapperClassName = new AtomicReference<>("");
+            tepGenMapperMethodInfoVOList.stream().forEach(tepGenMapperMethodInfoVO ->
+                {
+                    contentsStringBuilder.append(getNewLineString());
+                    contentsStringBuilder.append(getTabString(1));
+
+                    contentsStringBuilder.append(
+                        isNotEmpty(tepGenMapperMethodInfoVO.getMethodReturnClassName()) ?
+                            tepGenMapperMethodInfoVO.getMethodReturnClassName()
+                            : "void"
+                    );
+                    contentsStringBuilder.append(" ");
+                    contentsStringBuilder.append(tepGenMapperMethodInfoVO.getMethodName());
+                    contentsStringBuilder.append("(");
+                    if (isNotEmpty(tepGenMapperMethodInfoVO.getMethodParamClassName())) {
+                        contentsStringBuilder.append(
+                            tepGenMapperMethodInfoVO.getMethodParamClassName());
+                        contentsStringBuilder.append(" ");
+                        contentsStringBuilder.append(
+                            tepGenMapperMethodInfoVO.getMethodParamInstantName());
+                    }
+                    contentsStringBuilder.append("); ");
+                    mapperPackage.set(tepGenMapperMethodInfoVO.getMapperPackageName());
+                    mapperClassName.set(tepGenMapperMethodInfoVO.getMapperClassName());
+                }
+            );
+            String mapperFullPath = mapperPackage.get();
+
+            mapperJavaString = mapperJavaString.replace("@mapperFullPath",
+                mapperFullPath);
+            mapperJavaString = mapperJavaString.replace("@importModelString",
+                getImportModelString(packageNo));
+            mapperJavaString = mapperJavaString.replace("@mapperClassName",
+                mapperClassName.get());
+            mapperJavaString = mapperJavaString.replace("@mapperContents",
+                contentsStringBuilder.toString());
+
+            createFile(packageName, mapperClassName.get() + ".java", mapperJavaString);
+            //file 생성정보
+            coreGenerateMapper.insertMulti(List.of(
+                TepGenFileInfoEO.builder().fileName(mapperClassName.get() + ".java")
+                    .packageName(packageName)
+                    .packageNo(packageNo)
+                    .fileType("mapper")
+                    .fileContents(mapperJavaString).build()));
+        }
+        return mapperJavaFileName;
     }
 
 
