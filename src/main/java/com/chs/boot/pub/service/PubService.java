@@ -500,7 +500,7 @@ public class PubService {
 
     public String retrievePubWord(PubWordDO pubWordDO){
         List<PubWordDO> list = pubMapper.retrievePubWord(pubWordDO);
-        return list == null ? "" : list.get(0).getFieldName();
+        return list.size() ==0 ? "" : list.get(0).getFieldName();
     }
 
     private String getDateFieldString(PubItemDTO pubItemDTO, Long tabIndex) {
