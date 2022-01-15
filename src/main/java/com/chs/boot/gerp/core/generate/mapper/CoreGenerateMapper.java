@@ -2,6 +2,8 @@ package com.chs.boot.gerp.core.generate.mapper;
 
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
+import com.chs.boot.gerp.core.generate.model.SequenceConditionVO;
+import com.chs.boot.gerp.core.generate.model.SequenceVO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
@@ -30,4 +32,5 @@ public interface CoreGenerateMapper {
     void updateMultiTepGenMapperMethodInfo(List<TepGenMapperMethodInfoEO> tepGenMapperMethodInfoEOList);
     void deleteMultiTepGenMapperMethodInfo(List<TepGenMapperMethodInfoEO> tepGenMapperMethodInfoEOList);
     TepGenMapperMethodInfoEO retrieveTepGenMapperMethodInfoByPk(TepGenMapperMethodInfoEO tepGenMapperMethodInfoEO);
+    List<SequenceVO> getNextVal(SequenceConditionVO sequenceConditionVO);
 }

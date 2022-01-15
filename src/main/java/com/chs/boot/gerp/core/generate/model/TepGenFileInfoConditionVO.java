@@ -11,4 +11,5 @@ public class TepGenFileInfoConditionVO {
 	private String packageName;
 	private String fileName;
 	private String fileContents;
+	private String fileType;
 }

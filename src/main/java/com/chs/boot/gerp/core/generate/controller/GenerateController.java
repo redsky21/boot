@@ -4,6 +4,7 @@ import static com.chs.boot.common.util.MyBatisUtil.isEmpty;
 
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
+import com.chs.boot.gerp.core.generate.model.SequenceConditionVO;
 import com.chs.boot.gerp.core.generate.service.GenerateService;
 import java.util.List;
 import org.apache.commons.text.CaseUtils;
@@ -27,9 +28,13 @@ public class GenerateController {
     public String getEOString(
         @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
 
-        String eoName = generateService.makeEOFile("a.b.c.d",schemaColumnConditionVO.getTableName());
-        generateService.insertMapperMethodForTable(-1L,"a.b.c.d",schemaColumnConditionVO.getTableName(),
-            eoName);
+//        String eoName = generateService.makeEOFile("a.b.c.d",schemaColumnConditionVO.getTableName());
+//        generateService.insertMapperMethodForTable(-1L,"a.b.c.d",schemaColumnConditionVO.getTableName(),
+//            eoName);
+        Long packageNo =  generateService.getNextVal(SequenceConditionVO.builder().sequenceName( "tem_gen_package_no_seq").build());
+
+
+        generateService.doTableJob(packageNo,"a.c.d.e",schemaColumnConditionVO.getTableName());
         return"1";
 
     }

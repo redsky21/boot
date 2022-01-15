@@ -11,5 +11,5 @@ public class TepGenFileInfoEO {
 	private String packageName;
 	private String fileName;
 	private String fileContents;
-
+	private String fileType;
 }

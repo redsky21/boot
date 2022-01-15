@@ -31,6 +31,9 @@
     <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileName)'>AND
       file_name=#{fileName}
     </if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileType)'>AND
+      file_type=#{fileType}
+    </if>
     <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(fileContents)'>AND
       file_contents=#{fileContents}
     </if>
@@ -43,6 +46,7 @@
     ,package_name
     ,file_name
     ,file_contents
+    ,file_type
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -52,6 +56,7 @@
       ,#{item.packageName}
       ,#{item.fileName}
       ,#{item.fileContents}
+      ,#{item.fileType}
       )
     </foreach>
   </insert>
@@ -71,6 +76,7 @@
       ,package_name = #{item.packageName}
       ,file_name = #{item.fileName}
       ,file_contents = #{item.fileContents}
+      ,file_type = #{item.fileType}
       WHERE file_seq = #{item.fileSeq}
     </foreach>
   </update>
@@ -82,6 +88,7 @@
          , package_name
          , file_name
          , file_contents
+         , file_type
     FROM tep_gen_file_info
     WHERE file_seq = #{fileSeq}
   </select>
@@ -95,35 +102,35 @@
     AND 1=1
     <if test='methodSeq!=null'>AND method_seq=#{methodSeq}</if>
     <if test='packageNo!=null'>AND package_no=#{packageNo}</if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(mapperPackageName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(mapperPackageName)'>AND
       mapper_package_name=#{mapperPackageName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(mapperXmlName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(mapperXmlName)'>AND
       mapper_xml_name=#{mapperXmlName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(mapperClassName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(mapperClassName)'>AND
       mapper_class_name=#{mapperClassName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodAnnotationName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodAnnotationName)'>AND
       method_annotation_name=#{methodAnnotationName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodReturnClassName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodReturnClassName)'>AND
       method_return_class_name=#{methodReturnClassName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodName)'>AND
       method_name=#{methodName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamClassName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodParamClassName)'>AND
       method_param_class_name=#{methodParamClassName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamInstantName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodParamInstantName)'>AND
       method_param_instant_name=#{methodParamInstantName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(xmlMethodType)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(xmlMethodType)'>AND
       xml_method_type=#{xmlMethodType}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(sqlStmt)'>AND sql_stmt=#{sqlStmt}</if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(tableName)'>AND table_name=#{tableName}
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(sqlStmt)'>AND sql_stmt=#{sqlStmt}</if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(tableName)'>AND table_name=#{tableName}
     </if>
   </select>
   <insert id="insertMultiTepGenMapperMethodInfo"
@@ -211,5 +218,11 @@
     FROM tep_gen_mapper_method_info
     WHERE method_seq = #{methodSeq}
   </select>
-
+  <select id="getNextVal" resultType="com.chs.boot.gerp.core.generate.model.SequenceVO"
+    parameterType="com.chs.boot.gerp.core.generate.model.SequenceConditionVO"
+    flushCache="true" useCache="false">
+		<![CDATA[
+    select nextval(${sequenceName}) as next_val
+    ]]>
+	</select>
 </mapper>
