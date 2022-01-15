@@ -1,6 +1,7 @@
 package com.chs.boot.pub.controller;
 
 import com.chs.boot.pub.model.PubBaseDTO;
+import com.chs.boot.pub.model.PubWordDO;
 import com.chs.boot.pub.service.PubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -32,6 +33,12 @@ public class PubController {
         response.getOutputStream().write(fileByte);
         response.getOutputStream().flush();
         response.getOutputStream().close();
-
     }
+
+    @PostMapping(path = "/retrieveWord")
+    public String generateHtml(@RequestBody PubWordDO pubWordDO)
+        {
+        return pubService.retrievePubWord(pubWordDO);
+    }
+
 }
