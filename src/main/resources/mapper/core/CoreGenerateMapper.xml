@@ -225,7 +225,7 @@
     select nextval(${sequenceName}) as next_val
     ]]>
 	</select>
-  <select id="retrieveTepGenServiceMethodInfo" resultType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO"  parameterType="com.chs.boot.gerp.core.coreGenerate.model.TepGenServiceMethodInfoConditionVO">
+  <select id="retrieveTepGenServiceMethodInfo" resultType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO"  parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoConditionVO">
 
     SELECT *
     FROM tep_gen_service_method_info
