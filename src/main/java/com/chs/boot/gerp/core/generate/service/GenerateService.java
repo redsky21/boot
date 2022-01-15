@@ -101,6 +101,8 @@ public class GenerateService {
         String templateString = getTemplateSqlStmtString("MapperXmlDelete");
 //        String methodName =
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        //LG CNS Co., Ltd.~  5000 User License
+        //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
         String eoFullPathName = packageName + "." + "model." + eoName;
 
         SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
