@@ -9,6 +9,9 @@ import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
+import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoConditionVO;
+import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
+import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -31,4 +34,10 @@ public interface CoreGenerateMapper {
     void deleteMultiTepGenMapperMethodInfo(List<TepGenMapperMethodInfoEO> tepGenMapperMethodInfoEOList);
     TepGenMapperMethodInfoEO retrieveTepGenMapperMethodInfoByPk(TepGenMapperMethodInfoEO tepGenMapperMethodInfoEO);
     List<SequenceVO> getNextVal(SequenceConditionVO sequenceConditionVO);
+    List<TepGenServiceMethodInfoVO> retrieveTepGenServiceMethodInfo  (
+        TepGenServiceMethodInfoConditionVO tepGenServiceMethodInfoConditionVO);
+    void insertMultiTepGenServiceMethodInfo(List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList);
+    void updateMultiTepGenServiceMethodInfo(List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList);
+    void deleteMultiTepGenServiceMethodInfo(List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList);
+    TepGenServiceMethodInfoEO retrieveTepGenServiceMethodInfoByPk(TepGenServiceMethodInfoEO tepGenServiceMethodInfoEO);
 }

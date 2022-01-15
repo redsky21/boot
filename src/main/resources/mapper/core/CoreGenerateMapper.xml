@@ -225,4 +225,101 @@
     select nextval(${sequenceName}) as next_val
     ]]>
 	</select>
+  <select id="retrieveTepGenServiceMethodInfo" resultType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO"  parameterType="com.chs.boot.gerp.core.coreGenerate.model.TepGenServiceMethodInfoConditionVO">
+
+    SELECT *
+    FROM tep_gen_service_method_info
+    WHERE 1=1
+
+    AND 1=1
+    <if test='methodSeq!=null'>AND method_seq=#{methodSeq}</if>
+    <if test='packageNo!=null'>AND package_no=#{packageNo}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(servicePackageName)'>AND service_package_name=#{servicePackageName}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(serviceClassName)'>AND service_class_name=#{serviceClassName}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodAnnotationName)'>AND method_annotation_name=#{methodAnnotationName}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodAccessor)'>AND method_accessor=#{methodAccessor}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodReturnClassName)'>AND method_return_class_name=#{methodReturnClassName}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodName)'>AND method_name=#{methodName}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamClassName)'>AND method_param_class_name=#{methodParamClassName}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamInstantName)'>AND method_param_instant_name=#{methodParamInstantName}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodContents)'>AND method_contents=#{methodContents}</if>
+    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(tableName)'>AND table_name=#{tableName}</if>
+  </select>
+  <insert id="insertMultiTepGenServiceMethodInfo" parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO">
+    INSERT INTO tep_gen_service_method_info
+    (
+    method_seq
+    ,package_no
+    ,service_package_name
+    ,service_class_name
+    ,method_annotation_name
+    ,method_accessor
+    ,method_return_class_name
+    ,method_name
+    ,method_param_class_Name
+    ,method_param_instant_Name
+    ,method_contents
+    ,table_name
+    )
+    VALUES
+    <foreach separator="," item="item" collection="list">
+      (
+      #{item.methodSeq}
+      ,#{item.packageNo}
+      ,#{item.servicePackageName}
+      ,#{item.serviceClassName}
+      ,#{item.methodAnnotationName}
+      ,#{item.methodAccessor}
+      ,#{item.methodReturnClassName}
+      ,#{item.methodName}
+      ,#{item.methodParamClassName}
+      ,#{item.methodParamInstantName}
+      ,#{item.methodContents}
+      ,#{item.tableName}
+      )
+    </foreach>
+  </insert>
+  <delete id="deleteMultiTepGenServiceMethodInfo" parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO">
+    DELETE
+    FROM tep_gen_service_method_info
+    WHERE method_seq IN
+    <foreach item="item" collection="list" open="(" separator="," close=")">
+      #{item.methodSeq}
+    </foreach>
+  </delete>
+  <update id="updateMultiTepGenServiceMethodInfo" parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO">
+    <foreach separator=";" item="item" collection="list">
+      UPDATE tep_gen_service_method_info
+      SET
+      package_no = #{item.packageNo}
+      ,service_package_name = #{item.servicePackageName}
+      ,service_class_name = #{item.serviceClassName}
+      ,method_annotation_name = #{item.methodAnnotationName}
+      ,method_accessor = #{item.methodAccessor}
+      ,method_return_class_name = #{item.methodReturnClassName}
+      ,method_name = #{item.methodName}
+      ,method_param_class_Name = #{item.methodParamClassName}
+      ,method_param_instant_Name = #{item.methodParamInstantName}
+      ,method_contents = #{item.methodContents}
+      ,table_name = #{item.tableName}
+      WHERE method_seq = #{item.methodSeq}
+    </foreach>
+  </update>
+  <select id="retrieveTepGenServiceMethodInfoByPk" parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO" resultType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO" >
+    SELECT
+      method_seq
+         ,package_no
+         ,service_package_name
+         ,service_class_name
+         ,method_annotation_name
+         ,method_accessor
+         ,method_return_class_name
+         ,method_name
+         ,method_param_class_Name
+         ,method_param_instant_Name
+         ,method_contents
+         ,table_name
+    FROM tep_gen_service_method_info
+    WHERE method_seq = #{methodSeq}
+  </select>
 </mapper>
