@@ -62,8 +62,8 @@ public class GenerateService {
         //3. insert service info
         insertServiceMethodForTable(packageNo, packageName, tableName, eoName);
 
-        makeMapperXml(packageNo, packageName);
-        makeMapperJava(packageNo, packageName);
+//        makeMapperXml(packageNo, packageName);
+//        makeMapperJava(packageNo, packageName);
 //        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
 
@@ -114,11 +114,41 @@ public class GenerateService {
         String methodParamInstantName = lowerCaseFirst(eoName) + "List";
         //save method 만들기
         insertSaveServiceMethod(packageNo, servicePackageName, tableName, eoName, serviceClassName,
-            methodAnnotationName,"public", methodParamInstantName
+            methodAnnotationName, "public", methodParamInstantName
         );
         //validation
+        insertValidationServiceMethod(packageNo, servicePackageName, tableName, eoName, serviceClassName,
+            methodAnnotationName, "public", methodParamInstantName
+        );
+//        getValidationString(packageNo,tableName,eoName,"AA",eoName,methodParamInstantName);
 
         return mapperXmlFileName;
+    }
+
+    private void insertValidationServiceMethod(Long packageNo, String servicePackageName,
+        String tableName, String eoName, String serviceClassName,
+        String methodAnnotationName
+        , String method_accessor,
+        String methodParamInstantName) {
+        String methodName = "validation" + eoName;;
+        String methodContents = getValidationString(packageNo, tableName, eoName, methodName,
+            eoName, methodParamInstantName);
+        coreGenerateMapper.insertMultiTepGenServiceMethodInfo(
+            List.of(
+                TepGenServiceMethodInfoEO.builder()
+                    .packageNo(packageNo)
+                    .servicePackageName(servicePackageName)
+                    .serviceClassName(serviceClassName)
+                    .methodAccessor(method_accessor)
+                    .methodAnnotationName(methodAnnotationName)
+                    .methodReturnClassName("List<"+eoName+">")
+                    .methodName(methodName)
+                    .methodParamClassName(eoName)
+                    .methodParamInstantName(methodParamInstantName)
+                    .methodContents(methodContents)
+                    .build()
+            )
+        );
     }
 
     private void insertSaveServiceMethod(Long packageNo, String servicePackageName,
@@ -327,6 +357,69 @@ public class GenerateService {
         return returnString;
     }
 
+    private String getValidationString(Long packageNo,
+        String tableName, String eoName, String methodName
+        , String methodParamClassName
+        , String methodParamInstantName) {
+        String returnString = "";
+        //@methodName
+        //@eoName
+        //@methodParamInstantName
+        //@loopEOInstance
+        //@nullCheck
+        //@dupCheck
+        String loopEOInstance = lowerCaseFirst(eoName);
+        //@validationMethodName
+//        String validationMethodName = "validation" + eoName;
+        //@mapperInstanceName
+//        String mapperInstanceName = lowerCaseFirst(getMapperClassName(packageNo, tableName));
+//        //@mapperDeleteMethodName
+//        String mapperDeleteMethodName = getMapperMethodName(packageNo, tableName, "delete");
+//        //@mapperUpdateMethodName
+//        String mapperUpdateMethodName = getMapperMethodName(packageNo, tableName, "update");
+//        //@mapperInsertMethodName
+//        String mapperInsertMethodName = getMapperMethodName(packageNo, tableName, "insert");
+
+        String templateString = getTemplateSqlStmtString("ServiceValidationMethod");
+
+        templateString = templateString.replace("@methodName", methodName);
+        templateString = templateString.replace("@methodParamClassName", methodParamClassName);
+        templateString = templateString.replace("@methodParamInstantName", methodParamInstantName);
+        templateString = templateString.replace("@eoName", eoName);
+        templateString = templateString.replace("@loopEOInstance", loopEOInstance);
+        templateString = templateString.replace("//@nullCheck", getNullValidationString(loopEOInstance,tableName));
+
+        return templateString;
+    }
+
+    private String getNullValidationString(String loopEOInstance
+        , String tableName) {
+        String returnString = "";
+
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+        List<SchemaColumnVO> schemaColumnVOList = b2bGenerateMapper.retrieveColumnSchema(
+            schemaColumnConditionVO);
+        if(isNotNullAndEmpty(schemaColumnVOList)){
+            StringBuilder tmpString = new StringBuilder("");
+
+            schemaColumnVOList.stream().filter(schemaColumnVO -> nullToEmpty(schemaColumnVO.getIsNullable()).equals("YES") ).forEach(schemaColumnVO -> {
+                String templateString = getTemplateSqlStmtString("serviceValidationNullCheck");
+                String memberName = CaseUtils.toCamelCase(schemaColumnVO.getColumnName(),true,'_');
+                String camelMemberName = CaseUtils.toCamelCase(schemaColumnVO.getColumnName(),false,'_');
+                templateString = templateString.replace("@loopEOInstance",loopEOInstance);
+                templateString = templateString.replace("@memberName",memberName);
+                templateString = templateString.replace("@camelMemberName",camelMemberName);
+                tmpString.append(getNewLineString()).append(templateString);
+            });
+            returnString = tmpString.toString();
+        }
+        //@loopEOInstance
+        //@memberName
+        //@camelMemberName
+
+        return returnString;
+    }
 
     private String getSaveMethodString(Long packageNo,
         String tableName, String eoName, String methodName
