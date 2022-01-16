@@ -26,6 +26,7 @@ import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
+import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -58,9 +59,12 @@ public class GenerateService {
         String eoName = makeEOFile(packageNo, packageName, tableName);
         //2 insert mapper info
         insertMapperMethodForTable(packageNo, packageName, tableName, eoName);
+        //3. insert service info
+        insertServiceMethodForTable(packageNo, packageName, tableName, eoName);
+
         makeMapperXml(packageNo, packageName);
         makeMapperJava(packageNo, packageName);
-        getSaveMethodString(packageNo,tableName,eoName,"save");
+//        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
 
 
@@ -99,6 +103,50 @@ public class GenerateService {
         //validation
 
         return mapperXmlFileName;
+    }
+
+    private String insertServiceMethodForTable(Long packageNo, String packageName,
+        String tableName, String eoName) {
+        String mapperXmlFileName = "";
+        String servicePackageName = packageName + ".service";
+        String serviceClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Service";
+        String methodAnnotationName = "@Transactional";
+        String methodParamInstantName = lowerCaseFirst(eoName) + "List";
+        //save method 만들기
+        insertSaveServiceMethod(packageNo, servicePackageName, tableName, eoName, serviceClassName,
+            methodAnnotationName,"public", methodParamInstantName
+        );
+        //validation
+
+        return mapperXmlFileName;
+    }
+
+    private void insertSaveServiceMethod(Long packageNo, String servicePackageName,
+        String tableName, String eoName, String serviceClassName,
+        String methodAnnotationName
+        , String method_accessor,
+        String methodParamInstantName) {
+        String methodName =
+            "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "List";
+        String methodContents = getSaveMethodString(packageNo, tableName, eoName, methodName,
+            eoName, methodParamInstantName);
+        coreGenerateMapper.insertMultiTepGenServiceMethodInfo(
+            List.of(
+                TepGenServiceMethodInfoEO.builder()
+                    .packageNo(packageNo)
+                    .servicePackageName(servicePackageName)
+                    .serviceClassName(serviceClassName)
+                    .methodAccessor(method_accessor)
+                    .methodAnnotationName(methodAnnotationName)
+                    .methodReturnClassName(null)
+                    .methodName(methodName)
+                    .methodParamClassName(eoName)
+                    .methodParamInstantName(methodParamInstantName)
+                    .methodContents(methodContents)
+                    .build()
+            )
+        );
     }
 
     private void insertSelectByPkMapperMethod(Long packageNo, String packageName,
@@ -279,24 +327,15 @@ public class GenerateService {
         return returnString;
     }
 
-    private void insertSaveServiceMethod(Long packageNo, String packageName,
-        String tableName, String eoName, String servicePackageName, String mapperXmlName,
-        String mapperClassName,
-        String methodAnnotationName, String methodParamClassName, String methodParamInstantName) {
-        String methodName =
-            "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
-                + "List";
-        String methodContents = getSaveMethodString(packageNo, tableName, eoName, methodName);
-    }
 
     private String getSaveMethodString(Long packageNo,
-        String tableName, String eoName, String methodName) {
+        String tableName, String eoName, String methodName
+        , String methodParamClassName
+        , String methodParamInstantName) {
         String returnString = "";
         //@methodName
         //@methodParamClassName
-        String methodParamClassName = eoName;
         //@methodParamInstantName
-        String methodParamInstantName = lowerCaseFirst(eoName) + "List";
         //@loopEOInstance
         String loopEOInstance = lowerCaseFirst(eoName);
         //@validationMethodName
@@ -304,22 +343,22 @@ public class GenerateService {
         //@mapperInstanceName
         String mapperInstanceName = lowerCaseFirst(getMapperClassName(packageNo, tableName));
         //@mapperDeleteMethodName
-        String mapperDeleteMethodName =getMapperMethodName(packageNo, tableName,"delete");
+        String mapperDeleteMethodName = getMapperMethodName(packageNo, tableName, "delete");
         //@mapperUpdateMethodName
-        String mapperUpdateMethodName =getMapperMethodName(packageNo, tableName,"update");
+        String mapperUpdateMethodName = getMapperMethodName(packageNo, tableName, "update");
         //@mapperInsertMethodName
-        String mapperInsertMethodName =getMapperMethodName(packageNo, tableName,"insert");
+        String mapperInsertMethodName = getMapperMethodName(packageNo, tableName, "insert");
         String templateString = getTemplateSqlStmtString("ServiceSaveMethod");
 
-        templateString = templateString.replace("@methodName",methodName);
-        templateString = templateString.replace("@methodParamClassName",methodParamClassName);
-        templateString = templateString.replace("@methodParamInstantName",methodParamInstantName);
-        templateString = templateString.replace("@loopEOInstance",loopEOInstance);
-        templateString = templateString.replace("@validationMethodName",validationMethodName);
-        templateString = templateString.replace("@mapperInstanceName",mapperInstanceName);
-        templateString = templateString.replace("@mapperDeleteMethodName",mapperDeleteMethodName);
-        templateString = templateString.replace("@mapperUpdateMethodName",mapperUpdateMethodName);
-        templateString = templateString.replace("@mapperInsertMethodName",mapperInsertMethodName);
+        templateString = templateString.replace("@methodName", methodName);
+        templateString = templateString.replace("@methodParamClassName", methodParamClassName);
+        templateString = templateString.replace("@methodParamInstantName", methodParamInstantName);
+        templateString = templateString.replace("@loopEOInstance", loopEOInstance);
+        templateString = templateString.replace("@validationMethodName", validationMethodName);
+        templateString = templateString.replace("@mapperInstanceName", mapperInstanceName);
+        templateString = templateString.replace("@mapperDeleteMethodName", mapperDeleteMethodName);
+        templateString = templateString.replace("@mapperUpdateMethodName", mapperUpdateMethodName);
+        templateString = templateString.replace("@mapperInsertMethodName", mapperInsertMethodName);
 
         return templateString;
     }
