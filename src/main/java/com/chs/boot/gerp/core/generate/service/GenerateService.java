@@ -100,6 +100,10 @@ public class GenerateService {
         insertSelectByPkMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
             mapperXmlName, mapperClassName, methodAnnotationName,
             methodParamClassName, methodParamInstantName);
+        //select all 만들기
+        insertSelectListMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
+            mapperXmlName, mapperClassName, methodAnnotationName,
+            methodParamClassName, methodParamInstantName);
         //validation
 
         return mapperXmlFileName;
@@ -117,7 +121,8 @@ public class GenerateService {
             methodAnnotationName, "public", methodParamInstantName
         );
         //validation
-        insertValidationServiceMethod(packageNo, servicePackageName, tableName, eoName, serviceClassName,
+        insertValidationServiceMethod(packageNo, servicePackageName, tableName, eoName,
+            serviceClassName,
             methodAnnotationName, "public", methodParamInstantName
         );
 //        getValidationString(packageNo,tableName,eoName,"AA",eoName,methodParamInstantName);
@@ -130,7 +135,8 @@ public class GenerateService {
         String methodAnnotationName
         , String method_accessor,
         String methodParamInstantName) {
-        String methodName = "validation" + eoName;;
+        String methodName = "validation" + eoName;
+        ;
         String methodContents = getValidationString(packageNo, tableName, eoName, methodName,
             eoName, methodParamInstantName);
         coreGenerateMapper.insertMultiTepGenServiceMethodInfo(
@@ -141,7 +147,7 @@ public class GenerateService {
                     .serviceClassName(serviceClassName)
                     .methodAccessor(method_accessor)
                     .methodAnnotationName(methodAnnotationName)
-                    .methodReturnClassName("List<"+eoName+">")
+                    .methodReturnClassName("List<" + eoName + ">")
                     .methodName(methodName)
                     .methodParamClassName(eoName)
                     .methodParamInstantName(methodParamInstantName)
@@ -177,6 +183,90 @@ public class GenerateService {
                     .build()
             )
         );
+    }
+
+    private void insertSelectListMapperMethod(Long packageNo, String packageName,
+        String tableName, String eoName, String mapperPackageName, String mapperXmlName,
+        String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName
+    ) {
+        //insert method 만들기
+        String methodName =
+            "retrieve" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "ListAll";
+        String xmlMethodType = "select";
+        String sqlStmt = getSelectListString(packageName, tableName, eoName, methodName);
+
+        coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
+            TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
+                .packageNo(packageNo)
+                .mapperXmlName(mapperXmlName)
+                .mapperClassName(mapperClassName)
+                .methodAnnotationName(methodAnnotationName)
+                .methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName)
+                .xmlMethodType(xmlMethodType)
+                .tableName(tableName)
+                .methodReturnClassName(methodParamClassName)
+                .sqlStmt(sqlStmt).build()));
+    }
+
+    private String getSelectListString(String packageName,
+        String tableName, String eoName, String methodName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("MapperXmlSelect");
+//        String methodName =
+//            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        //LG CNS Co., Ltd.~  5000 User License
+        //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
+        String conditionVOFullPathName = packageName + "." + "model." + eoName;
+        String resultVOFullPathName = packageName + "." + "model." + eoName;
+
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+
+        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(
+            schemaColumnConditionVO);
+        StringBuilder whereString = new StringBuilder("");
+        StringBuilder columnName = new StringBuilder("");
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            final int[] inx = {0};
+            final int[] whereInx = {0};
+
+            schemaColumnVOList.forEach(schemaColumnVO -> {
+
+                inx[0] = inx[0] + 1;
+                if (inx[0] > 1){
+                    columnName.append(getNewLineString());
+                    whereString.append(getNewLineString());
+                }
+
+                columnName.append(getTabString(3));
+                columnName.append(",");
+                columnName.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+
+
+                whereString.append(getTabString(3));
+                String whereTemplate =  getTemplateSqlStmtString("MapperXmlWhere");
+                whereTemplate = whereTemplate.replace("@columnName",schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                whereTemplate = whereTemplate.replace("@memberName",CaseUtils.toCamelCase(
+                    schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
+                    false, '_'));
+                whereString.append(whereTemplate);
+
+            });
+
+        }
+        returnString = templateString;
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@conditionVOFullPathName", conditionVOFullPathName);
+        returnString = returnString.replace("@resultVOFullPathName", resultVOFullPathName);
+        returnString = returnString.replace("@columnName", columnName.toString());
+        returnString = returnString.replace("@tableName", tableName);
+        returnString = returnString.replace("@whereString", whereString.toString());
+
+        return returnString;
     }
 
     private void insertSelectByPkMapperMethod(Long packageNo, String packageName,
@@ -387,7 +477,8 @@ public class GenerateService {
         templateString = templateString.replace("@methodParamInstantName", methodParamInstantName);
         templateString = templateString.replace("@eoName", eoName);
         templateString = templateString.replace("@loopEOInstance", loopEOInstance);
-        templateString = templateString.replace("//@nullCheck", getNullValidationString(loopEOInstance,tableName));
+        templateString = templateString.replace("//@nullCheck",
+            getNullValidationString(loopEOInstance, tableName));
 
         return templateString;
     }
@@ -400,18 +491,22 @@ public class GenerateService {
         schemaColumnConditionVO.setTableName(tableName);
         List<SchemaColumnVO> schemaColumnVOList = b2bGenerateMapper.retrieveColumnSchema(
             schemaColumnConditionVO);
-        if(isNotNullAndEmpty(schemaColumnVOList)){
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
             StringBuilder tmpString = new StringBuilder("");
 
-            schemaColumnVOList.stream().filter(schemaColumnVO -> nullToEmpty(schemaColumnVO.getIsNullable()).equals("YES") ).forEach(schemaColumnVO -> {
-                String templateString = getTemplateSqlStmtString("serviceValidationNullCheck");
-                String memberName = CaseUtils.toCamelCase(schemaColumnVO.getColumnName(),true,'_');
-                String camelMemberName = CaseUtils.toCamelCase(schemaColumnVO.getColumnName(),false,'_');
-                templateString = templateString.replace("@loopEOInstance",loopEOInstance);
-                templateString = templateString.replace("@memberName",memberName);
-                templateString = templateString.replace("@camelMemberName",camelMemberName);
-                tmpString.append(getNewLineString()).append(templateString);
-            });
+            schemaColumnVOList.stream()
+                .filter(schemaColumnVO -> nullToEmpty(schemaColumnVO.getIsNullable()).equals("YES"))
+                .forEach(schemaColumnVO -> {
+                    String templateString = getTemplateSqlStmtString("serviceValidationNullCheck");
+                    String memberName = CaseUtils.toCamelCase(schemaColumnVO.getColumnName(), true,
+                        '_');
+                    String camelMemberName = CaseUtils.toCamelCase(schemaColumnVO.getColumnName(),
+                        false, '_');
+                    templateString = templateString.replace("@loopEOInstance", loopEOInstance);
+                    templateString = templateString.replace("@memberName", memberName);
+                    templateString = templateString.replace("@camelMemberName", camelMemberName);
+                    tmpString.append(getNewLineString()).append(templateString);
+                });
             returnString = tmpString.toString();
         }
         //@loopEOInstance
