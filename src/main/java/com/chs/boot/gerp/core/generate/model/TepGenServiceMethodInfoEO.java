@@ -18,5 +18,5 @@ public class TepGenServiceMethodInfoEO {
 	private String methodParamInstantName;
 	private String methodContents;
 	private String tableName;
-
+	private String addDatasetParam;
 }

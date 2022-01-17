@@ -183,6 +183,7 @@ public class GenerateService {
                     .methodParamInstantName(methodParamInstantName)
                     .methodContents(methodContents)
                     .tableName(tableName)
+                    .addDatasetParam("Y")
                     .build()
             )
         );

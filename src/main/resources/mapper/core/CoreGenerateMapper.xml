@@ -284,6 +284,7 @@
     ,method_param_instant_Name
     ,method_contents
     ,table_name
+    ,add_dataset_param
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -300,6 +301,7 @@
       ,#{item.methodParamInstantName}
       ,#{item.methodContents}
       ,#{item.tableName}
+      ,#{item.addDatasetParam}
       )
     </foreach>
   </insert>
