@@ -34,4 +34,26 @@
   </select>
 
 
+  <select id="retrieveTableConstraints" resultType="com.chs.boot.gerp.b2b.generate.model.TableConstraintsVO"
+    parameterType="com.chs.boot.gerp.b2b.generate.model.TableConstraintsVO">
+
+    SELECT *
+    FROM information_schema.TABLE_CONSTRAINTS
+    WHERE upper(table_name)=upper(#{tableName})
+
+  </select>
+
+  <select id="retrieveKeyColumnUsage" resultType="com.chs.boot.gerp.b2b.generate.model.TableConstraintsVO"
+    parameterType="com.chs.boot.gerp.b2b.generate.model.TableConstraintsVO">
+
+    select CONSTRAINT_NAME,COLUMN_NAME
+    from information_schema.KEY_COLUMN_USAGE
+    where TABLE_NAME = #{tableName}
+      and CONSTRAINT_NAME = #{constraintName}
+
+  </select>
+
+
+
+
 </mapper>

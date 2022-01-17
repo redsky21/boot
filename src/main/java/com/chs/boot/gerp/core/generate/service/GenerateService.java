@@ -15,6 +15,7 @@ import static com.chs.boot.common.util.StringUtil.upperCaseFirst;
 import com.chs.boot.gerp.b2b.generate.mapper.B2bGenerateMapper;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
+import com.chs.boot.gerp.b2b.generate.model.TableConstraintsVO;
 import com.chs.boot.gerp.core.generate.mapper.CoreGenerateMapper;
 import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.CoreColumnVO;
@@ -62,8 +63,8 @@ public class GenerateService {
         //3. insert service info
         insertServiceMethodForTable(packageNo, packageName, tableName, eoName);
 
-//        makeMapperXml(packageNo, packageName);
-//        makeMapperJava(packageNo, packageName);
+        makeMapperXml(packageNo, packageName);
+        makeMapperJava(packageNo, packageName);
 //        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
 
@@ -123,7 +124,7 @@ public class GenerateService {
         //validation
         insertValidationServiceMethod(packageNo, servicePackageName, tableName, eoName,
             serviceClassName,
-            methodAnnotationName, "public", methodParamInstantName
+            methodAnnotationName, "private", methodParamInstantName
         );
 //        getValidationString(packageNo,tableName,eoName,"AA",eoName,methodParamInstantName);
 
@@ -147,11 +148,12 @@ public class GenerateService {
                     .serviceClassName(serviceClassName)
                     .methodAccessor(method_accessor)
                     .methodAnnotationName(methodAnnotationName)
-                    .methodReturnClassName("List<" + eoName + ">")
+                    .methodReturnClassName("Boolean")
                     .methodName(methodName)
                     .methodParamClassName(eoName)
                     .methodParamInstantName(methodParamInstantName)
                     .methodContents(methodContents)
+                    .tableName(tableName)
                     .build()
             )
         );
@@ -175,11 +177,12 @@ public class GenerateService {
                     .serviceClassName(serviceClassName)
                     .methodAccessor(method_accessor)
                     .methodAnnotationName(methodAnnotationName)
-                    .methodReturnClassName(null)
+                    .methodReturnClassName("void")
                     .methodName(methodName)
                     .methodParamClassName(eoName)
                     .methodParamInstantName(methodParamInstantName)
                     .methodContents(methodContents)
+                    .tableName(tableName)
                     .build()
             )
         );
@@ -237,7 +240,7 @@ public class GenerateService {
             schemaColumnVOList.forEach(schemaColumnVO -> {
 
                 inx[0] = inx[0] + 1;
-                if (inx[0] > 1){
+                if (inx[0] > 1) {
                     columnName.append(getNewLineString());
                     whereString.append(getNewLineString());
                 }
@@ -246,11 +249,11 @@ public class GenerateService {
                 columnName.append(",");
                 columnName.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
 
-
                 whereString.append(getTabString(3));
-                String whereTemplate =  getTemplateSqlStmtString("MapperXmlWhere");
-                whereTemplate = whereTemplate.replace("@columnName",schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
-                whereTemplate = whereTemplate.replace("@memberName",CaseUtils.toCamelCase(
+                String whereTemplate = getTemplateSqlStmtString("MapperXmlWhere");
+                whereTemplate = whereTemplate.replace("@columnName",
+                    schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                whereTemplate = whereTemplate.replace("@memberName", CaseUtils.toCamelCase(
                     schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
                     false, '_'));
                 whereString.append(whereTemplate);
@@ -479,9 +482,76 @@ public class GenerateService {
         templateString = templateString.replace("@loopEOInstance", loopEOInstance);
         templateString = templateString.replace("//@nullCheck",
             getNullValidationString(loopEOInstance, tableName));
+        templateString = templateString.replace("//@dupCheck", getDupValidationString(eoName,loopEOInstance, tableName) );
 
         return templateString;
     }
+
+    private String getDupValidationString(String eoName, String loopEOInstance
+        , String tableName) {
+        String returnString = "";
+
+        TableConstraintsVO conditionVO = new TableConstraintsVO();
+        conditionVO.setTableName(tableName);
+        //1 pk uk 존재여부 확인
+        List<TableConstraintsVO> tableConstraintsVOList = b2bGenerateMapper.retrieveTableConstraints(
+            conditionVO);
+        if (isNotNullAndEmpty(tableConstraintsVOList)) {
+            returnString = getTemplateSqlStmtString("serviceValidationDupCheck");
+            StringBuilder setParamString = new StringBuilder("");
+            StringBuilder addValidationString = new StringBuilder("");
+
+            tableConstraintsVOList.stream()
+                .forEach(tableConstraintsVO -> {
+                    List<TableConstraintsVO> columnUsageVOList = b2bGenerateMapper.retrieveKeyColumnUsage(
+                        tableConstraintsVO);
+                    if (isNotNullAndEmpty(columnUsageVOList)) {
+                        columnUsageVOList.stream().forEach(columnUsageVO -> {
+                            String templateSetParamString = getTemplateSqlStmtString(
+                                "serviceValidationDupCheckSetParam");
+                            String addValidationSetParamString = getTemplateSqlStmtString(
+                                "serviceValidationDupCheckAddValidationSet");
+                            String memberName = CaseUtils.toCamelCase(columnUsageVO.getColumnName(),
+                                true, '_');
+                            String camelMemberName = CaseUtils.toCamelCase(
+                                columnUsageVO.getColumnName(), false, '_');
+
+                            String setParam =
+                                templateSetParamString.replace("@memberName", memberName);
+                            String addValidationSet =
+                                addValidationSetParamString.replace("@camelMemberName",
+                                    camelMemberName).replace("@loopEOInstance", loopEOInstance);
+                            setParamString.append(getNewLineString());
+                            setParamString.append(setParam);
+
+                            addValidationString.append(getNewLineString());
+                            addValidationString.append(addValidationSet);
+
+                        });
+
+
+                    }
+
+                });
+
+            returnString = returnString.replace("//@setParam",setParamString);
+            String retrieveMethod =
+                "retrieve" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                    + "ListAll";
+
+            returnString = returnString.replace("@retrieveMethod",retrieveMethod);
+
+            returnString = returnString.replace("//@addValidationSet",addValidationString);
+            returnString = returnString.replace("@loopEOInstance",loopEOInstance);
+            returnString = returnString.replace("@eoName",eoName);
+        }
+        //@loopEOInstance
+        //@memberName
+        //@camelMemberName
+
+        return returnString;
+    }
+
 
     private String getNullValidationString(String loopEOInstance
         , String tableName) {
