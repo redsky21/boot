@@ -12,6 +12,7 @@ import static com.chs.boot.common.util.StringUtil.lastIndexString;
 import static com.chs.boot.common.util.StringUtil.lowerCaseFirst;
 import static com.chs.boot.common.util.StringUtil.upperCaseFirst;
 
+import com.chs.boot.common.util.StringUtil;
 import com.chs.boot.gerp.b2b.generate.mapper.B2bGenerateMapper;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
@@ -28,6 +29,7 @@ import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
+import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -65,6 +67,8 @@ public class GenerateService {
 
         makeMapperXml(packageNo, packageName);
         makeMapperJava(packageNo, packageName);
+        makeServiceJava(packageNo, packageName);
+        makeServiceImplJava(packageNo, packageName);
 //        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
 
@@ -169,6 +173,7 @@ public class GenerateService {
                 + "List";
         String methodContents = getSaveMethodString(packageNo, tableName, eoName, methodName,
             eoName, methodParamInstantName);
+        String methodParamClassName = "List<"+eoName+">";
         coreGenerateMapper.insertMultiTepGenServiceMethodInfo(
             List.of(
                 TepGenServiceMethodInfoEO.builder()
@@ -179,7 +184,7 @@ public class GenerateService {
                     .methodAnnotationName(methodAnnotationName)
                     .methodReturnClassName("void")
                     .methodName(methodName)
-                    .methodParamClassName(eoName)
+                    .methodParamClassName(methodParamClassName)
                     .methodParamInstantName(methodParamInstantName)
                     .methodContents(methodContents)
                     .tableName(tableName)
@@ -834,6 +839,7 @@ public class GenerateService {
         return eoClassName;
     }
 
+
     public String makeMapperXml(Long packageNo, String packageName) {
         String mapperFileName = "";
         List<TepGenMapperMethodInfoVO> tepGenMapperMethodInfoVOList = coreGenerateMapper.retrieveTepGenMapperMethodInfo(
@@ -893,6 +899,125 @@ public class GenerateService {
         }
 
         return returnString.toString();
+    }
+
+
+    public String makeServiceImplJava(Long packageNo, String packageName) {
+        String serviceImplJavaFileName = "";
+        List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
+            TepGenServiceMethodInfoEO.builder().packageNo(packageNo).build()
+        );
+        if (isNotNullAndEmpty(tepGenServiceMethodInfoEOList)) {
+            String serviceImplJavaString = getTemplateSqlStmtString("ServiceJavaImpl");
+
+            StringBuilder contentsStringBuilder = new StringBuilder("");
+            AtomicReference<String> servicePackage = new AtomicReference<>("");
+            AtomicReference<String> serviceClassName = new AtomicReference<>("");
+            tepGenServiceMethodInfoEOList.stream().forEach(tepGenMapperMethodInfoVO ->
+                {
+                    contentsStringBuilder.append(getNewLineString());
+//                    contentsStringBuilder.append(getTabString(1));
+
+                    contentsStringBuilder.append(
+                        tepGenMapperMethodInfoVO.getMethodContents()
+                    );
+                    servicePackage.set(tepGenMapperMethodInfoVO.getServicePackageName());
+                    serviceClassName.set(tepGenMapperMethodInfoVO.getServiceClassName());
+                }
+            );
+            String serviceFullPath = servicePackage.get();
+
+            serviceImplJavaString = serviceImplJavaString.replace("@serviceFullPath",
+                serviceFullPath);
+            serviceImplJavaString = serviceImplJavaString.replace("@importModelString",
+                getImportModelString(packageNo));
+            serviceImplJavaString = serviceImplJavaString.replace("@serviceClassName",
+                serviceClassName.get());
+            serviceImplJavaString = serviceImplJavaString.replace("@serviceContents",
+                contentsStringBuilder.toString());
+            //mapper 정보조회
+            TepGenMapperMethodInfoVO TepGenMapperMethodInfoVO =  coreGenerateMapper.retrieveTepGenMapperMethodInfo(
+                TepGenMapperMethodInfoConditionVO.builder()
+                    .packageNo(packageNo)
+                    .build()
+            ).stream().findFirst().get();
+            String mapperPackage  = TepGenMapperMethodInfoVO.getMapperPackageName()+"."+TepGenMapperMethodInfoVO.getMapperClassName();
+            String mapperClassName = TepGenMapperMethodInfoVO.getMapperClassName();
+            String mapperInstantName = lowerCaseFirst(mapperClassName);
+            serviceImplJavaString = serviceImplJavaString.replace("@mapperPackage",
+                mapperPackage);
+            serviceImplJavaString = serviceImplJavaString.replace("@mapperClassName",
+                mapperClassName);
+            serviceImplJavaString = serviceImplJavaString.replace("@mapperInstantName",
+                mapperInstantName);
+            createFile(packageName, serviceClassName.get() + "Impl.java", serviceImplJavaString);
+            //file 생성정보
+            coreGenerateMapper.insertMulti(List.of(
+                TepGenFileInfoEO.builder().fileName(serviceClassName.get() + "Impl.java")
+                    .packageName(packageName)
+                    .packageNo(packageNo)
+                    .fileType("serviceImpl")
+                    .fileContents(serviceImplJavaString).build()));
+        }
+        return serviceImplJavaFileName;
+    }
+
+    public String makeServiceJava(Long packageNo, String packageName) {
+        String serviceJavaFileName = "";
+        List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
+            TepGenServiceMethodInfoEO.builder().packageNo(packageNo).methodAccessor("public").build()
+        );
+        if (isNotNullAndEmpty(tepGenServiceMethodInfoEOList)) {
+            String serviceJavaString = getTemplateSqlStmtString("ServiceJava");
+            StringBuilder contentsStringBuilder = new StringBuilder("");
+            AtomicReference<String> servicePackage = new AtomicReference<>("");
+            AtomicReference<String> serviceClassName = new AtomicReference<>("");
+            tepGenServiceMethodInfoEOList.stream().forEach(tepGenMapperMethodInfoVO ->
+                {
+                    contentsStringBuilder.append(getNewLineString());
+                    contentsStringBuilder.append(getTabString(1));
+
+                    contentsStringBuilder.append(
+                        isNotEmpty(tepGenMapperMethodInfoVO.getMethodReturnClassName()) ?
+                            tepGenMapperMethodInfoVO.getMethodReturnClassName()
+                            : "void"
+                    );
+                    contentsStringBuilder.append(" ");
+                    contentsStringBuilder.append(tepGenMapperMethodInfoVO.getMethodName());
+                    contentsStringBuilder.append("(");
+                    if (isNotEmpty(tepGenMapperMethodInfoVO.getMethodParamClassName())) {
+                        contentsStringBuilder.append(
+                            tepGenMapperMethodInfoVO.getMethodParamClassName());
+                        contentsStringBuilder.append(" ");
+                        contentsStringBuilder.append(
+                            tepGenMapperMethodInfoVO.getMethodParamInstantName());
+                    }
+                    contentsStringBuilder.append("); ");
+                    servicePackage.set(tepGenMapperMethodInfoVO.getServicePackageName());
+                    serviceClassName.set(tepGenMapperMethodInfoVO.getServiceClassName());
+                }
+            );
+            String serviceFullPath = servicePackage.get();
+
+            serviceJavaString = serviceJavaString.replace("@serviceFullPath",
+                serviceFullPath);
+            serviceJavaString = serviceJavaString.replace("@importModelString",
+                getImportModelString(packageNo));
+            serviceJavaString = serviceJavaString.replace("@serviceClassName",
+                serviceClassName.get());
+            serviceJavaString = serviceJavaString.replace("@serviceContents",
+                contentsStringBuilder.toString());
+
+            createFile(packageName, serviceClassName.get() + ".java", serviceJavaString);
+            //file 생성정보
+            coreGenerateMapper.insertMulti(List.of(
+                TepGenFileInfoEO.builder().fileName(serviceClassName.get() + ".java")
+                    .packageName(packageName)
+                    .packageNo(packageNo)
+                    .fileType("service")
+                    .fileContents(serviceJavaString).build()));
+        }
+        return serviceJavaFileName;
     }
 
     public String makeMapperJava(Long packageNo, String packageName) {

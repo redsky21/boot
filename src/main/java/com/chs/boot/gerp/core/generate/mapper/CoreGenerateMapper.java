@@ -34,8 +34,8 @@ public interface CoreGenerateMapper {
     void deleteMultiTepGenMapperMethodInfo(List<TepGenMapperMethodInfoEO> tepGenMapperMethodInfoEOList);
     TepGenMapperMethodInfoEO retrieveTepGenMapperMethodInfoByPk(TepGenMapperMethodInfoEO tepGenMapperMethodInfoEO);
     List<SequenceVO> getNextVal(SequenceConditionVO sequenceConditionVO);
-    List<TepGenServiceMethodInfoVO> retrieveTepGenServiceMethodInfo  (
-        TepGenServiceMethodInfoConditionVO tepGenServiceMethodInfoConditionVO);
+    List<TepGenServiceMethodInfoEO> retrieveTepGenServiceMethodInfo  (
+        TepGenServiceMethodInfoEO TepGenServiceMethodInfoEO);
     void insertMultiTepGenServiceMethodInfo(List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList);
     void updateMultiTepGenServiceMethodInfo(List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList);
     void deleteMultiTepGenServiceMethodInfo(List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList);

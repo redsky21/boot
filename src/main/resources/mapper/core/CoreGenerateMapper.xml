@@ -228,8 +228,8 @@
     ]]>
 	</select>
   <select id="retrieveTepGenServiceMethodInfo"
-    resultType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO"
-    parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoConditionVO">
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO">
 
     SELECT *
     FROM tep_gen_service_method_info
@@ -238,34 +238,34 @@
     AND 1=1
     <if test='methodSeq!=null'>AND method_seq=#{methodSeq}</if>
     <if test='packageNo!=null'>AND package_no=#{packageNo}</if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(servicePackageName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(servicePackageName)'>AND
       service_package_name=#{servicePackageName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(serviceClassName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(serviceClassName)'>AND
       service_class_name=#{serviceClassName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodAnnotationName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodAnnotationName)'>AND
       method_annotation_name=#{methodAnnotationName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodAccessor)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodAccessor)'>AND
       method_accessor=#{methodAccessor}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodReturnClassName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodReturnClassName)'>AND
       method_return_class_name=#{methodReturnClassName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodName)'>AND
       method_name=#{methodName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamClassName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodParamClassName)'>AND
       method_param_class_name=#{methodParamClassName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodParamInstantName)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodParamInstantName)'>AND
       method_param_instant_name=#{methodParamInstantName}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(methodContents)'>AND
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(methodContents)'>AND
       method_contents=#{methodContents}
     </if>
-    <if test='@com.lge.common.util.MyBatisUtil@isNotEmpty(tableName)'>AND table_name=#{tableName}
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(tableName)'>AND table_name=#{tableName}
     </if>
   </select>
   <insert id="insertMultiTepGenServiceMethodInfo"
