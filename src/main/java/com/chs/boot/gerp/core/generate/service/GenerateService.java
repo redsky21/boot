@@ -4,8 +4,6 @@ import static com.chs.boot.common.constant.SystemConstant.BOF;
 import static com.chs.boot.common.util.CommonUtil.getListSize;
 import static com.chs.boot.common.util.CommonUtil.isNotNullAndEmpty;
 import static com.chs.boot.common.util.CommonUtil.nullToEmpty;
-import static com.chs.boot.common.util.CommonUtil.replace;
-import static com.chs.boot.common.util.MyBatisUtil.isEmpty;
 import static com.chs.boot.common.util.MyBatisUtil.isNotEmpty;
 import static com.chs.boot.common.util.StringUtil.getNewLineString;
 import static com.chs.boot.common.util.StringUtil.getTabString;
@@ -13,7 +11,6 @@ import static com.chs.boot.common.util.StringUtil.lastIndexString;
 import static com.chs.boot.common.util.StringUtil.lowerCaseFirst;
 import static com.chs.boot.common.util.StringUtil.upperCaseFirst;
 
-import com.chs.boot.common.util.StringUtil;
 import com.chs.boot.gerp.b2b.generate.mapper.B2bGenerateMapper;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
@@ -31,7 +28,6 @@ import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
-import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -44,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,10 +189,15 @@ public class GenerateService {
         String returnString = "";
         String templateString = getTemplateSqlStmtString("ControllerJavaSaveMethod");
 
-        String urlPath = lastIndexString(packageName, ".") ;
+        String urlPath = lastIndexString(packageName, ".");
         String eoInstantName = lowerCaseFirst(eoName);
-        String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
-        String baseURL = BOF.getLocalBaseURL()+BOF.getLocalUrlContext();
+//        String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
+        String datasetName =
+            CaseUtils.toCamelCase(tableName.substring(tableName.indexOf("_") + 1), false, '_')
+                + "DatasetName";
+        ;
+        String baseURL = BOF.getLocalBaseURL() + BOF.getLocalUrlContext();
+
         returnString = templateString;
         returnString = returnString.replace("@methodName", methodName);
         returnString = returnString.replace("@eoName", eoName);
@@ -204,8 +206,84 @@ public class GenerateService {
         returnString = returnString.replace("@datasetName", datasetName);
         returnString = returnString.replace("@aURL", baseURL);
 
+        String simpleDataSetName =
+            CaseUtils.toCamelCase(tableName.substring(tableName.indexOf("_") + 1), false, '_')
+                + "Dataset";
+        String demoContents = getDemoContents(tableName);
+        returnString = returnString.replace("@simpleDataSetName", simpleDataSetName);
+        returnString = returnString.replace("@demoContents", demoContents);
+
 //        returnString = returnString.replace("@serviceInstantName", serviceInstantName);
         return returnString;
+    }
+
+    public String getDemoContents(String tableName) {
+        StringBuilder returnString = new StringBuilder("");
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+        List<SchemaColumnVO> schemaColumnVOList = b2bGenerateMapper.retrieveColumnSchema(
+            schemaColumnConditionVO);
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            AtomicInteger inx = new AtomicInteger();
+
+            List<ConvertDataTypeVO> dataTypeVOList = coreGenerateMapper.getConvertDataType();
+            Map<String, String> dataTypeMap = new HashMap<>();
+            if (getListSize(dataTypeVOList) > 0) {
+                dataTypeVOList.forEach(convertDataTypeVO -> {
+                    dataTypeMap.put(convertDataTypeVO.getMariaDataType(),
+                        convertDataTypeVO.getJavaDataType());
+                });
+            }
+
+            schemaColumnVOList.stream().forEach(schemaColumnVO ->
+            {
+                inx.getAndIncrement();
+                if (inx.get() > 1) {
+                    returnString.append(getNewLineString());
+                    returnString.append(getTabString(11));
+                    returnString.append(",");
+                }
+                returnString.append("\"").append(schemaColumnVO.getColumnName()).append("\":");
+                String javaDataType = dataTypeMap.get(schemaColumnVO.getDataType());
+                switch (nullToEmpty(javaDataType)) {
+                    case "Boolean":
+                        returnString.append("true");
+                        break;
+                    case "Integer":
+                        returnString.append("1");
+                        break;
+                    case "Long":
+                        returnString.append("1");
+                        break;
+                    case "Float":
+                        returnString.append("1.0");
+                        break;
+                    case "Double":
+                        returnString.append("1.0");
+                        break;
+                    case "BigDecimal":
+                        returnString.append("1.0");
+                        break;
+                    case "Date":
+                        returnString.append("\"2021-07-09T15:12:13\"");
+                        break;
+                    case "LocalDateTime":
+                        returnString.append("\"2021-08-09T15:12:13\"");
+                        break;
+                    case "String":
+                        returnString.append("\"A\"");
+                        break;
+                    case "byte[]":
+                        returnString.append("null");
+                        break;
+                    default:
+                        returnString.append("null");
+                        break;
+                }
+
+            });
+        }
+        return returnString.toString();
     }
 
 
