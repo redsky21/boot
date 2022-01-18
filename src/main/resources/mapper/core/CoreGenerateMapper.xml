@@ -467,19 +467,19 @@
     ,add_dataset_param
     FROM tep_gen_controller_method_info
     <where>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodSeq)'>AND method_seq=#{methodSeq}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND package_no=#{packageNo}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(controllerPackageName)'>AND controller_package_name=#{controllerPackageName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(controllerClassName)'>AND controller_class_name=#{controllerClassName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodAnnotationName)'>AND method_annotation_name=#{methodAnnotationName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodAccessor)'>AND method_accessor=#{methodAccessor}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodReturnClassName)'>AND method_return_class_name=#{methodReturnClassName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodName)'>AND method_name=#{methodName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodParamClassName)'>AND method_param_class_name=#{methodParamClassName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodParamInstantName)'>AND method_param_instant_name=#{methodParamInstantName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodContents)'>AND method_contents=#{methodContents}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND table_name=#{tableName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(addDatasetParam)'>AND add_dataset_param=#{addDatasetParam}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodSeq)'>AND method_seq=#{methodSeq}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND package_no=#{packageNo}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerPackageName)'>AND controller_package_name=#{controllerPackageName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerClassName)'>AND controller_class_name=#{controllerClassName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodAnnotationName)'>AND method_annotation_name=#{methodAnnotationName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodAccessor)'>AND method_accessor=#{methodAccessor}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodReturnClassName)'>AND method_return_class_name=#{methodReturnClassName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodName)'>AND method_name=#{methodName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodParamClassName)'>AND method_param_class_name=#{methodParamClassName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodParamInstantName)'>AND method_param_instant_name=#{methodParamInstantName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodContents)'>AND method_contents=#{methodContents}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND table_name=#{tableName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(addDatasetParam)'>AND add_dataset_param=#{addDatasetParam}</if>
     </where>
   </select>
 </mapper>

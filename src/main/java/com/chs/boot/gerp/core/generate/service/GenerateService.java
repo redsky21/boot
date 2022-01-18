@@ -71,8 +71,75 @@ public class GenerateService {
         makeMapperJava(packageNo, packageName);
         makeServiceJava(packageNo, packageName);
         makeServiceImplJava(packageNo, packageName);
+        makeControllerJava(packageNo, packageName);
 //        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
+
+    public String makeControllerJava(Long packageNo, String packageName) {
+        String controllerJavaFileName = "";
+        List<TepGenControllerMethodInfoEO> tepGenControllerMethodInfoEOList = coreGenerateMapper.retrieveTepGenControllerMethodInfoListAll(
+            TepGenControllerMethodInfoEO.builder().packageNo(packageNo).build()
+        );
+        if (isNotNullAndEmpty(tepGenControllerMethodInfoEOList)) {
+            String controllerJavaString = getTemplateSqlStmtString("ControllerJava");
+
+            StringBuilder contentsStringBuilder = new StringBuilder("");
+            AtomicReference<String> controllerPackage = new AtomicReference<>("");
+            AtomicReference<String> controllerClassName = new AtomicReference<>("");
+            tepGenControllerMethodInfoEOList.stream().forEach(tepGenControllerMethodInfoEO ->
+                {
+                    contentsStringBuilder.append(getNewLineString());
+//                    contentsStringBuilder.append(getTabString(1));
+
+                    contentsStringBuilder.append(
+                        tepGenControllerMethodInfoEO.getMethodContents()
+                    );
+                    controllerPackage.set(tepGenControllerMethodInfoEO.getControllerPackageName());
+                    controllerClassName.set(tepGenControllerMethodInfoEO.getControllerClassName());
+                }
+            );
+            String controllerFullPath = controllerPackage.get();
+            String importModelString = getImportModelString(packageNo);
+            String importServiceString = getImportServiceString(packageNo);
+            String serviceClassName = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
+                TepGenServiceMethodInfoEO.builder()
+                    .packageNo(packageNo)
+                    .build()).stream().findFirst().get().getServiceClassName();
+            String serviceInstantName = lowerCaseFirst(serviceClassName);
+            StringBuilder controllerContents = new StringBuilder("");
+
+            coreGenerateMapper.retrieveTepGenControllerMethodInfoListAll(
+                TepGenControllerMethodInfoEO.builder().packageNo(packageNo).build()
+            ).stream().forEach(tepGenControllerMethodInfoEO ->
+                controllerContents.append(tepGenControllerMethodInfoEO.getMethodContents())
+            );
+
+            controllerJavaString = controllerJavaString.replace("@controllerFullPath",
+                controllerFullPath);
+            controllerJavaString = controllerJavaString.replace("@importModelString",
+                importModelString);
+            controllerJavaString = controllerJavaString.replace("@importServiceString",
+                importServiceString);
+            controllerJavaString = controllerJavaString.replace("@serviceClassName",
+                serviceClassName);
+            controllerJavaString = controllerJavaString.replace("@serviceInstantName",
+                serviceInstantName);
+
+            controllerJavaString = controllerJavaString.replace("@controllerContents",
+                contentsStringBuilder.toString());
+
+            createFile(packageName, controllerClassName.get() + ".java", controllerJavaString);
+            //file 생성정보
+            coreGenerateMapper.insertMulti(List.of(
+                TepGenFileInfoEO.builder().fileName(controllerClassName.get() + ".java")
+                    .packageName(packageName)
+                    .packageNo(packageNo)
+                    .fileType("controller")
+                    .fileContents(controllerJavaString).build()));
+        }
+        return controllerJavaFileName;
+    }
+
 
     //
     private void insertControllerMethodForTable(Long packageNo, String packageName,
@@ -91,7 +158,7 @@ public class GenerateService {
         String methodName =
             "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
                 + "List";
-        String methodContents = getControllerSaveString(packageName,tableName,eoName,methodName);
+        String methodContents = getControllerSaveString(packageName, tableName, eoName, methodName);
 
         coreGenerateMapper.insertTepGenControllerMethodInfoList(List.of(
             TepGenControllerMethodInfoEO.builder().controllerPackageName(controllerPackageName)
@@ -122,11 +189,9 @@ public class GenerateService {
         String returnString = "";
         String templateString = getTemplateSqlStmtString("ControllerJavaSaveMethod");
 
-        String  urlPath      =lastIndexString(packageName,".")+"/"+methodName;
-        String  eoInstantName = lowerCaseFirst(eoName);
-        String  datasetName  = CaseUtils.toCamelCase(tableName,false,'_')+"DatasetName";
-
-
+        String urlPath = lastIndexString(packageName, ".") + "/" + methodName;
+        String eoInstantName = lowerCaseFirst(eoName);
+        String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
 
         returnString = templateString;
         returnString = returnString.replace("@methodName", methodName);
@@ -1060,6 +1125,9 @@ public class GenerateService {
                         contentsStringBuilder.append(" ");
                         contentsStringBuilder.append(
                             tepGenMapperMethodInfoVO.getMethodParamInstantName());
+                    }
+                    if(nullToEmpty(tepGenMapperMethodInfoVO.getAddDatasetParam()).equals("Y")){
+                        contentsStringBuilder.append(" ,String dataSetName");
                     }
                     contentsStringBuilder.append("); ");
                     servicePackage.set(tepGenMapperMethodInfoVO.getServicePackageName());
