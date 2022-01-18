@@ -22,6 +22,7 @@ import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.CoreColumnVO;
 import com.chs.boot.gerp.core.generate.model.SequenceConditionVO;
 import com.chs.boot.gerp.core.generate.model.SequenceVO;
+import com.chs.boot.gerp.core.generate.model.TepGenControllerMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
@@ -64,100 +65,77 @@ public class GenerateService {
         insertMapperMethodForTable(packageNo, packageName, tableName, eoName);
         //3. insert service info
         insertServiceMethodForTable(packageNo, packageName, tableName, eoName);
-
+        //4. insert controller info
+        insertControllerMethodForTable(packageNo, packageName, tableName, eoName);
         makeMapperXml(packageNo, packageName);
         makeMapperJava(packageNo, packageName);
         makeServiceJava(packageNo, packageName);
         makeServiceImplJava(packageNo, packageName);
 //        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
-//
-//    private void insertSaveControllerMethod(Long packageNo, String packageName,
-//        String tableName, String eoName, String mapperPackageName, String mapperXmlName,
-//        String mapperClassName,
-//        String methodAnnotationName, String methodParamClassName, String methodParamInstantName
-//        ,String methodReturnClassName
-//    ) {
-//        //insert method 만들기
-//        String methodName =
-//            "retrieve" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
-//                + "ListAll";
-//        String xmlMethodType = "select";
-//        String sqlStmt = getSelectListString(packageName, tableName, eoName, methodName);
-//
-//        coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
-//            TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
-//                .packageNo(packageNo)
-//                .mapperXmlName(mapperXmlName)
-//                .mapperClassName(mapperClassName)
-//                .methodAnnotationName(methodAnnotationName)
-//                .methodName(methodName)
-//                .methodParamClassName(methodParamClassName)
-//                .methodParamInstantName(methodParamInstantName)
-//                .xmlMethodType(xmlMethodType)
-//                .tableName(tableName)
-//                .methodReturnClassName(methodReturnClassName)
-//                .sqlStmt(sqlStmt).build()));
-//    }
-//
-//    private String getSelectListString(String packageName,
-//        String tableName, String eoName, String methodName) {
-//        String returnString = "";
-//        String templateString = getTemplateSqlStmtString("MapperXmlSelect");
-////        String methodName =
-////            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
-//        //LG CNS Co., Ltd.~  5000 User License
-//        //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
-//        String conditionVOFullPathName = packageName + "." + "model." + eoName;
-//        String resultVOFullPathName = packageName + "." + "model." + eoName;
-//
-//        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
-//        schemaColumnConditionVO.setTableName(tableName);
-//
-//        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(
-//            schemaColumnConditionVO);
-//        StringBuilder whereString = new StringBuilder("");
-//        StringBuilder columnName = new StringBuilder("");
-//        if (isNotNullAndEmpty(schemaColumnVOList)) {
-//            final int[] inx = {0};
-//            final int[] whereInx = {0};
-//
-//            schemaColumnVOList.forEach(schemaColumnVO -> {
-//
-//                inx[0] = inx[0] + 1;
-//                if (inx[0] > 1) {
-//                    columnName.append(getNewLineString());
-//                    whereString.append(getNewLineString());
-//                }
-//
-//                columnName.append(getTabString(3));
-//                columnName.append(",");
-//                columnName.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
-//
-//                whereString.append(getTabString(3));
-//                String whereTemplate = getTemplateSqlStmtString("MapperXmlWhere");
-//                whereTemplate = whereTemplate.replace("@columnName",
-//                    schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
-//                whereTemplate = whereTemplate.replace("@memberName", CaseUtils.toCamelCase(
-//                    schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
-//                    false, '_'));
-//                whereString.append(whereTemplate);
-//
-//            });
-//
-//        }
-//        returnString = templateString;
-//        returnString = returnString.replace("@methodName", methodName);
-//        returnString = returnString.replace("@conditionVOFullPathName", conditionVOFullPathName);
-//        returnString = returnString.replace("@resultVOFullPathName", resultVOFullPathName);
-//        returnString = returnString.replace("@columnName", columnName.toString());
-//        returnString = returnString.replace("@tableName", tableName);
-//        returnString = returnString.replace("@whereString", whereString.toString());
-//
-//        return returnString;
-//    }
+
+    //
+    private void insertControllerMethodForTable(Long packageNo, String packageName,
+        String tableName, String eoName
+    ) {
+        //insert method 만들기
+        String controllerPackageName = packageName + ".controller";
+        String methodAccessor = "public";
+        String controllerClassName =
+            upperCaseFirst(lastIndexString(packageName, ".")) + "Controller";
+        ;
+        String methodAnnotationName = "@Transactional";
+        String methodReturnClassName = "ResponseModel";
+        String methodParamClassName = "@RequestBody RequestModel";
+        String methodParamInstantName = "requestModel";
+        String methodName =
+            "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "List";
+        String methodContents = getControllerSaveString(packageName,tableName,eoName,methodName);
+
+        coreGenerateMapper.insertTepGenControllerMethodInfoList(List.of(
+            TepGenControllerMethodInfoEO.builder().controllerPackageName(controllerPackageName)
+                .packageNo(packageNo)
+                .controllerClassName(controllerClassName)
+                .methodAnnotationName(methodAnnotationName)
+                .methodAccessor(methodAccessor)
+                .methodReturnClassName(methodReturnClassName)
+                .methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName)
+                .methodContents(methodContents)
+                .tableName(tableName)
+                .build()));
+    }
+
+    private String getImportServiceString(Long packageNo) {
+        TepGenServiceMethodInfoEO tepGenServiceMethodInfoEO = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
+            TepGenServiceMethodInfoEO.builder().packageNo(packageNo)
+                .build()).stream().findFirst().get();
+        return "import " + tepGenServiceMethodInfoEO.getServicePackageName() + "."
+            + tepGenServiceMethodInfoEO.getServiceClassName()
+            + ";";
+    }
+
+    private String getControllerSaveString(String packageName,
+        String tableName, String eoName, String methodName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("ControllerJavaSaveMethod");
+
+        String  urlPath      =lastIndexString(packageName,".")+"/"+methodName;
+        String  eoInstantName = lowerCaseFirst(eoName);
+        String  datasetName  = CaseUtils.toCamelCase(tableName,false,'_')+"DatasetName";
 
 
+
+        returnString = templateString;
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@eoName", eoName);
+        returnString = returnString.replace("@urlPath", urlPath);
+        returnString = returnString.replace("@eoInstantName", eoInstantName);
+        returnString = returnString.replace("@datasetName", datasetName);
+        return returnString;
+    }
 
 
     public Long getNextVal(SequenceConditionVO sequenceConditionVO) {
@@ -195,7 +173,7 @@ public class GenerateService {
         //select all 만들기
         insertSelectListMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
             mapperXmlName, mapperClassName, methodAnnotationName,
-            eoName, lowerCaseFirst(eoName),methodParamClassName);
+            eoName, lowerCaseFirst(eoName), methodParamClassName);
         //validation
 
         return mapperXmlFileName;
@@ -260,7 +238,7 @@ public class GenerateService {
                 + "List";
         String methodContents = getSaveMethodString(packageNo, tableName, eoName, methodName,
             eoName, methodParamInstantName);
-        String methodParamClassName = "List<"+eoName+">";
+        String methodParamClassName = "List<" + eoName + ">";
         coreGenerateMapper.insertMultiTepGenServiceMethodInfo(
             List.of(
                 TepGenServiceMethodInfoEO.builder()
@@ -285,7 +263,7 @@ public class GenerateService {
         String tableName, String eoName, String mapperPackageName, String mapperXmlName,
         String mapperClassName,
         String methodAnnotationName, String methodParamClassName, String methodParamInstantName
-        ,String methodReturnClassName
+        , String methodReturnClassName
     ) {
         //insert method 만들기
         String methodName =
@@ -576,7 +554,8 @@ public class GenerateService {
         templateString = templateString.replace("@loopEOInstance", loopEOInstance);
         templateString = templateString.replace("//@nullCheck",
             getNullValidationString(loopEOInstance, tableName));
-        templateString = templateString.replace("//@dupCheck", getDupValidationString(eoName,loopEOInstance, tableName) );
+        templateString = templateString.replace("//@dupCheck",
+            getDupValidationString(eoName, loopEOInstance, tableName));
 
         return templateString;
     }
@@ -628,16 +607,16 @@ public class GenerateService {
 
                 });
 
-            returnString = returnString.replace("//@setParam",setParamString);
+            returnString = returnString.replace("//@setParam", setParamString);
             String retrieveMethod =
                 "retrieve" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
                     + "ListAll";
 
-            returnString = returnString.replace("@retrieveMethod",retrieveMethod);
+            returnString = returnString.replace("@retrieveMethod", retrieveMethod);
 
-            returnString = returnString.replace("//@addValidationSet",addValidationString);
-            returnString = returnString.replace("@loopEOInstance",loopEOInstance);
-            returnString = returnString.replace("@eoName",eoName);
+            returnString = returnString.replace("//@addValidationSet", addValidationString);
+            returnString = returnString.replace("@loopEOInstance", loopEOInstance);
+            returnString = returnString.replace("@eoName", eoName);
         }
         //@loopEOInstance
         //@memberName
@@ -1024,12 +1003,13 @@ public class GenerateService {
             serviceImplJavaString = serviceImplJavaString.replace("@serviceContents",
                 contentsStringBuilder.toString());
             //mapper 정보조회
-            TepGenMapperMethodInfoVO TepGenMapperMethodInfoVO =  coreGenerateMapper.retrieveTepGenMapperMethodInfo(
+            TepGenMapperMethodInfoVO TepGenMapperMethodInfoVO = coreGenerateMapper.retrieveTepGenMapperMethodInfo(
                 TepGenMapperMethodInfoConditionVO.builder()
                     .packageNo(packageNo)
                     .build()
             ).stream().findFirst().get();
-            String mapperPackage  = TepGenMapperMethodInfoVO.getMapperPackageName()+"."+TepGenMapperMethodInfoVO.getMapperClassName();
+            String mapperPackage = TepGenMapperMethodInfoVO.getMapperPackageName() + "."
+                + TepGenMapperMethodInfoVO.getMapperClassName();
             String mapperClassName = TepGenMapperMethodInfoVO.getMapperClassName();
             String mapperInstantName = lowerCaseFirst(mapperClassName);
             serviceImplJavaString = serviceImplJavaString.replace("@mapperPackage",
@@ -1053,7 +1033,8 @@ public class GenerateService {
     public String makeServiceJava(Long packageNo, String packageName) {
         String serviceJavaFileName = "";
         List<TepGenServiceMethodInfoEO> tepGenServiceMethodInfoEOList = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
-            TepGenServiceMethodInfoEO.builder().packageNo(packageNo).methodAccessor("public").build()
+            TepGenServiceMethodInfoEO.builder().packageNo(packageNo).methodAccessor("public")
+                .build()
         );
         if (isNotNullAndEmpty(tepGenServiceMethodInfoEOList)) {
             String serviceJavaString = getTemplateSqlStmtString("ServiceJava");
