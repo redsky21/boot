@@ -119,14 +119,16 @@ public class GenerateService {
             controllerJavaString = controllerJavaString.replace("@importModelString",
                 importModelString);
             controllerJavaString = controllerJavaString.replace("@importServiceString",
+
                 importServiceString);
+            controllerJavaString = controllerJavaString.replace("@controllerContents",
+                contentsStringBuilder.toString());
             controllerJavaString = controllerJavaString.replace("@serviceClassName",
                 serviceClassName);
             controllerJavaString = controllerJavaString.replace("@serviceInstantName",
                 serviceInstantName);
-
-            controllerJavaString = controllerJavaString.replace("@controllerContents",
-                contentsStringBuilder.toString());
+            controllerJavaString = controllerJavaString.replace("@controllerClassName",
+                controllerClassName.get());
 
             createFile(packageName, controllerClassName.get() + ".java", controllerJavaString);
             //file 생성정보
@@ -189,7 +191,7 @@ public class GenerateService {
         String returnString = "";
         String templateString = getTemplateSqlStmtString("ControllerJavaSaveMethod");
 
-        String urlPath = lastIndexString(packageName, ".") + "/" + methodName;
+        String urlPath = lastIndexString(packageName, ".") ;
         String eoInstantName = lowerCaseFirst(eoName);
         String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
 
@@ -199,6 +201,7 @@ public class GenerateService {
         returnString = returnString.replace("@urlPath", urlPath);
         returnString = returnString.replace("@eoInstantName", eoInstantName);
         returnString = returnString.replace("@datasetName", datasetName);
+//        returnString = returnString.replace("@serviceInstantName", serviceInstantName);
         return returnString;
     }
 
@@ -609,6 +612,7 @@ public class GenerateService {
 //        String mapperUpdateMethodName = getMapperMethodName(packageNo, tableName, "update");
 //        //@mapperInsertMethodName
 //        String mapperInsertMethodName = getMapperMethodName(packageNo, tableName, "insert");
+        String mapperInstanceName = lowerCaseFirst(getMapperClassName(packageNo, tableName));
 
         String templateString = getTemplateSqlStmtString("ServiceValidationMethod");
 
@@ -621,6 +625,8 @@ public class GenerateService {
             getNullValidationString(loopEOInstance, tableName));
         templateString = templateString.replace("//@dupCheck",
             getDupValidationString(eoName, loopEOInstance, tableName));
+        templateString = templateString.replace("@mapperInstanceName",
+            mapperInstanceName);
 
         return templateString;
     }
@@ -656,6 +662,7 @@ public class GenerateService {
 
                             String setParam =
                                 templateSetParamString.replace("@memberName", memberName);
+
                             String addValidationSet =
                                 addValidationSetParamString.replace("@camelMemberName",
                                     camelMemberName).replace("@loopEOInstance", loopEOInstance);
@@ -982,15 +989,17 @@ public class GenerateService {
             StringBuilder contentsStringBuilder = new StringBuilder("");
             AtomicReference<String> mapperPackage = new AtomicReference<>("");
             AtomicReference<String> mapperXmlName = new AtomicReference<>("");
+            AtomicReference<String> mapperClassName = new AtomicReference<>("");
             tepGenMapperMethodInfoVOList.stream().forEach(tepGenMapperMethodInfoVO ->
                 {
                     contentsStringBuilder.append(getNewLineString());
                     contentsStringBuilder.append(tepGenMapperMethodInfoVO.getSqlStmt());
                     mapperPackage.set(tepGenMapperMethodInfoVO.getMapperPackageName());
                     mapperXmlName.set(tepGenMapperMethodInfoVO.getMapperXmlName());
+                    mapperClassName.set(tepGenMapperMethodInfoVO.getMapperClassName());
                 }
             );
-            String mapperFullPath = mapperPackage.get();
+            String mapperFullPath = mapperPackage.get() + "." + mapperClassName.get();
 
             xmlMapperTemplateString = xmlMapperTemplateString.replace("@mapperFullPath",
                 mapperFullPath);
@@ -1126,7 +1135,7 @@ public class GenerateService {
                         contentsStringBuilder.append(
                             tepGenMapperMethodInfoVO.getMethodParamInstantName());
                     }
-                    if(nullToEmpty(tepGenMapperMethodInfoVO.getAddDatasetParam()).equals("Y")){
+                    if (nullToEmpty(tepGenMapperMethodInfoVO.getAddDatasetParam()).equals("Y")) {
                         contentsStringBuilder.append(" ,String dataSetName");
                     }
                     contentsStringBuilder.append("); ");
