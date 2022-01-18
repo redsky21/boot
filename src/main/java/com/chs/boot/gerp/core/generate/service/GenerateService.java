@@ -1,5 +1,6 @@
 package com.chs.boot.gerp.core.generate.service;
 
+import static com.chs.boot.common.constant.SystemConstant.BOF;
 import static com.chs.boot.common.util.CommonUtil.getListSize;
 import static com.chs.boot.common.util.CommonUtil.isNotNullAndEmpty;
 import static com.chs.boot.common.util.CommonUtil.nullToEmpty;
@@ -194,13 +195,15 @@ public class GenerateService {
         String urlPath = lastIndexString(packageName, ".") ;
         String eoInstantName = lowerCaseFirst(eoName);
         String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
-
+        String baseURL = BOF.getLocalBaseURL()+BOF.getLocalUrlContext();
         returnString = templateString;
         returnString = returnString.replace("@methodName", methodName);
         returnString = returnString.replace("@eoName", eoName);
         returnString = returnString.replace("@urlPath", urlPath);
         returnString = returnString.replace("@eoInstantName", eoInstantName);
         returnString = returnString.replace("@datasetName", datasetName);
+        returnString = returnString.replace("@aURL", baseURL);
+
 //        returnString = returnString.replace("@serviceInstantName", serviceInstantName);
         return returnString;
     }
