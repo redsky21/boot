@@ -782,7 +782,7 @@ public class GenerateService {
             StringBuilder tmpString = new StringBuilder("");
 
             schemaColumnVOList.stream()
-                .filter(schemaColumnVO -> nullToEmpty(schemaColumnVO.getIsNullable()).equals("YES"))
+                .filter(schemaColumnVO -> !nullToEmpty(schemaColumnVO.getIsNullable()).equals("YES"))
                 .forEach(schemaColumnVO -> {
                     String templateString = getTemplateSqlStmtString("serviceValidationNullCheck");
                     String memberName = CaseUtils.toCamelCase(schemaColumnVO.getColumnName(), true,
