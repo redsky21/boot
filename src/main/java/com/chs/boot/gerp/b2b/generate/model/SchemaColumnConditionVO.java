@@ -25,4 +25,5 @@ public class SchemaColumnConditionVO {
 	private String columnComment;
 	private String isGenerated;
 	private String generationExpression;
+	private String packageName;
 }

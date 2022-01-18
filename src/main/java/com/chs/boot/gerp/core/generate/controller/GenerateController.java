@@ -32,9 +32,9 @@ public class GenerateController {
 //        generateService.insertMapperMethodForTable(-1L,"a.b.c.d",schemaColumnConditionVO.getTableName(),
 //            eoName);
         Long packageNo =  generateService.getNextVal(SequenceConditionVO.builder().sequenceName( "tem_gen_package_no_seq").build());
+        String packageName =  schemaColumnConditionVO.getPackageName();
 
-
-        generateService.doTableJob(packageNo,"a.c.d.e",schemaColumnConditionVO.getTableName());
+        generateService.doTableJob(packageNo,packageName,schemaColumnConditionVO.getTableName());
         return"1";
 
     }
