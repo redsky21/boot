@@ -250,17 +250,11 @@ public class GenerateService {
                         returnString.append("true");
                         break;
                     case "Integer":
-                        returnString.append("1");
-                        break;
                     case "Long":
                         returnString.append("1");
                         break;
                     case "Float":
-                        returnString.append("1.0");
-                        break;
                     case "Double":
-                        returnString.append("1.0");
-                        break;
                     case "BigDecimal":
                         returnString.append("1.0");
                         break;
@@ -272,9 +266,6 @@ public class GenerateService {
                         break;
                     case "String":
                         returnString.append("\"A\"");
-                        break;
-                    case "byte[]":
-                        returnString.append("null");
                         break;
                     default:
                         returnString.append("null");
