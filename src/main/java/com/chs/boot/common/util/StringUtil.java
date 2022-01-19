@@ -33,4 +33,14 @@ public class StringUtil {
         arr[0] = Character.toLowerCase(arr[0]);
         return new String(arr);
     }
+
+    public static String replaceLast(String str, String regex, String replacement) {
+        int regexIndexOf = str.lastIndexOf(regex);
+        if(regexIndexOf == -1){
+            return str;
+        }else{
+            return str.substring(0, regexIndexOf) + str.substring(regexIndexOf).replace(regex, replacement);
+        }
+    }
+
 }
