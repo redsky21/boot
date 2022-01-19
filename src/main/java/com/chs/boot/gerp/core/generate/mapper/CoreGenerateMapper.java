@@ -10,6 +10,7 @@ import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
+import com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO;
@@ -46,4 +47,10 @@ public interface CoreGenerateMapper {
     void deleteTepGenControllerMethodInfoList(List<TepGenControllerMethodInfoEO> tepGenControllerMethodInfoEOList);
     List<TepGenControllerMethodInfoEO> retrieveTepGenControllerMethodInfoListByPk(List<TepGenControllerMethodInfoEO> tepGenControllerMethodInfoEOList);
     List<TepGenControllerMethodInfoEO> retrieveTepGenControllerMethodInfoListAll(TepGenControllerMethodInfoEO tepGenControllerMethodInfoEOList);
+    void insertTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
+    void updateTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
+    void deleteTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
+    List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListByPk(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
+    List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListAll(TepGenMasterInfoEO tepGenMasterInfoEO);
+
 }

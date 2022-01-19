@@ -482,4 +482,134 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(addDatasetParam)'>AND add_dataset_param=#{addDatasetParam}</if>
     </where>
   </select>
+  <insert id="insertTepGenMasterInfoList" parameterType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO">
+    INSERT INTO tep_gen_master_info
+    (
+    master_seq
+    ,package_no
+    ,package_name
+    ,method_type
+    ,table_name
+    ,method_name
+    ,sql_stmt
+    ,vo_name
+    ,controller_yn
+    ,service_yn
+    ,init_yn
+    ,init_order_seq
+    ,lookup_type
+    )
+    VALUES
+    <foreach separator="," item="item" collection="list">
+      (
+      #{item.masterSeq}
+      ,#{item.packageNo}
+      ,#{item.packageName}
+      ,#{item.methodType}
+      ,#{item.tableName}
+      ,#{item.methodName}
+      ,#{item.sqlStmt}
+      ,#{item.voName}
+      ,#{item.controllerYn}
+      ,#{item.serviceYn}
+      ,#{item.initYn}
+      ,#{item.initOrderSeq}
+      ,#{item.lookupType}
+      )
+    </foreach>
+  </insert>
+  <update id="updateTepGenMasterInfoList" parameterType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO">
+    <foreach separator=";" item="item" collection="list">
+      UPDATE tep_gen_master_info
+      SET
+      master_seq	=	#{item.masterSeq}
+      ,package_no	=	#{item.packageNo}
+      ,package_name	=	#{item.packageName}
+      ,method_type	=	#{item.methodType}
+      ,table_name	=	#{item.tableName}
+      ,method_name	=	#{item.methodName}
+      ,sql_stmt	=	#{item.sqlStmt}
+      ,vo_name	=	#{item.voName}
+      ,controller_yn	=	#{item.controllerYn}
+      ,service_yn	=	#{item.serviceYn}
+      ,init_yn	=	#{item.initYn}
+      ,init_order_seq	=	#{item.initOrderSeq}
+      ,lookup_type	=	#{item.lookupType}
+      WHERE 1=1
+      AND master_seq	=	#{item.masterSeq}
+    </foreach>
+  </update>
+  <delete id="deleteTepGenMasterInfoList" parameterType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO">
+    DELETE FROM tep_gen_master_info
+    <where>
+      <foreach collection="list" item="item" open="" close="" separator="OR">
+        (
+        master_seq	=	#{item.masterSeq}
+        )
+      </foreach>
+    </where>
+  </delete>
+  <select id="retrieveTepGenMasterInfoListByPk"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO"
+  >
+    SELECT
+    master_seq
+    ,package_no
+    ,package_name
+    ,method_type
+    ,table_name
+    ,method_name
+    ,sql_stmt
+    ,vo_name
+    ,controller_yn
+    ,service_yn
+    ,init_yn
+    ,init_order_seq
+    ,lookup_type
+    FROM tep_gen_master_info
+    <where>
+      <foreach collection="list" item="item" open="" close="" separator="OR">
+        (
+        master_seq	=	#{item.masterSeq}
+        )
+      </foreach>
+    </where>
+  </select>
+  <select id="retrieveTepGenMasterInfoListAll"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO"
+  >
+    SELECT
+    uuid() as row_key
+    ,master_seq
+    ,package_no
+    ,package_name
+    ,method_type
+    ,table_name
+    ,method_name
+    ,sql_stmt
+    ,vo_name
+    ,controller_yn
+    ,service_yn
+    ,init_yn
+    ,init_order_seq
+    ,lookup_type
+    FROM tep_gen_master_info
+    <where>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(masterSeq)'>AND master_seq=#{masterSeq}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND package_no=#{packageNo}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(packageName)'>AND package_name=#{packageName}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodType)'>AND method_type=#{methodType}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND table_name=#{tableName}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodName)'>AND method_name=#{methodName}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(sqlStmt)'>AND sql_stmt=#{sqlStmt}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(voName)'>AND vo_name=#{voName}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(controllerYn)'>AND controller_yn=#{controllerYn}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(serviceYn)'>AND service_yn=#{serviceYn}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(initYn)'>AND init_yn=#{initYn}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(initOrderSeq)'>AND init_order_seq=#{initOrderSeq}</if>
+      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(lookupType)'>AND lookup_type=#{lookupType}</if>
+    </where>
+  </select>
 </mapper>
