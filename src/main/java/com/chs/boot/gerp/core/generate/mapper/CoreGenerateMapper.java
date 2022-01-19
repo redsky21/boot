@@ -11,15 +11,16 @@ import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO;
-import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
-import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
+import java.util.LinkedHashMap;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface CoreGenerateMapper {
+
+    List<LinkedHashMap<String, Object>> selectSqlStmt(String param);
 
     List<ConvertDataTypeVO> getConvertDataType();
     List<TepGenTemplateEO> retrieveTepGenTemplate(TepGenTemplateEO tepGenTemplateEO);

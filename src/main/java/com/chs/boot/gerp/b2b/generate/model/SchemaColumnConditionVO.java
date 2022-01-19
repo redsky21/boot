@@ -26,4 +26,5 @@ public class SchemaColumnConditionVO {
 	private String isGenerated;
 	private String generationExpression;
 	private String packageName;
+	private Long packageNo;
 }

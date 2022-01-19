@@ -31,10 +31,11 @@ public class GenerateController {
 //        String eoName = generateService.makeEOFile("a.b.c.d",schemaColumnConditionVO.getTableName());
 //        generateService.insertMapperMethodForTable(-1L,"a.b.c.d",schemaColumnConditionVO.getTableName(),
 //            eoName);
-        Long packageNo =  generateService.getNextVal(SequenceConditionVO.builder().sequenceName( "tem_gen_package_no_seq").build());
+//        Long packageNo =  generateService.getNextVal(SequenceConditionVO.builder().sequenceName( "tem_gen_package_no_seq").build());
         String packageName =  schemaColumnConditionVO.getPackageName();
 
-        generateService.doTableJob(packageNo,packageName,schemaColumnConditionVO.getTableName());
+//        generateService.doTableJob(packageNo,packageName,schemaColumnConditionVO.getTableName());
+        generateService.doMainJob(schemaColumnConditionVO.getPackageNo());
         return"1";
 
     }

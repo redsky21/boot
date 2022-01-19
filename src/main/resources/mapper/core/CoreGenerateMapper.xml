@@ -2,7 +2,15 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
+
 <mapper namespace="com.chs.boot.gerp.core.generate.mapper.CoreGenerateMapper">
+
+  <select id="selectSqlStmt" resultType="java.util.LinkedHashMap">
+	 	<![CDATA[
+    ${selectQuery}
+    ]]>
+	</select>
+
   <select id="getConvertDataType"
     resultType="com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO">
     SELECT maria_Data_type, java_Data_type
@@ -597,19 +605,19 @@
     ,lookup_type
     FROM tep_gen_master_info
     <where>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(masterSeq)'>AND master_seq=#{masterSeq}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND package_no=#{packageNo}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(packageName)'>AND package_name=#{packageName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodType)'>AND method_type=#{methodType}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND table_name=#{tableName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(methodName)'>AND method_name=#{methodName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(sqlStmt)'>AND sql_stmt=#{sqlStmt}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(voName)'>AND vo_name=#{voName}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(controllerYn)'>AND controller_yn=#{controllerYn}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(serviceYn)'>AND service_yn=#{serviceYn}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(initYn)'>AND init_yn=#{initYn}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(initOrderSeq)'>AND init_order_seq=#{initOrderSeq}</if>
-      <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(lookupType)'>AND lookup_type=#{lookupType}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(masterSeq)'>AND master_seq=#{masterSeq}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND package_no=#{packageNo}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(packageName)'>AND package_name=#{packageName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodType)'>AND method_type=#{methodType}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND table_name=#{tableName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodName)'>AND method_name=#{methodName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(sqlStmt)'>AND sql_stmt=#{sqlStmt}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(voName)'>AND vo_name=#{voName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerYn)'>AND controller_yn=#{controllerYn}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(serviceYn)'>AND service_yn=#{serviceYn}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(initYn)'>AND init_yn=#{initYn}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(initOrderSeq)'>AND init_order_seq=#{initOrderSeq}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(lookupType)'>AND lookup_type=#{lookupType}</if>
     </where>
   </select>
 
