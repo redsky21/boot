@@ -52,5 +52,6 @@ public interface CoreGenerateMapper {
     void deleteTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListByPk(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListAll(TepGenMasterInfoEO tepGenMasterInfoEO);
+    Long getNewPackageNo();
 
 }

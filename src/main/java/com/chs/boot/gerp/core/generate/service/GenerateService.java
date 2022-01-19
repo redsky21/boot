@@ -277,6 +277,10 @@ public class GenerateService {
         return returnString.toString();
     }
 
+    public Long getNewPackageNo(){
+        return getNextVal(SequenceConditionVO.builder().sequenceName("package_no_seq").build());
+    }
+
 
     public Long getNextVal(SequenceConditionVO sequenceConditionVO) {
         List<SequenceVO> sequenceVOList =

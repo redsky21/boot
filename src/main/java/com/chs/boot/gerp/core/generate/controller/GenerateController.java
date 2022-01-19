@@ -38,6 +38,10 @@ public class GenerateController {
         return"1";
 
     }
+    @PostMapping("/gerp/gen/getNewPackageNo")
+    public Long getNewPackageNo() {
+        return generateService.getNewPackageNo();
+    }
 
     @PostMapping("/gerp/gen/retrieveColumnSchema")
     public List<SchemaColumnVO> retrieveColumnSchema(

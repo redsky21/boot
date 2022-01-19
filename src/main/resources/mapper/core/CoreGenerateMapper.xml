@@ -612,4 +612,5 @@
       <if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(lookupType)'>AND lookup_type=#{lookupType}</if>
     </where>
   </select>
+
 </mapper>
