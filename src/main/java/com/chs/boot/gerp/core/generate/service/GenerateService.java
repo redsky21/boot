@@ -68,8 +68,8 @@ public class GenerateService {
             mainList.stream().forEach(tepGenMasterInfoEO -> {
                 if (tepGenMasterInfoEO.getMethodType().equals("Q")) {
                     doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
-                        tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName()
-                        , tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
+                        tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
+                        tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
                         tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
                         tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
                         tepGenMasterInfoEO.getLookupType());
@@ -101,7 +101,11 @@ public class GenerateService {
         insertMapperMethodForSql(packageNo, packageName, voName, voConditionName, sqlStmt,
             methodName, protoTypeMap);
         //3. insert service info
-        insertSqlServiceMethod(packageNo,packageName,voName,voConditionName,methodName);
+        insertSqlServiceMethod(packageNo, packageName, voName, voConditionName, methodName);
+        //4. insert controller info
+//        insertSqlServiceMethod(packageNo,packageName,voName,voConditionName,methodName);
+        insertControllerMethodForSql(packageNo,packageName,methodName,voConditionName,voName);
+
     }
 
     public void doTableJob(Long packageNo, String packageName, String tableName) {
@@ -139,8 +143,7 @@ public class GenerateService {
         return returnMap;
     }
 
-    private LinkedHashMap<String, String> getTypeMap(
-        LinkedHashMap<String, Object> map) {
+    private LinkedHashMap<String, String> getTypeMap(LinkedHashMap<String, Object> map) {
         LinkedHashMap<String, String> returnMap = new LinkedHashMap<>();
         for (String key : map.keySet()) {
             String javaType = "";
@@ -224,6 +227,66 @@ public class GenerateService {
         return controllerJavaFileName;
     }
 
+    private void insertControllerMethodForSql(Long packageNo, String packageName, String methodName,
+        String conditionVOName, String voName) {
+        //insert method 만들기
+        String controllerPackageName = packageName + ".controller";
+        String methodAccessor = "public";
+        String controllerClassName =
+            upperCaseFirst(lastIndexString(packageName, ".")) + "Controller";
+        ;
+        String methodAnnotationName = null;
+        String methodReturnClassName = "ResponseModel";
+        String methodParamClassName = "@RequestBody RequestModel";
+        String methodParamInstantName = "requestModel";
+        String methodContents = getControllerSqlString(packageName, methodName, conditionVOName,
+            voName);
+
+        coreGenerateMapper.insertTepGenControllerMethodInfoList(List.of(
+            TepGenControllerMethodInfoEO.builder().controllerPackageName(controllerPackageName)
+                .packageNo(packageNo).controllerClassName(controllerClassName)
+                .methodAnnotationName(methodAnnotationName).methodAccessor(methodAccessor)
+                .methodReturnClassName(methodReturnClassName).methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
+                .build()));
+    }
+
+    private String getControllerSqlString(String packageName, String methodName,
+        String conditionVOName, String voName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("ControllerJavaRetrieveMethod");
+
+        String urlPath = lastIndexString(packageName, ".");
+        String conditionVOInstantName = lowerCaseFirst(conditionVOName);
+        String voInstantName = lowerCaseFirst(voName);
+
+//        String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
+        String datasetName = voInstantName + "DatasetName";
+
+        String baseURL = BOF.getLocalBaseURL() + BOF.getLocalUrlContext();
+
+        returnString = templateString;
+        returnString = returnString.replace("@urlPath", urlPath);
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@conditionVOName", conditionVOName);
+        returnString = returnString.replace("@conditionVOInstantName", conditionVOInstantName);
+
+        returnString = returnString.replace("@voName", voName);
+        returnString = returnString.replace("@voInstantName", voInstantName);
+
+        returnString = returnString.replace("@datasetName", datasetName);
+
+        returnString = returnString.replace("@aURL", baseURL);
+
+        String simpleDataSetName = datasetName + "Dataset";
+//        String demoContents = getDemoContents(tableName);
+//        returnString = returnString.replace("@simpleDataSetName", simpleDataSetName);
+//        returnString = returnString.replace("@demoContents", demoContents);
+
+//        returnString = returnString.replace("@serviceInstantName", serviceInstantName);
+        return returnString;
+    }
 
     //
     private void insertControllerMethodForTable(Long packageNo, String packageName,
@@ -377,9 +440,8 @@ public class GenerateService {
 
         //select all 만들기
         insertSqlMapperMethod(packageNo, packageName, voName, conditionVOName, mapperPackageName,
-            mapperXmlName, mapperClassName
-            , methodAnnotationName, methodParamClassName, methodParamInstantName,
-            methodReturnClassName, methodName, resultMap, sqlStmt);
+            mapperXmlName, mapperClassName, methodAnnotationName, methodParamClassName,
+            methodParamInstantName, methodReturnClassName, methodName, resultMap, sqlStmt);
         //validation
 
     }
@@ -478,22 +540,20 @@ public class GenerateService {
         String methodReturnClassName = "List<" + voName + ">";
         String methodParamClassName = conditionVOName;
         String methodParamInstantName = lowerCaseFirst(methodParamClassName);
-        String methodContents = getSqlMethodString(packageNo, methodName,methodParamClassName,methodParamInstantName
-        ,methodReturnClassName);
+        String methodContents = getSqlMethodString(packageNo, methodName, methodParamClassName,
+            methodParamInstantName, methodReturnClassName);
 
         coreGenerateMapper.insertMultiTepGenServiceMethodInfo(List.of(
             TepGenServiceMethodInfoEO.builder().packageNo(packageNo)
                 .servicePackageName(servicePackageName).serviceClassName(serviceClassName)
-                .methodAccessor(method_accessor)
-                .methodReturnClassName(methodReturnClassName).methodName(methodName)
-                .methodParamClassName(methodParamClassName)
+                .methodAccessor(method_accessor).methodReturnClassName(methodReturnClassName)
+                .methodName(methodName).methodParamClassName(methodParamClassName)
                 .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
                 .addDatasetParam("Y").build()));
     }
 
-    private String getSqlMethodString(Long packageNo, String methodName, String methodParamClassName
-        , String methodParamInstantName
-        , String methodReturnClassName) {
+    private String getSqlMethodString(Long packageNo, String methodName,
+        String methodParamClassName, String methodParamInstantName, String methodReturnClassName) {
         String returnString = "";
         String mapperClassName = getMapperClassName(packageNo);
         String mapperInstantName = lowerCaseFirst(mapperClassName);
@@ -528,13 +588,11 @@ public class GenerateService {
                 .build()));
     }
 
-    private void insertSqlMapperMethod(Long packageNo, String packageName,
-        String voName, String conditionVOName, String mapperPackageName, String mapperXmlName,
-        String mapperClassName,
-        String methodAnnotationName, String methodParamClassName, String methodParamInstantName,
-        String methodReturnClassName, String methodName, LinkedHashMap<String, Object> resultMap
-        , String queryString
-    ) {
+    private void insertSqlMapperMethod(Long packageNo, String packageName, String voName,
+        String conditionVOName, String mapperPackageName, String mapperXmlName,
+        String mapperClassName, String methodAnnotationName, String methodParamClassName,
+        String methodParamInstantName, String methodReturnClassName, String methodName,
+        LinkedHashMap<String, Object> resultMap, String queryString) {
 
         String xmlMethodType = "select";
         String sqlStmt = getSqlListString(packageName, voName, conditionVOName, methodName,
@@ -546,8 +604,7 @@ public class GenerateService {
                 .methodAnnotationName(methodAnnotationName).methodName(methodName)
                 .methodParamClassName(methodParamClassName)
                 .methodParamInstantName(methodParamInstantName).xmlMethodType(xmlMethodType)
-                .methodReturnClassName(methodReturnClassName).sqlStmt(sqlStmt)
-                .build()));
+                .methodReturnClassName(methodReturnClassName).sqlStmt(sqlStmt).build()));
     }
 
     private String getSqlListString(String packageName, String voName, String conditionVOName,
@@ -578,8 +635,7 @@ public class GenerateService {
                 whereTemplate = whereTemplate.replace("@columnName",
                     colName.toLowerCase(Locale.ROOT));
                 whereTemplate = whereTemplate.replace("@memberName",
-                    CaseUtils.toCamelCase(colName.toLowerCase(Locale.ROOT),
-                        false, '_'));
+                    CaseUtils.toCamelCase(colName.toLowerCase(Locale.ROOT), false, '_'));
                 whereString.append(whereTemplate);
 
             });
@@ -979,8 +1035,7 @@ public class GenerateService {
 
     private String getMapperClassName(Long packageNo) {
         List<TepGenMapperMethodInfoVO> tepGenMapperMethodInfoVOList = coreGenerateMapper.retrieveTepGenMapperMethodInfo(
-            TepGenMapperMethodInfoConditionVO.builder().packageNo(packageNo)
-                .build());
+            TepGenMapperMethodInfoConditionVO.builder().packageNo(packageNo).build());
         return isNotNullAndEmpty(tepGenMapperMethodInfoVOList) ? tepGenMapperMethodInfoVOList.get(0)
             .getMapperClassName() : "";
     }
