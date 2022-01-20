@@ -611,6 +611,8 @@ public class GenerateService {
         String methodName, LinkedHashMap<String, Object> resultMap, String sqlStmt) {
         String returnString = "";
         String templateString = getTemplateSqlStmtString("MapperXmlSql");
+        sqlStmt = sqlStmt.replaceFirst("(?i)select","SELECT uuid() as row_key,");
+
 //        String methodName =
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         //LG CNS Co., Ltd.~  5000 User License
