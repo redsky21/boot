@@ -3,6 +3,13 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.chs.boot.gerp.b2b.generate.mapper.B2bGenerateMapper">
+  <select id="selectSqlStmt" resultType="java.util.LinkedHashMap">
+    <![CDATA[
+    ${selectQuery}
+    ]]>
+    LIMIT 100
+  </select>
+
   <select id="retrieveColumnSchema" resultType="com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO"
     parameterType="com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO">
 

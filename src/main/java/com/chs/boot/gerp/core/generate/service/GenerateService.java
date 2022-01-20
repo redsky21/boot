@@ -82,7 +82,7 @@ public class GenerateService {
         String sqlStmt, String voName, String controllerYn, String serviceYn, String initYn,
         Long initOrderSeq, String lookupType) {
         //1. make VO File
-        List<LinkedHashMap<String, Object>> result = coreGenerateMapper.selectSqlStmt(sqlStmt);
+        List<LinkedHashMap<String, Object>> result = b2bGenerateMapper.selectSqlStmt(sqlStmt);
         LinkedHashMap<String, Object> protoTypeMap = getMapProtoType(result);
         LinkedHashMap<String, String> resultMap = getTypeMap(protoTypeMap);
         voName = upperCaseFirst(voName);

@@ -5,11 +5,7 @@
 
 <mapper namespace="com.chs.boot.gerp.core.generate.mapper.CoreGenerateMapper">
 
-  <select id="selectSqlStmt" resultType="java.util.LinkedHashMap">
-	 	<![CDATA[
-    ${selectQuery}
-    ]]>
-	</select>
+
 
   <select id="getConvertDataType"
     resultType="com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO">

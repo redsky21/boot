@@ -20,7 +20,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface CoreGenerateMapper {
 
-    List<LinkedHashMap<String, Object>> selectSqlStmt(String param);
+
 
     List<ConvertDataTypeVO> getConvertDataType();
     List<TepGenTemplateEO> retrieveTepGenTemplate(TepGenTemplateEO tepGenTemplateEO);
