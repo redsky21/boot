@@ -4,6 +4,7 @@ import static com.chs.boot.common.constant.SystemConstant.BOF;
 import static com.chs.boot.common.util.CommonUtil.getListSize;
 import static com.chs.boot.common.util.CommonUtil.isNotNullAndEmpty;
 import static com.chs.boot.common.util.CommonUtil.nullToEmpty;
+import static com.chs.boot.common.util.CommonUtil.replaceSidoName;
 import static com.chs.boot.common.util.MyBatisUtil.isNotEmpty;
 import static com.chs.boot.common.util.StringUtil.getNewLineString;
 import static com.chs.boot.common.util.StringUtil.getTabString;
@@ -914,14 +915,16 @@ public class GenerateService {
 
         templateString = templateString.replace("@methodName", methodName);
         templateString = templateString.replace("@methodParamClassName", methodParamClassName);
-        templateString = templateString.replace("@methodParamInstantName", methodParamInstantName);
+
         templateString = templateString.replace("@eoName", eoName);
         templateString = templateString.replace("@loopEOInstance", loopEOInstance);
         templateString = templateString.replace("//@nullCheck",
             getNullValidationString(loopEOInstance, tableName));
         templateString = templateString.replace("//@dupCheck",
             getDupValidationString(eoName, loopEOInstance, tableName));
+        templateString = templateString.replace("@methodParamInstantName", methodParamInstantName);
         templateString = templateString.replace("@mapperInstanceName", mapperInstanceName);
+
 
         return templateString;
     }
@@ -938,7 +941,7 @@ public class GenerateService {
             returnString = getTemplateSqlStmtString("serviceValidationDupCheck");
             StringBuilder setParamString = new StringBuilder("");
             StringBuilder addValidationString = new StringBuilder("");
-            StringBuilder serviceValidationDupInList = new StringBuilder("");
+            StringBuilder serviceValidationDupInListB = new StringBuilder("");
             tableConstraintsVOList.stream().forEach(tableConstraintsVO -> {
 
                 List<TableConstraintsVO> columnUsageVOList = b2bGenerateMapper.retrieveKeyColumnUsage(
@@ -979,14 +982,15 @@ public class GenerateService {
 
                     });
                     tmpServiceValidationDupInList = tmpServiceValidationDupInList.replace(
-                        "serviceValidationDupInListMember", stringBuilder);
-                    serviceValidationDupInList.append(getNewLineString())
+                        "@serviceValidationDupInListMember", stringBuilder);
+                    serviceValidationDupInListB.append(getNewLineString())
                         .append(tmpServiceValidationDupInList);
                 }
 
             });
 
             returnString = returnString.replace("//@setParam", setParamString);
+            returnString = returnString.replace("//@inListDupCheck", serviceValidationDupInListB.toString());
             String retrieveMethod =
                 "retrieve" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
                     + "ListAll";
