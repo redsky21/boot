@@ -43,6 +43,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.text.CaseUtils;
@@ -65,6 +66,7 @@ public class GenerateService {
         List<TepGenMasterInfoEO> mainList = coreGenerateMapper.retrieveTepGenMasterInfoListAll(
             tepGenMasterInfoConditionEO);
         if (isNotNullAndEmpty(mainList)) {
+            String packageName = mainList.stream().findFirst().get().getPackageName();
             mainList.stream().forEach(tepGenMasterInfoEO -> {
                 if (tepGenMasterInfoEO.getMethodType().equals("Q")) {
                     doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
@@ -73,8 +75,17 @@ public class GenerateService {
                         tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
                         tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
                         tepGenMasterInfoEO.getLookupType());
+                } else if (tepGenMasterInfoEO.getMethodType().equals("T")) {
+                    doTableJob(tepGenMasterInfoEO.getPackageNo(),
+                        tepGenMasterInfoEO.getPackageName(),
+                        tepGenMasterInfoEO.getTableName());
                 }
             });
+            makeMapperXml(packageNo, packageName);
+            makeMapperJava(packageNo, packageName);
+            makeServiceJava(packageNo, packageName);
+            makeServiceImplJava(packageNo, packageName);
+            makeControllerJava(packageNo, packageName);
         }
     }
 
@@ -104,7 +115,7 @@ public class GenerateService {
         insertSqlServiceMethod(packageNo, packageName, voName, voConditionName, methodName);
         //4. insert controller info
 //        insertSqlServiceMethod(packageNo,packageName,voName,voConditionName,methodName);
-        insertControllerMethodForSql(packageNo,packageName,methodName,voConditionName,voName);
+        insertControllerMethodForSql(packageNo, packageName, methodName, voConditionName, voName);
 
     }
 
@@ -117,11 +128,11 @@ public class GenerateService {
         insertServiceMethodForTable(packageNo, packageName, tableName, eoName);
         //4. insert controller info
         insertControllerMethodForTable(packageNo, packageName, tableName, eoName);
-        makeMapperXml(packageNo, packageName);
-        makeMapperJava(packageNo, packageName);
-        makeServiceJava(packageNo, packageName);
-        makeServiceImplJava(packageNo, packageName);
-        makeControllerJava(packageNo, packageName);
+//        makeMapperXml(packageNo, packageName);
+//        makeMapperJava(packageNo, packageName);
+//        makeServiceJava(packageNo, packageName);
+//        makeServiceImplJava(packageNo, packageName);
+//        makeControllerJava(packageNo, packageName);
 //        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
 
@@ -373,7 +384,14 @@ public class GenerateService {
                         convertDataTypeVO.getJavaDataType());
                 });
             }
+            returnString.append(getNewLineString());
+            returnString.append(getTabString(11));
+            returnString.append("\"cudsKey\":\"C\"");
+            returnString.append(getNewLineString());
+            returnString.append(getTabString(11));
+            returnString.append("\",rowKey\":\"").append(UUID.randomUUID().toString()).append("\"");
 
+            inx.set(2);
             schemaColumnVOList.stream().forEach(schemaColumnVO -> {
                 inx.getAndIncrement();
                 if (inx.get() > 1) {
@@ -381,7 +399,9 @@ public class GenerateService {
                     returnString.append(getTabString(11));
                     returnString.append(",");
                 }
-                returnString.append("\"").append(schemaColumnVO.getColumnName()).append("\":");
+                returnString.append("\"")
+                    .append(CaseUtils.toCamelCase(schemaColumnVO.getColumnName(), false, '_'))
+                    .append("\":");
                 String javaDataType = dataTypeMap.get(schemaColumnVO.getDataType());
                 switch (nullToEmpty(javaDataType)) {
                     case "Boolean":
@@ -431,7 +451,7 @@ public class GenerateService {
         LinkedHashMap<String, Object> resultMap) {
 
         String mapperPackageName = packageName + ".mapper";
-        String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper.xml";
+        String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper_SQL.xml";
         String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper";
         String methodAnnotationName = "";
         String methodReturnClassName = "List<" + voName + ">";
@@ -446,11 +466,11 @@ public class GenerateService {
 
     }
 
-    public String insertMapperMethodForTable(Long packageNo, String packageName, String tableName,
+    private String insertMapperMethodForTable(Long packageNo, String packageName, String tableName,
         String eoName) {
         String mapperXmlFileName = "";
         String mapperPackageName = packageName + ".mapper";
-        String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper.xml";
+        String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper_SQL.xml";
         String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper";
         String methodAnnotationName = "@Transactional";
         String methodParamClassName = "List<" + eoName + ">";
@@ -611,14 +631,14 @@ public class GenerateService {
         String methodName, LinkedHashMap<String, Object> resultMap, String sqlStmt) {
         String returnString = "";
         String templateString = getTemplateSqlStmtString("MapperXmlSql");
-        sqlStmt = sqlStmt.replaceFirst("(?i)select","SELECT uuid() as row_key,");
+        sqlStmt = sqlStmt.replaceFirst("(?i)select", "SELECT uuid() as row_key,");
 
 //        String methodName =
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         //LG CNS Co., Ltd.~  5000 User License
         //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
-        String conditionVOFullPathName = packageName + "." + "model." + voName;
-        String resultVOFullPathName = packageName + "." + "model." + conditionVOName;
+        String conditionVOFullPathName = packageName + "." + "model." + conditionVOName;
+        String resultVOFullPathName = packageName + "." + "model." + voName;
 
         StringBuilder whereString = new StringBuilder("");
         if (isNotNullAndEmpty(resultMap)) {
@@ -918,18 +938,31 @@ public class GenerateService {
             returnString = getTemplateSqlStmtString("serviceValidationDupCheck");
             StringBuilder setParamString = new StringBuilder("");
             StringBuilder addValidationString = new StringBuilder("");
-
+            StringBuilder serviceValidationDupInList = new StringBuilder("");
             tableConstraintsVOList.stream().forEach(tableConstraintsVO -> {
+
                 List<TableConstraintsVO> columnUsageVOList = b2bGenerateMapper.retrieveKeyColumnUsage(
                     tableConstraintsVO);
                 if (isNotNullAndEmpty(columnUsageVOList)) {
+                    //const 하나당
+                    String tmpServiceValidationDupInList = getTemplateSqlStmtString(
+                        "serviceValidationDupInList");
+                    StringBuilder stringBuilder = new StringBuilder("");
                     columnUsageVOList.stream().forEach(columnUsageVO -> {
+                        String memberName = CaseUtils.toCamelCase(columnUsageVO.getColumnName(),
+                            true, '_');
+
+                        String serviceValidationDupInListMember = getTemplateSqlStmtString(
+                            "serviceValidationDupInListMember");
+                        serviceValidationDupInListMember = serviceValidationDupInListMember.replace(
+                            "@memberName", memberName);
+                        stringBuilder.append(getNewLineString())
+                            .append(serviceValidationDupInListMember);
+
                         String templateSetParamString = getTemplateSqlStmtString(
                             "serviceValidationDupCheckSetParam");
                         String addValidationSetParamString = getTemplateSqlStmtString(
                             "serviceValidationDupCheckAddValidationSet");
-                        String memberName = CaseUtils.toCamelCase(columnUsageVO.getColumnName(),
-                            true, '_');
                         String camelMemberName = CaseUtils.toCamelCase(
                             columnUsageVO.getColumnName(), false, '_');
 
@@ -945,8 +978,10 @@ public class GenerateService {
                         addValidationString.append(addValidationSet);
 
                     });
-
-
+                    tmpServiceValidationDupInList = tmpServiceValidationDupInList.replace(
+                        "serviceValidationDupInListMember", stringBuilder);
+                    serviceValidationDupInList.append(getNewLineString())
+                        .append(tmpServiceValidationDupInList);
                 }
 
             });
@@ -1107,7 +1142,11 @@ public class GenerateService {
         if (isNotNullAndEmpty(schemaColumnVOList)) {
             final int[] inx = {0};
             final int[] whereInx = {0};
-            schemaColumnVOList.forEach(schemaColumnVO -> {
+            schemaColumnVOList.stream().filter(schemaColumnVO ->
+                !schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT).equals("created_by")
+                    && !schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT)
+                    .equals("creation_date")
+            ).forEach(schemaColumnVO -> {
 
                 inx[0] = inx[0] + 1;
                 if (inx[0] > 1) {
@@ -1123,11 +1162,19 @@ public class GenerateService {
                 matchString.append(getTabString(1));
                 matchString.append("=");
                 matchString.append(getTabString(1));
-                matchString.append("#{item.");
-                matchString.append(
-                    CaseUtils.toCamelCase(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
-                        false, '_'));
-                matchString.append("}");
+                if (schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT)
+                    .equals("last_update_date")
+                ) {
+                    matchString.append("now()");
+                } else {
+                    matchString.append("#{item.");
+                    matchString.append(
+                        CaseUtils.toCamelCase(
+                            schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
+                            false, '_'));
+                    matchString.append("}");
+
+                }
 
                 if (nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI")) {
                     whereInx[0] = whereInx[0] + 1;
@@ -1140,6 +1187,7 @@ public class GenerateService {
                     whereString.append(getTabString(1));
                     whereString.append("=");
                     whereString.append(getTabString(1));
+
                     whereString.append("#{item.");
                     whereString.append(CaseUtils.toCamelCase(
                         schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT), false, '_'));
@@ -1195,11 +1243,20 @@ public class GenerateService {
                     variableName.append(getTabString(3));
                     variableName.append(" ");
                 }
-                variableName.append("#{item.");
-                variableName.append(
-                    CaseUtils.toCamelCase(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
-                        false, '_'));
-                variableName.append("}");
+                if (schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT).equals("creation_date")
+                    ||
+                    schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT)
+                        .equals("last_update_date")
+                ) {
+                    variableName.append("now()");
+                } else {
+                    variableName.append("#{item.");
+                    variableName.append(
+                        CaseUtils.toCamelCase(
+                            schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT),
+                            false, '_'));
+                    variableName.append("}");
+                }
             });
         }
         returnString = templateString;
