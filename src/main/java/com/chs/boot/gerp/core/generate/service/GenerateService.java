@@ -86,6 +86,22 @@ public class GenerateService {
                         tepGenMasterInfoEO.getTableName());
                 }
             });
+            //sql controller method 처리
+            Map<Long, String> controllerMethodMap = new HashMap<>();
+
+            coreGenerateMapper.retrieveTepGenControllerUnitMethodListAll(
+                TepGenControllerUnitMethodEO.builder()
+                    .packageNo(packageNo)
+                    .build()).stream().forEach(tepGenControllerUnitMethodEO ->
+                controllerMethodMap.put(tepGenControllerUnitMethodEO.getPackageNo(),
+                    tepGenControllerUnitMethodEO.getControllerMethodName())
+            );
+            if (controllerMethodMap.size() > 0) {
+                controllerMethodMap.forEach((mapPackageNo, mapControllerMethodName) ->
+                    insertControllerMethodForSql(mapPackageNo, packageName, mapControllerMethodName)
+                );
+                //insertControllerMethodForSql
+            }
             makeMapperXml(packageNo, packageName);
             makeMapperJava(packageNo, packageName);
             makeServiceJava(packageNo, packageName);
@@ -123,7 +139,7 @@ public class GenerateService {
 //        insertControllerMethodForSql(packageNo, packageName, methodName, voConditionName, voName);
         insertControllerUnitForSql(packageNo, packageName,
             isNotEmpty(controllerMethodName) ? controllerMethodName : methodName, methodName,
-            voConditionName, voName, datasetSeq==null?0:datasetSeq);
+            voConditionName, voName, datasetSeq == null ? 0 : datasetSeq);
     }
 
     public void doTableJob(Long packageNo, String packageName, String tableName) {
@@ -245,8 +261,8 @@ public class GenerateService {
         return controllerJavaFileName;
     }
 
-    private void insertControllerMethodForSql(Long packageNo, String packageName, String methodName,
-        String conditionVOName, String voName) {
+    private void insertControllerMethodForSql(Long packageNo, String packageName,
+        String controllerMethodName) {
         //insert method 만들기
         String controllerPackageName = packageName + ".controller";
         String methodAccessor = "public";
@@ -257,14 +273,14 @@ public class GenerateService {
         String methodReturnClassName = "ResponseModel";
         String methodParamClassName = "@RequestBody RequestModel";
         String methodParamInstantName = "requestModel";
-        String methodContents = getControllerSqlString(packageName, methodName, conditionVOName,
-            voName);
+        String methodContents = getControllerSqlString(packageNo, packageName,
+            controllerMethodName);
 
         coreGenerateMapper.insertTepGenControllerMethodInfoList(List.of(
             TepGenControllerMethodInfoEO.builder().controllerPackageName(controllerPackageName)
                 .packageNo(packageNo).controllerClassName(controllerClassName)
                 .methodAnnotationName(methodAnnotationName).methodAccessor(methodAccessor)
-                .methodReturnClassName(methodReturnClassName).methodName(methodName)
+                .methodReturnClassName(methodReturnClassName).methodName(controllerMethodName)
                 .methodParamClassName(methodParamClassName)
                 .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
                 .build()));
@@ -272,7 +288,7 @@ public class GenerateService {
 
     private void insertControllerUnitForSql(Long packageNo, String packageName,
         String controllerMethodName, String methodName,
-        String conditionVOName, String voName,Long datasetSeq) {
+        String conditionVOName, String voName, Long datasetSeq) {
         //insert method 만들기
         String controllerPackageName = packageName + ".controller";
         String methodAccessor = "public";
@@ -324,12 +340,11 @@ public class GenerateService {
         returnString = returnString.replace("@datasetName", datasetName);
 
         returnString = returnString.replace("@aURL", baseURL);
-        returnString = returnString.replace("@datasetSeq",datasetSeq.toString());
-        if( datasetSeq ==0 ){
+        returnString = returnString.replace("@datasetSeq", datasetSeq.toString());
+        if (datasetSeq == 0) {
             returnString = returnString.replace("//@0", "");
             returnString = returnString.replace("//@1", "//");
-        }
-        else{
+        } else {
             returnString = returnString.replace("//@0", "//");
             returnString = returnString.replace("//@1", "");
         }
@@ -338,34 +353,32 @@ public class GenerateService {
         return returnString;
     }
 
-    private String getControllerSqlString(String packageName, String methodName,
-        String conditionVOName, String voName) {
+    private String getControllerSqlString(Long packageNo, String packageName,
+        String controllerMethodName) {
         String returnString = "";
         String templateString = getTemplateSqlStmtString("ControllerJavaRetrieveMethod");
 
         String urlPath = lastIndexString(packageName, ".");
-        String conditionVOInstantName = lowerCaseFirst(conditionVOName);
-        String voInstantName = lowerCaseFirst(voName);
 
 //        String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
-        String datasetName = voInstantName + "DatasetName";
 
         String baseURL = BOF.getLocalBaseURL() + BOF.getLocalUrlContext();
 
         returnString = templateString;
         returnString = returnString.replace("@urlPath", urlPath);
-        returnString = returnString.replace("@methodName", methodName);
-        returnString = returnString.replace("@conditionVOName", conditionVOName);
-        returnString = returnString.replace("@conditionVOInstantName", conditionVOInstantName);
+        returnString = returnString.replace("@controllerMethodName", controllerMethodName);
 
-        returnString = returnString.replace("@voName", voName);
-        returnString = returnString.replace("@voInstantName", voInstantName);
-
-        returnString = returnString.replace("@datasetName", datasetName);
+        StringBuilder conditionUnitString = new StringBuilder("");
+        coreGenerateMapper.retrieveTepGenControllerUnitMethodListAll(
+            TepGenControllerUnitMethodEO.builder()
+                .packageNo(packageNo).controllerMethodName(controllerMethodName)
+                .build()).stream().forEach(tepGenControllerUnitMethodEO -> {
+            conditionUnitString.append(getNewLineString()).append(getTabString(2)
+            ).append(tepGenControllerUnitMethodEO.getMethodContents());
+        });
 
         returnString = returnString.replace("@aURL", baseURL);
-
-        String simpleDataSetName = datasetName + "Dataset";
+        returnString = returnString.replace("@conditionUnitString",conditionUnitString);
 //        String demoContents = getDemoContents(tableName);
 //        returnString = returnString.replace("@simpleDataSetName", simpleDataSetName);
 //        returnString = returnString.replace("@demoContents", demoContents);

@@ -831,5 +831,6 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND table_name=#{tableName}</if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(addDatasetParam)'>AND add_dataset_param=#{addDatasetParam}</if>
     </where>
+    order by package_no,controller_method_name, dataset_seq
   </select>
 </mapper>

@@ -6,6 +6,7 @@ import lombok.Data;
 @Builder
 @Data
 public class TepGenControllerUnitMethodEO {
+	private String rowKey;
 	private Long methodSeq;
 	private Long packageNo;
 	private String controllerPackageName;
