@@ -4,6 +4,7 @@ import com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO;
 import com.chs.boot.gerp.core.generate.model.SequenceConditionVO;
 import com.chs.boot.gerp.core.generate.model.SequenceVO;
 import com.chs.boot.gerp.core.generate.model.TepGenControllerMethodInfoEO;
+import com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenFileInfoVO;
@@ -19,9 +20,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface CoreGenerateMapper {
-
-
-
     List<ConvertDataTypeVO> getConvertDataType();
     List<TepGenTemplateEO> retrieveTepGenTemplate(TepGenTemplateEO tepGenTemplateEO);
     List<TepGenFileInfoVO> retrieveTepGenFileInfo  (
@@ -53,6 +51,9 @@ public interface CoreGenerateMapper {
     void deleteTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListByPk(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListAll(TepGenMasterInfoEO tepGenMasterInfoEO);
-    Long getNewPackageNo();
-
+    void insertTepGenControllerUnitMethodList(List<TepGenControllerUnitMethodEO> tepGenControllerUnitMethodEOList);
+    void updateTepGenControllerUnitMethodList(List<TepGenControllerUnitMethodEO> tepGenControllerUnitMethodEOList);
+    void deleteTepGenControllerUnitMethodList(List<TepGenControllerUnitMethodEO> tepGenControllerUnitMethodEOList);
+    List<TepGenControllerUnitMethodEO> retrieveTepGenControllerUnitMethodListByPk(List<TepGenControllerUnitMethodEO> tepGenControllerUnitMethodEOList);
+    List<TepGenControllerUnitMethodEO> retrieveTepGenControllerUnitMethodListAll(TepGenControllerUnitMethodEO tepGenControllerUnitMethodEO);
 }
