@@ -921,10 +921,10 @@ public class GenerateService {
         templateString = templateString.replace("//@nullCheck",
             getNullValidationString(loopEOInstance, tableName));
         templateString = templateString.replace("//@dupCheck",
-            getDupValidationString(eoName, loopEOInstance, tableName));
+            getDupValidationString(eoName, loopEOInstance
+                , tableName));
         templateString = templateString.replace("@methodParamInstantName", methodParamInstantName);
         templateString = templateString.replace("@mapperInstanceName", mapperInstanceName);
-
 
         return templateString;
     }
@@ -990,7 +990,8 @@ public class GenerateService {
             });
 
             returnString = returnString.replace("//@setParam", setParamString);
-            returnString = returnString.replace("//@inListDupCheck", serviceValidationDupInListB.toString());
+            returnString = returnString.replace("//@inListDupCheck",
+                serviceValidationDupInListB.toString());
             String retrieveMethod =
                 "retrieve" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
                     + "ListAll";

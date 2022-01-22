@@ -502,6 +502,8 @@
     ,init_yn
     ,init_order_seq
     ,lookup_type
+    ,controller_method_name
+    ,controller_dataset_method_seq
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -519,6 +521,8 @@
       ,#{item.initYn}
       ,#{item.initOrderSeq}
       ,#{item.lookupType}
+      ,#{controllerMethodName}
+      ,#{controllerDatasetMethodSeq}
       )
     </foreach>
   </insert>
@@ -539,6 +543,8 @@
       ,init_yn	=	#{item.initYn}
       ,init_order_seq	=	#{item.initOrderSeq}
       ,lookup_type	=	#{item.lookupType}
+      ,controller_method_name = #{controllerMethodName}
+      ,controller_dataset_method_seq = #{controllerDatasetMethodSeq}
       WHERE 1=1
       AND master_seq	=	#{item.masterSeq}
     </foreach>
@@ -571,6 +577,8 @@
     ,init_yn
     ,init_order_seq
     ,lookup_type
+    ,controller_method_name
+    ,controller_dataset_method_seq
     FROM tep_gen_master_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -599,6 +607,8 @@
     ,init_yn
     ,init_order_seq
     ,lookup_type
+    ,controller_method_name
+    ,controller_dataset_method_seq
     FROM tep_gen_master_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(masterSeq)'>AND master_seq=#{masterSeq}</if>
@@ -614,6 +624,8 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(initYn)'>AND init_yn=#{initYn}</if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(initOrderSeq)'>AND init_order_seq=#{initOrderSeq}</if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(lookupType)'>AND lookup_type=#{lookupType}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerMethodName)'>AND controller_method_name=#{controllerMethodName}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerDatasetMethodSeq)'>AND controller_dataset_method_seq=#{controllerDatasetMethodSeq}</if>
     </where>
   </select>
 

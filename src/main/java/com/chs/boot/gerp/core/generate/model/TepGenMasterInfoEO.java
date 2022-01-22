@@ -17,5 +17,6 @@ public class TepGenMasterInfoEO  {
 	private String initYn;
 	private Long initOrderSeq;
 	private String lookupType;
-
+	private String controllerMethodName;
+	private Long controllerDatasetMethodSeq;
 }
