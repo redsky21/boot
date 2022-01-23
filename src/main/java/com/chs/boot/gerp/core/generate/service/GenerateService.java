@@ -5,6 +5,7 @@ import static com.chs.boot.common.util.CommonUtil.getListSize;
 import static com.chs.boot.common.util.CommonUtil.isNotNullAndEmpty;
 import static com.chs.boot.common.util.CommonUtil.nullToEmpty;
 import static com.chs.boot.common.util.CommonUtil.replaceSidoName;
+import static com.chs.boot.common.util.MyBatisUtil.isEmpty;
 import static com.chs.boot.common.util.MyBatisUtil.isNotEmpty;
 import static com.chs.boot.common.util.StringUtil.getNewLineString;
 import static com.chs.boot.common.util.StringUtil.getTabString;
@@ -84,7 +85,19 @@ public class GenerateService {
                     doTableJob(tepGenMasterInfoEO.getPackageNo(),
                         tepGenMasterInfoEO.getPackageName(),
                         tepGenMasterInfoEO.getTableName());
+                } else if (tepGenMasterInfoEO.getMethodType().equals("L")) {
+                    doLookupJob(tepGenMasterInfoEO.getPackageNo(),
+                        tepGenMasterInfoEO.getPackageName(),
+                        tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
+                        tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
+                        tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
+                        tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
+                        tepGenMasterInfoEO.getLookupType(),
+                        tepGenMasterInfoEO.getControllerMethodName(),
+                        tepGenMasterInfoEO.getControllerDatasetMethodSeq()
+                    );
                 }
+
             });
             //sql controller method 처리
             Map<Long, String> controllerMethodMap = new HashMap<>();
@@ -109,6 +122,25 @@ public class GenerateService {
             makeControllerJava(packageNo, packageName);
         }
     }
+
+    public void doLookupJob(Long packageNo, String packageName, String methodType,
+        String methodName,
+        String sqlStmt, String voName, String controllerYn, String serviceYn, String initYn,
+        Long initOrderSeq, String lookupType, String controllerMethodName, Long datasetSeq) {
+        if (isEmpty(methodName)) {
+            methodName =
+                "retrieve" + CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), true, '_'
+                );
+        }
+//        insertSqlServiceMethod(packageNo, packageName, voName, voConditionName, methodName);
+        insertLookupServiceMethod(packageNo, packageName, methodName, lookupType);
+        insertControllerUnitForLookup(packageNo, packageName, controllerMethodName, methodName,
+            lookupType, datasetSeq);
+//        insertControllerUnitForSql(packageNo, packageName,
+//            isNotEmpty(controllerMethodName) ? controllerMethodName : methodName, methodName,
+//            voConditionName, voName, datasetSeq == null ? 0 : datasetSeq);
+    }
+
 
     public void doSqlJob(Long packageNo, String packageName, String methodType, String methodName,
         String sqlStmt, String voName, String controllerYn, String serviceYn, String initYn,
@@ -286,6 +318,80 @@ public class GenerateService {
                 .build()));
     }
 
+    private void insertControllerUnitForLookup(Long packageNo, String packageName,
+        String controllerMethodName, String methodName,
+        String lookupType, Long datasetSeq) {
+        //insert method 만들기
+        String controllerPackageName = packageName + ".controller";
+        String methodAccessor = "public";
+        String controllerClassName =
+            upperCaseFirst(lastIndexString(packageName, ".")) + "Controller";
+
+        String methodAnnotationName = null;
+        String methodReturnClassName = "ResponseModel";
+        String methodParamClassName = "@RequestBody RequestModel";
+        String methodParamInstantName = "requestModel";
+        String methodContents = getControllerUnitLookupString(packageName, methodName, lookupType,
+            datasetSeq);
+
+        coreGenerateMapper.insertTepGenControllerUnitMethodList(List.of(
+            TepGenControllerUnitMethodEO.builder().controllerPackageName(controllerPackageName)
+                .packageNo(packageNo).controllerClassName(controllerClassName)
+                .methodAnnotationName(methodAnnotationName).methodAccessor(methodAccessor)
+                .controllerMethodName(controllerMethodName)
+                .methodReturnClassName(methodReturnClassName).methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
+                .datasetSeq(datasetSeq)
+                .build()));
+    }
+
+    private String getControllerUnitLookupString(String packageName, String methodName,
+        String lookupType, Long datasetSeq) {
+        String returnString;
+        String templateString = getTemplateSqlStmtString("controllerJavaRetrieveUnit");
+
+        String urlPath = lastIndexString(packageName, ".");
+//        String conditionVOName = CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT),true,'_');
+        String conditionVOName = "LookupValuesVO";
+        String voName = "LookupValuesVO";
+        String conditionVOInstantName =
+            CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), false, '_')
+                + "LookupConditionVO";
+        String voInstantName = CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), false, '_')
+            + "LookupVO";
+
+//        String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
+        String datasetName =
+            CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), false, '_') + "DatasetName";
+
+        String baseURL = BOF.getLocalBaseURL() + BOF.getLocalUrlContext();
+
+        returnString = templateString;
+        returnString = returnString.replace("@urlPath", urlPath);
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@conditionVOName", conditionVOName);
+        returnString = returnString.replace("@conditionVOInstantName", conditionVOInstantName);
+
+        returnString = returnString.replace("@voName", voName);
+        returnString = returnString.replace("@voInstantName", voInstantName);
+
+        returnString = returnString.replace("@datasetName", datasetName);
+
+        returnString = returnString.replace("@aURL", baseURL);
+        returnString = returnString.replace("@datasetSeq", datasetSeq.toString());
+        if (datasetSeq == 0) {
+            returnString = returnString.replace("//@0", "");
+            returnString = returnString.replace("//@1", "//");
+        } else {
+            returnString = returnString.replace("//@0", "//");
+            returnString = returnString.replace("//@1", "");
+        }
+//        String simpleDataSetName = datasetName + "Dataset";
+
+        return returnString;
+    }
+
     private void insertControllerUnitForSql(Long packageNo, String packageName,
         String controllerMethodName, String methodName,
         String conditionVOName, String voName, Long datasetSeq) {
@@ -294,7 +400,7 @@ public class GenerateService {
         String methodAccessor = "public";
         String controllerClassName =
             upperCaseFirst(lastIndexString(packageName, ".")) + "Controller";
-        ;
+
         String methodAnnotationName = null;
         String methodReturnClassName = "ResponseModel";
         String methodParamClassName = "@RequestBody RequestModel";
@@ -316,7 +422,7 @@ public class GenerateService {
 
     private String getControllerUnitSqlString(String packageName, String methodName,
         String conditionVOName, String voName, Long datasetSeq) {
-        String returnString = "";
+        String returnString;
         String templateString = getTemplateSqlStmtString("controllerJavaRetrieveUnit");
 
         String urlPath = lastIndexString(packageName, ".");
@@ -348,14 +454,14 @@ public class GenerateService {
             returnString = returnString.replace("//@0", "//");
             returnString = returnString.replace("//@1", "");
         }
-        String simpleDataSetName = datasetName + "Dataset";
+//        String simpleDataSetName = datasetName + "Dataset";
 
         return returnString;
     }
 
     private String getControllerSqlString(Long packageNo, String packageName,
         String controllerMethodName) {
-        String returnString = "";
+        String returnString;
         String templateString = getTemplateSqlStmtString("ControllerJavaRetrieveMethod");
 
         String urlPath = lastIndexString(packageName, ".");
@@ -378,7 +484,7 @@ public class GenerateService {
         });
 
         returnString = returnString.replace("@aURL", baseURL);
-        returnString = returnString.replace("@conditionUnitString",conditionUnitString);
+        returnString = returnString.replace("@conditionUnitString", conditionUnitString);
 //        String demoContents = getDemoContents(tableName);
 //        returnString = returnString.replace("@simpleDataSetName", simpleDataSetName);
 //        returnString = returnString.replace("@demoContents", demoContents);
@@ -638,6 +744,34 @@ public class GenerateService {
                 .methodParamClassName(methodParamClassName)
                 .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
                 .tableName(tableName).addDatasetParam("Y").build()));
+    }
+
+    private void insertLookupServiceMethod(Long packageNo, String packageName, String methodName,
+        String lookupType) {
+        String servicePackageName = packageName + ".service";
+        String serviceClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Service";
+        String method_accessor = "public";
+        String methodReturnClassName = "List<LookupValuesVO>";
+        String methodParamClassName = "LookupValuesVO";
+        String methodParamInstantName = "conditionVO";
+        String methodContents = getLookupMethodString(packageNo, methodName, lookupType);
+
+        coreGenerateMapper.insertMultiTepGenServiceMethodInfo(List.of(
+            TepGenServiceMethodInfoEO.builder().packageNo(packageNo)
+                .servicePackageName(servicePackageName).serviceClassName(serviceClassName)
+                .methodAccessor(method_accessor).methodReturnClassName(methodReturnClassName)
+                .methodName(methodName).methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
+                .addDatasetParam("Y").build()));
+    }
+
+    private String getLookupMethodString(Long packageNo, String methodName,
+        String lookupType) {
+        String returnString = "";
+        returnString = getTemplateSqlStmtString("serviceJavaLookup");
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@lookupType", lookupType);
+        return returnString;
     }
 
     private void insertSqlServiceMethod(Long packageNo, String packageName, String voName,
