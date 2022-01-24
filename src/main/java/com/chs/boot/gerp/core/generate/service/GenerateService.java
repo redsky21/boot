@@ -170,6 +170,18 @@ public class GenerateService {
 
 
         });
+        //api Interface 추가
+        StringBuilder apiString = new StringBuilder("");
+        TepGenModelInfoEO apiEO = new TepGenModelInfoEO();
+        apiEO.setPackageNo(packageNo);
+        Map<String,String> apiMap = new HashMap<>();
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(apiEO).stream().forEach(
+            tepGenModelInfoEO1 -> {
+                apiMap.put(tepGenModelInfoEO1.
+            }
+        );
+
+
         returnString = new StringBuilder(
             tsMainTemplateString.replace("//@interfaceContent", contentString));
         return returnString.toString();
