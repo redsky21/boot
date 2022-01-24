@@ -23,4 +23,5 @@ public class TepGenModelInfoEO {
     private String lookupType;
     private String controllerMethodName;
     private Long controllerDatasetMethodSeq;
+    private String apiInterfaceParam;
 }

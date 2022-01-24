@@ -911,7 +911,7 @@
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
-
+    ,api_interface_param
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -932,7 +932,7 @@
       ,#{item.lookupType}
       ,#{item.controllerMethodName}
       ,#{item.controllerDatasetMethodSeq}
-
+      ,#{item.apiInterfaceParam}
       )
     </foreach>
   </insert>
@@ -957,7 +957,7 @@
       ,lookup_type = #{item.lookupType}
       ,controller_method_name = #{item.controllerMethodName}
       ,controller_dataset_method_seq = #{item.controllerDatasetMethodSeq}
-
+      ,api_interface_param = #{item.apiInterfaceParam}
       WHERE 1=1
       AND model_seq = #{item.modelSeq}
     </foreach>
@@ -994,7 +994,7 @@
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
-
+    ,api_interface_param
     FROM tep_gen_model_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -1026,6 +1026,7 @@
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
+    ,api_interface_param
     FROM tep_gen_model_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(modelSeq)'>AND
@@ -1067,6 +1068,14 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(datasetName)'>AND
         dataset_name=#{datasetName}
       </if>
+
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceParam)'>AND
+        api_interface_param = #{item.apiInterfaceParam}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerMethodName)'>AND
+        controller_method_name = #{item.controllerMethodName}
+      </if>
+
     </where>
   </select>
 </mapper>

@@ -203,6 +203,7 @@ public class GenerateService {
             tepGenModelInfoEO.setLookupType(lookupType);
             tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
+            tepGenModelInfoEO.setApiInterfaceParam("I"+upperCaseFirst(controllerMethodName)+"ApiParam");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         }
     }
@@ -1625,6 +1626,7 @@ public class GenerateService {
                 lowerCaseFirst(replaceLast(voClassName, "VO", "")) + "Dataset");
             tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
+            tepGenModelInfoEO.setApiInterfaceParam("I"+upperCaseFirst(controllerMethodName)+"ApiParam");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -1959,6 +1961,7 @@ public class GenerateService {
                 tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
                 tepGenModelInfoEO.setControllerDatasetMethodSeq(
                     datasetMethodSeq == null ? 0 : datasetMethodSeq);
+                tepGenModelInfoEO.setApiInterfaceParam("I"+upperCaseFirst(controllerMethodName)+"ApiParam");
                 coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 
             }
