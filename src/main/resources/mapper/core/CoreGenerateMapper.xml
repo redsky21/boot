@@ -908,6 +908,10 @@
     ,null_yn
     ,lookup_yn
     ,dataset_name
+    ,lookup_type
+    ,controller_method_name
+    ,controller_dataset_method_seq
+
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -925,6 +929,10 @@
       ,#{item.nullYn}
       ,#{item.lookupYn}
       ,#{item.datasetName}
+      ,#{item.lookupType}
+      ,#{item.controllerMethodName}
+      ,#{item.controllerDatasetMethodSeq}
+
       )
     </foreach>
   </insert>
@@ -946,6 +954,10 @@
       ,null_yn = #{item.nullYn}
       ,lookup_yn = #{item.lookupYn}
       ,dataset_name = #{item.datasetName}
+      ,lookup_type = #{item.lookupType}
+      ,controller_method_name = #{item.controllerMethodName}
+      ,controller_dataset_method_seq = #{item.controllerDatasetMethodSeq}
+
       WHERE 1=1
       AND model_seq = #{item.modelSeq}
     </foreach>
@@ -979,6 +991,10 @@
     ,null_yn
     ,lookup_yn
     ,dataset_name
+    ,lookup_type
+    ,controller_method_name
+    ,controller_dataset_method_seq
+
     FROM tep_gen_model_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -1007,6 +1023,9 @@
     ,null_yn
     ,lookup_yn
     ,dataset_name
+    ,lookup_type
+    ,controller_method_name
+    ,controller_dataset_method_seq
     FROM tep_gen_model_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(modelSeq)'>AND

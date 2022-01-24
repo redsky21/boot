@@ -122,7 +122,57 @@ public class GenerateService {
             makeServiceJava(packageNo, packageName);
             makeServiceImplJava(packageNo, packageName);
             makeControllerJava(packageNo, packageName);
+            makeReactTSFile(packageNo, packageName);
         }
+    }
+
+    private String getReactTsString(Long packageNo) {
+        StringBuilder returnString = new StringBuilder("");
+        TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
+        tepGenModelInfoEO.setPackageNo(packageNo);
+        tepGenModelInfoEO.setLookupYn("N");
+        Map<String, String> interfaceNameMap = new HashMap<>();
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream()
+            .forEach(tepGenModelInfoEO1 -> {
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
+                        interfaceNameMap.put(tepGenModelInfoEO1.getInterfaceName(),
+                            tepGenModelInfoEO1.getDatasetName());
+                    }
+                }
+            );
+        String tsMainTemplateString = getTemplateSqlStmtString("reactType");
+        StringBuilder contentString = new StringBuilder("");
+        interfaceNameMap.forEach((interfaceName, datasetName) -> {
+            String reactTypeInterfaceContent = getTemplateSqlStmtString(
+                "reactTypeInterfaceContent");
+
+            TepGenModelInfoEO rowConditionEO = new TepGenModelInfoEO();
+            rowConditionEO.setPackageNo(packageNo);
+            rowConditionEO.setLookupYn("N");
+            rowConditionEO.setInterfaceName(interfaceName);
+            StringBuilder columnString = new StringBuilder("");
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(rowConditionEO).stream()
+                .forEach(rowEO -> {
+                    String reactTypeInterfaceContentAtom = getTemplateSqlStmtString(
+                        "reactTypeInterfaceContentAtom");
+                    reactTypeInterfaceContentAtom = reactTypeInterfaceContentAtom.replace(
+                        "@memberName", rowEO.getMemberName());
+                    reactTypeInterfaceContentAtom = reactTypeInterfaceContentAtom.replace("@tsType",
+                        rowEO.getTsType());
+                    columnString.append(getNewLineString()).append(reactTypeInterfaceContentAtom);
+                });
+            reactTypeInterfaceContent = reactTypeInterfaceContent.replace("@interfaceName",
+                interfaceName);
+            reactTypeInterfaceContent = reactTypeInterfaceContent.replace("@interfaceMemberContent",
+                columnString);
+
+            contentString.append(getNewLineString()).append(reactTypeInterfaceContent);
+
+
+        });
+        returnString = new StringBuilder(
+            tsMainTemplateString.replace("//@interfaceContent", contentString));
+        return returnString.toString();
     }
 
     public void doLookupJob(Long packageNo, String packageName, String methodType,
@@ -141,6 +191,20 @@ public class GenerateService {
 //        insertControllerUnitForSql(packageNo, packageName,
 //            isNotEmpty(controllerMethodName) ? controllerMethodName : methodName, methodName,
 //            voConditionName, voName, datasetSeq == null ? 0 : datasetSeq);
+        if (isNotNullAndEmpty(controllerMethodName)) {
+            TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
+            tepGenModelInfoEO.setPackageNo(packageNo);
+            tepGenModelInfoEO.setPackageName(packageName);
+            tepGenModelInfoEO.setDatasetName(
+                CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), false, '_') + "Dataset");
+            tepGenModelInfoEO.setLookupYn("Y");
+            tepGenModelInfoEO.setNullYn("Y");
+            tepGenModelInfoEO.setInterfaceName("ILookupData");
+            tepGenModelInfoEO.setLookupType(lookupType);
+            tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
+            tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
+            coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
+        }
     }
 
 
@@ -156,10 +220,12 @@ public class GenerateService {
             .equals("VO")) {
             voName = voName + "VO";
         }
-        makeVOFile(packageNo, packageName, voName, resultMap);
+        makeVOFile(packageNo, packageName, voName, resultMap,
+            isEmpty(controllerMethodName) ? methodName : controllerMethodName, datasetSeq);
         //2. makeConditionVO
         String voConditionName = replaceLast(voName, "VO", "ConditionVO");
-        makeVOFile(packageNo, packageName, voConditionName, resultMap);
+        makeVOFile(packageNo, packageName, voConditionName, resultMap,
+            isEmpty(controllerMethodName) ? methodName : controllerMethodName, datasetSeq);
 
         //3. insert mapper info
 //        insertMapperMethodForSql(packageNo, packageName, tableName, eoName);
@@ -178,7 +244,9 @@ public class GenerateService {
 
     public void doTableJob(Long packageNo, String packageName, String tableName) {
         //1 make EO File
-        String eoName = makeEOFile(packageNo, packageName, tableName);
+        String methodName =
+            "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_') + "List";
+        String eoName = makeEOFile(packageNo, packageName, tableName, methodName);
         //2 insert mapper info
         insertMapperMethodForTable(packageNo, packageName, tableName, eoName);
         //3. insert service info
@@ -236,6 +304,18 @@ public class GenerateService {
         return returnMap;
     }
 
+    private void makeReactTSFile(Long packageNo, String packageName) {
+        String tsString = getReactTsString(packageNo);
+        String[] g = packageName.split("[.]");
+        String lastPackName = g[g.length - 1];
+        createFrontFile(packageName, upperCaseFirst(lastPackName) + ".types.ts", tsString);
+        //file 생성정보
+        coreGenerateMapper.insertMulti(List.of(
+            TepGenFileInfoEO.builder().fileName(upperCaseFirst(lastPackName) + ".types.ts")
+                .packageName(packageName).packageNo(packageNo).fileType("controller")
+                .fileContents(tsString).build()));
+
+    }
 
     public String makeControllerJava(Long packageNo, String packageName) {
         String controllerJavaFileName = "";
@@ -360,8 +440,9 @@ public class GenerateService {
         String conditionVOInstantName =
             CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), false, '_')
                 + "LookupConditionVO";
-        String voInstantName = CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), false, '_')
-            + "LookupVO";
+        String voInstantName =
+            CaseUtils.toCamelCase(lookupType.toLowerCase(Locale.ROOT), false, '_')
+                + "LookupVO";
 
 //        String datasetName = CaseUtils.toCamelCase(tableName, false, '_') + "DatasetName";
         String datasetName =
@@ -1496,9 +1577,11 @@ public class GenerateService {
         return returnString;
     }
 
-    public String makeEOFile(Long packageNo, String packageName, String tableName) {
+    public String makeEOFile(Long packageNo, String packageName, String tableName,
+        String controllerMethodName) {
         String eoClassName = CaseUtils.toCamelCase(tableName, true, '_') + "EO";
-        String eoString = getEOString(packageNo,packageName, tableName, eoClassName);
+        String eoString = getEOString(packageNo, packageName, tableName, eoClassName,
+            controllerMethodName, 0L);
         String fileName = eoClassName + ".java";
 
         createFile(packageName, fileName, eoString);
@@ -1510,7 +1593,7 @@ public class GenerateService {
     }
 
     public String makeVOFile(Long packageNo, String packageName, String voClassName,
-        LinkedHashMap<String, String> resultMap) {
+        LinkedHashMap<String, String> resultMap, String controllerMethodName, Long datasetSeq) {
 
         String voString = getVOString(packageName, resultMap, voClassName);
         String fileName = voClassName + ".java";
@@ -1527,18 +1610,21 @@ public class GenerateService {
             });
         }
 
-        resultMap.forEach((memberName,javaType)->{
+        resultMap.forEach((memberName, javaType) -> {
             TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
             tepGenModelInfoEO.setPackageNo(packageNo);
             tepGenModelInfoEO.setPackageName(packageName);
             tepGenModelInfoEO.setVoName(voClassName);
             tepGenModelInfoEO.setJavaType(javaType);
             tepGenModelInfoEO.setTsType(tsTypeMap.get(javaType));
-            tepGenModelInfoEO.setInterfaceName("I"+replaceLast(voClassName, "VO", ""));
+            tepGenModelInfoEO.setInterfaceName("I" + replaceLast(voClassName, "VO", ""));
             tepGenModelInfoEO.setMemberName(memberName);
             tepGenModelInfoEO.setNullYn("Y");
             tepGenModelInfoEO.setLookupYn("N");
-            tepGenModelInfoEO.setDatasetName(lowerCaseFirst(replaceLast(voClassName, "VO", ""))+"Dataset");
+            tepGenModelInfoEO.setDatasetName(
+                lowerCaseFirst(replaceLast(voClassName, "VO", "")) + "Dataset");
+            tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
+            tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -1759,6 +1845,33 @@ public class GenerateService {
         return mapperJavaFileName;
     }
 
+    public void createFrontFile(String packageName, String fileName, String fileContents) {
+        File mainDir = new File("c:" + File.separatorChar + "chsWorkNew");
+        //한폴더에 몰자
+        String[] g = packageName.split("[.]");
+        String strDir = g[g.length - 1];
+        String dirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir
+            + File.separatorChar + "front";
+        if (!mainDir.isDirectory()) {
+            mainDir.mkdir();
+        }
+        File dir = new File(dirName);
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+        Path filePath = Paths.get(dirName, File.separatorChar + fileName);
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+
+        try {
+            fw = new FileWriter(filePath.toString(), false);
+            bw = new BufferedWriter(fw);
+            bw.write(fileContents);
+            bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void createFile(String packageName, String fileName, String fileContents) {
         File mainDir = new File("c:" + File.separatorChar + "chsWorkNew");
@@ -1810,7 +1923,8 @@ public class GenerateService {
         return returnString;
     }
 
-    public String getEOString(Long packageNo, String packageName, String tableName, String eoClassName) {
+    public String getEOString(Long packageNo, String packageName, String tableName,
+        String eoClassName, String controllerMethodName, Long datasetMethodSeq) {
         String returnString = "";
         //1 get EO Template
         String templateString = getTemplateSqlStmtString("EO");
@@ -1831,20 +1945,24 @@ public class GenerateService {
         }
 
         //2 get Replace String
-        List<TepGenModelInfoEO> tepGenModelInfoEOList  = new ArrayList<>();
-        String replaceString = getVOColumnString(coreColumnVOList, 1,tepGenModelInfoEOList);
+        List<TepGenModelInfoEO> tepGenModelInfoEOList = new ArrayList<>();
+        String replaceString = getVOColumnString(coreColumnVOList, 1, tepGenModelInfoEOList);
         tepGenModelInfoEOList.stream().forEach(tepGenModelInfoEO ->
             {
                 tepGenModelInfoEO.setPackageNo(packageNo);
                 tepGenModelInfoEO.setPackageName(packageName);
                 tepGenModelInfoEO.setVoName(eoClassName);
-                tepGenModelInfoEO.setInterfaceName("I"+replaceLast(eoClassName, "EO", ""));
+                tepGenModelInfoEO.setInterfaceName("I" + replaceLast(eoClassName, "EO", ""));
                 tepGenModelInfoEO.setNullYn("Y");
-                tepGenModelInfoEO.setDatasetName(lowerCaseFirst(replaceLast(eoClassName, "EO", ""))+"Dataset");
+                tepGenModelInfoEO.setDatasetName(
+                    lowerCaseFirst(replaceLast(eoClassName, "EO", "")) + "Dataset");
+                tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
+                tepGenModelInfoEO.setControllerDatasetMethodSeq(
+                    datasetMethodSeq == null ? 0 : datasetMethodSeq);
                 coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 
             }
-            );
+        );
         //3 eo name replace
         returnString = templateString.replace("//@EONameHere", eoClassName);
         returnString = returnString.replace("//@GenHere", replaceString);
@@ -1872,7 +1990,8 @@ public class GenerateService {
         return result;
     }
 
-    public String getVOColumnString(List<CoreColumnVO> coreColumnVOList, int tabInx,List<TepGenModelInfoEO> tepGenModelInfo) {
+    public String getVOColumnString(List<CoreColumnVO> coreColumnVOList, int tabInx,
+        List<TepGenModelInfoEO> tepGenModelInfo) {
         String tabString = getTabString(tabInx);
         StringBuilder returnString = new StringBuilder("");
         if (getListSize(coreColumnVOList) > 0) {
@@ -1902,12 +2021,15 @@ public class GenerateService {
 
                 TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
                 tepGenModelInfoEO.setColumnType(coreColumnVO.getDataType());
-                tepGenModelInfoEO.setJavaType(isNotNullAndEmpty(dataTypeMap.get(coreColumnVO.getDataType()))
-                    ? dataTypeMap.get(coreColumnVO.getDataType()) : "String");
+                tepGenModelInfoEO.setJavaType(
+                    isNotNullAndEmpty(dataTypeMap.get(coreColumnVO.getDataType()))
+                        ? dataTypeMap.get(coreColumnVO.getDataType()) : "String");
                 tepGenModelInfoEO.setColumnName(coreColumnVO.getColumnName());
-                tepGenModelInfoEO.setMemberName(CaseUtils.toCamelCase(coreColumnVO.getColumnName(), false, '_'));
-                tepGenModelInfoEO.setTsType(isNotNullAndEmpty(tsTypeMap.get(coreColumnVO.getDataType()))
-                    ? tsTypeMap.get(coreColumnVO.getDataType()) : "string");
+                tepGenModelInfoEO.setMemberName(
+                    CaseUtils.toCamelCase(coreColumnVO.getColumnName(), false, '_'));
+                tepGenModelInfoEO.setTsType(
+                    isNotNullAndEmpty(tsTypeMap.get(coreColumnVO.getDataType()))
+                        ? tsTypeMap.get(coreColumnVO.getDataType()) : "string");
                 tepGenModelInfoEO.setLookupYn("N");
                 finalTepGenModelInfo.add(tepGenModelInfoEO);
             });
