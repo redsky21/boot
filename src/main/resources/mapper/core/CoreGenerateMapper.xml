@@ -1070,13 +1070,14 @@
       </if>
 
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceParam)'>AND
-        api_interface_param = #{item.apiInterfaceParam}
+        api_interface_param = #{apiInterfaceParam}
       </if>
+
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerMethodName)'>AND
-        controller_method_name = #{item.controllerMethodName}
+        controller_method_name = #{controllerMethodName}
       </if>
 
     </where>
-    order by controller_dataset_method_seq
+
   </select>
 </mapper>

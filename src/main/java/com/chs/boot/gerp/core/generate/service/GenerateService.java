@@ -174,26 +174,47 @@ public class GenerateService {
         StringBuilder apiString = new StringBuilder("");
         TepGenModelInfoEO apiEO = new TepGenModelInfoEO();
         apiEO.setPackageNo(packageNo);
-        Map<String,String> apiMap = new HashMap<>();
+        Map<String, String> apiMap = new HashMap<>();
         coreGenerateMapper.retrieveTepGenModelInfoListAll(apiEO).stream().forEach(
             tepGenModelInfoEO1 -> {
-                apiMap.put(tepGenModelInfoEO1.getApiInterfaceParam(),"S");
+                apiMap.put(tepGenModelInfoEO1.getApiInterfaceParam(), "S");
             }
         );
-        apiMap.forEach((apiInterfaceParam,dummy)->{
+        apiMap.forEach((apiInterfaceParam, dummy) -> {
             TepGenModelInfoEO condtionFindEO = new TepGenModelInfoEO();
             condtionFindEO.setPackageNo(packageNo);
             condtionFindEO.setApiInterfaceParam(apiInterfaceParam);
-            String conditionType = coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream().filter(
-                tepGenModelInfoEO1 -> tepGenModelInfoEO1.getVoName().indexOf("ConditionVO")>=0
-            ).findFirst().get().getInterfaceName();
-            String reactTypeInterfaceContentApi = getTemplateSqlStmtString("reactTypeInterfaceContentApi");
-            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("@apiInterfaceParam",apiInterfaceParam);
-            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("@conditionType",conditionType);
-            apiString.append(getNewLineString()).append(reactTypeInterfaceContentApi);
+            String conditionType = coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO)
+                .stream().filter(
+                    tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getVoName())
+                        && tepGenModelInfoEO1.getVoName().indexOf("ConditionVO") >= 0
+                ).findFirst().orElseGet(() -> {
+                    return coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO)
+                        .stream().findFirst().get();
+                }).getInterfaceName();
+            String reactTypeInterfaceContentApi = getTemplateSqlStmtString(
+                "reactTypeInterfaceContentApi");
+            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace(
+                "@apiInterfaceParam", apiInterfaceParam);
+            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("@conditionType",
+                conditionType);
+
+            StringBuilder datasetString = new StringBuilder("");
+            LinkedHashMap<String, String> datasetMap = new LinkedHashMap();
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream().filter(tepGenModelInfoEO1 ->
+                    isEmpty(tepGenModelInfoEO1.getVoName())||tepGenModelInfoEO1.getVoName().indexOf("ConditionVO")<0 )
+                .forEach(tepGenModelInfoEO1 -> {
+                    datasetMap.put(tepGenModelInfoEO1.getDatasetName(), "S");
+                });
+            datasetMap.forEach((dataSetName, dummy2) -> {
+                datasetString.append(getNewLineString()).append(getTabString(2))
+                    .append(getTemplateSqlStmtString("reactTypeInterfaceApiRespDatasetContents")
+                        .replace("@datasetName", dataSetName));
+            });
+            apiString.append(getNewLineString()).append(
+                reactTypeInterfaceContentApi.replace("@apiRespDatasetContents", datasetString));
         });
         contentString.append(apiString.toString());
-
 
         returnString = new StringBuilder(
             tsMainTemplateString.replace("//@interfaceContent", contentString));
@@ -228,7 +249,8 @@ public class GenerateService {
             tepGenModelInfoEO.setLookupType(lookupType);
             tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
-            tepGenModelInfoEO.setApiInterfaceParam("I"+upperCaseFirst(controllerMethodName)+"ApiParam");
+            tepGenModelInfoEO.setApiInterfaceParam(
+                "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         }
     }
@@ -1651,7 +1673,8 @@ public class GenerateService {
                 lowerCaseFirst(replaceLast(voClassName, "VO", "")) + "Dataset");
             tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
-            tepGenModelInfoEO.setApiInterfaceParam("I"+upperCaseFirst(controllerMethodName)+"ApiParam");
+            tepGenModelInfoEO.setApiInterfaceParam(
+                "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -1986,7 +2009,8 @@ public class GenerateService {
                 tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
                 tepGenModelInfoEO.setControllerDatasetMethodSeq(
                     datasetMethodSeq == null ? 0 : datasetMethodSeq);
-                tepGenModelInfoEO.setApiInterfaceParam("I"+upperCaseFirst(controllerMethodName)+"ApiParam");
+                tepGenModelInfoEO.setApiInterfaceParam(
+                    "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
                 coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 
             }
