@@ -6,4 +6,5 @@ import lombok.Data;
 public class ConvertDataTypeVO {
     private String mariaDataType;
     private String javaDataType;
+    private String tsDataType;
 }

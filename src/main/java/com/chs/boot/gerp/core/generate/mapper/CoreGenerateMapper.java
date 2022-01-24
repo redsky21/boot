@@ -12,6 +12,7 @@ import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoConditionVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenMapperMethodInfoVO;
 import com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO;
+import com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import java.util.LinkedHashMap;
@@ -57,4 +58,9 @@ public interface CoreGenerateMapper {
     List<TepGenControllerUnitMethodEO> retrieveTepGenControllerUnitMethodListByPk(List<TepGenControllerUnitMethodEO> tepGenControllerUnitMethodEOList);
     List<TepGenControllerUnitMethodEO> retrieveTepGenControllerUnitMethodListAll(TepGenControllerUnitMethodEO tepGenControllerUnitMethodEO);
     void clearMetaData(Long packageNo);
+    void insertTepGenModelInfoList(List<TepGenModelInfoEO> tepGenModelInfoEOList);
+    void updateTepGenModelInfoList(List<TepGenModelInfoEO> tepGenModelInfoEOList);
+    void deleteTepGenModelInfoList(List<TepGenModelInfoEO> tepGenModelInfoEOList);
+    List<TepGenModelInfoEO> retrieveTepGenModelInfoListByPk(List<TepGenModelInfoEO> tepGenModelInfoEOList);
+    List<TepGenModelInfoEO> retrieveTepGenModelInfoListAll(TepGenModelInfoEO tepGenModelInfoEO);
 }

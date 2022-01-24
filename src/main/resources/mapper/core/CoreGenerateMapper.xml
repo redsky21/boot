@@ -8,7 +8,7 @@
 
   <select id="getConvertDataType"
     resultType="com.chs.boot.gerp.core.generate.model.ConvertDataTypeVO">
-    SELECT maria_Data_type, java_Data_type
+    SELECT maria_Data_type, java_Data_type, ts_data_type
     FROM tep_data_type
   </select>
   <!--retrieveTepGenTemplate-->
@@ -885,5 +885,169 @@
     delete
     from tep_gen_mapper_method_info
     where package_no = #{packageNo};
+    delete
+    from tep_gen_model_info
+    where package_no = #{packageNo};
+
+
   </delete>
+  <insert id="insertTepGenModelInfoList"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO">
+    INSERT INTO tep_gen_model_info
+    (
+    model_seq
+    ,package_no
+    ,package_name
+    ,column_name
+    ,column_type
+    ,vo_name
+    ,interface_name
+    ,member_name
+    ,java_type
+    ,ts_type
+    ,null_yn
+    ,lookup_yn
+    ,dataset_name
+    )
+    VALUES
+    <foreach separator="," item="item" collection="list">
+      (
+      #{item.modelSeq}
+      ,#{item.packageNo}
+      ,#{item.packageName}
+      ,#{item.columnName}
+      ,#{item.columnType}
+      ,#{item.voName}
+      ,#{item.interfaceName}
+      ,#{item.memberName}
+      ,#{item.javaType}
+      ,#{item.tsType}
+      ,#{item.nullYn}
+      ,#{item.lookupYn}
+      ,#{item.datasetName}
+      )
+    </foreach>
+  </insert>
+  <update id="updateTepGenModelInfoList"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO">
+    <foreach separator=";" item="item" collection="list">
+      UPDATE tep_gen_model_info
+      SET
+      model_seq = #{item.modelSeq}
+      ,package_no = #{item.packageNo}
+      ,package_name = #{item.packageName}
+      ,column_name = #{item.columnName}
+      ,column_type = #{item.columnType}
+      ,vo_name = #{item.voName}
+      ,interface_name = #{item.interfaceName}
+      ,member_name = #{item.memberName}
+      ,java_type = #{item.javaType}
+      ,ts_type = #{item.tsType}
+      ,null_yn = #{item.nullYn}
+      ,lookup_yn = #{item.lookupYn}
+      ,dataset_name = #{item.datasetName}
+      WHERE 1=1
+      AND model_seq = #{item.modelSeq}
+    </foreach>
+  </update>
+  <delete id="deleteTepGenModelInfoList"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO">
+    DELETE FROM tep_gen_model_info
+    <where>
+      <foreach collection="list" item="item" open="" close="" separator="OR">
+        (
+        model_seq = #{item.modelSeq}
+        )
+      </foreach>
+    </where>
+  </delete>
+  <select id="retrieveTepGenModelInfoListByPk"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO"
+  >
+    SELECT
+    model_seq
+    ,package_no
+    ,package_name
+    ,column_name
+    ,column_type
+    ,vo_name
+    ,interface_name
+    ,member_name
+    ,java_type
+    ,ts_type
+    ,null_yn
+    ,lookup_yn
+    ,dataset_name
+    FROM tep_gen_model_info
+    <where>
+      <foreach collection="list" item="item" open="" close="" separator="OR">
+        (
+        model_seq = #{item.modelSeq}
+        )
+      </foreach>
+    </where>
+  </select>
+  <select id="retrieveTepGenModelInfoListAll"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO"
+    resultType="com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO"
+  >
+    SELECT
+    uuid() as row_key
+    ,model_seq
+    ,package_no
+    ,package_name
+    ,column_name
+    ,column_type
+    ,vo_name
+    ,interface_name
+    ,member_name
+    ,java_type
+    ,ts_type
+    ,null_yn
+    ,lookup_yn
+    ,dataset_name
+    FROM tep_gen_model_info
+    <where>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(modelSeq)'>AND
+        model_seq=#{modelSeq}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND
+        package_no=#{packageNo}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(packageName)'>AND
+        package_name=#{packageName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(columnName)'>AND
+        column_name=#{columnName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(columnType)'>AND
+        column_type=#{columnType}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(voName)'>AND
+        vo_name=#{voName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(interfaceName)'>AND
+        interface_name=#{interfaceName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(memberName)'>AND
+        member_name=#{memberName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(javaType)'>AND
+        java_type=#{javaType}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(tsType)'>AND
+        ts_type=#{tsType}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(nullYn)'>AND
+        null_yn=#{nullYn}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(lookupYn)'>AND
+        lookup_yn=#{lookupYn}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(datasetName)'>AND
+        dataset_name=#{datasetName}
+      </if>
+    </where>
+  </select>
 </mapper>
