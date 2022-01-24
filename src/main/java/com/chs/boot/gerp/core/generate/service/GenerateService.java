@@ -200,19 +200,30 @@ public class GenerateService {
                 conditionType);
 
             StringBuilder datasetString = new StringBuilder("");
+            StringBuilder reqDatasetString = new StringBuilder("");
             LinkedHashMap<String, String> datasetMap = new LinkedHashMap();
-            coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream().filter(tepGenModelInfoEO1 ->
-                    isEmpty(tepGenModelInfoEO1.getVoName())||tepGenModelInfoEO1.getVoName().indexOf("ConditionVO")<0 )
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream()
+                .filter(tepGenModelInfoEO1 ->
+                    isEmpty(tepGenModelInfoEO1.getVoName())
+                        || tepGenModelInfoEO1.getVoName().indexOf("ConditionVO") < 0)
                 .forEach(tepGenModelInfoEO1 -> {
-                    datasetMap.put(tepGenModelInfoEO1.getDatasetName(), "S");
+                    datasetMap.put(tepGenModelInfoEO1.getDatasetName(),
+                        tepGenModelInfoEO1.getInterfaceName());
                 });
-            datasetMap.forEach((dataSetName, dummy2) -> {
+            datasetMap.forEach((dataSetName, interfaceName) -> {
                 datasetString.append(getNewLineString()).append(getTabString(2))
                     .append(getTemplateSqlStmtString("reactTypeInterfaceApiRespDatasetContents")
                         .replace("@datasetName", dataSetName));
+                reqDatasetString.append(getNewLineString()).append(getTabString(2))
+                    .append(getTemplateSqlStmtString("reactTypeInterfaceApiReqDatasetContents")
+                        .replace("@datasetName", dataSetName)
+                        .replace("@interfaceName", interfaceName));
+
+
             });
             apiString.append(getNewLineString()).append(
-                reactTypeInterfaceContentApi.replace("@apiRespDatasetContents", datasetString));
+                reactTypeInterfaceContentApi.replace("@apiRespDatasetContents", datasetString)
+                    .replace("@apiReqDatasetContents", reqDatasetString));
         });
         contentString.append(apiString.toString());
 
