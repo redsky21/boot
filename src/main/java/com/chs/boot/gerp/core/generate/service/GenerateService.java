@@ -177,9 +177,22 @@ public class GenerateService {
         Map<String,String> apiMap = new HashMap<>();
         coreGenerateMapper.retrieveTepGenModelInfoListAll(apiEO).stream().forEach(
             tepGenModelInfoEO1 -> {
-                apiMap.put(tepGenModelInfoEO1.
+                apiMap.put(tepGenModelInfoEO1.getApiInterfaceParam(),"S");
             }
         );
+        apiMap.forEach((apiInterfaceParam,dummy)->{
+            TepGenModelInfoEO condtionFindEO = new TepGenModelInfoEO();
+            condtionFindEO.setPackageNo(packageNo);
+            condtionFindEO.setApiInterfaceParam(apiInterfaceParam);
+            String conditionType = coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream().filter(
+                tepGenModelInfoEO1 -> tepGenModelInfoEO1.getVoName().indexOf("ConditionVO")>=0
+            ).findFirst().get().getInterfaceName();
+            String reactTypeInterfaceContentApi = getTemplateSqlStmtString("reactTypeInterfaceContentApi");
+            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("@apiInterfaceParam",apiInterfaceParam);
+            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("@conditionType",conditionType);
+            apiString.append(getNewLineString()).append(reactTypeInterfaceContentApi);
+        });
+        contentString.append(apiString.toString());
 
 
         returnString = new StringBuilder(
