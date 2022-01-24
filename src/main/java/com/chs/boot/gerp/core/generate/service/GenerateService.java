@@ -69,6 +69,7 @@ public class GenerateService {
         List<TepGenMasterInfoEO> mainList = coreGenerateMapper.retrieveTepGenMasterInfoListAll(
             tepGenMasterInfoConditionEO);
         if (isNotNullAndEmpty(mainList)) {
+            coreGenerateMapper.clearMetaData(packageNo);
             String packageName = mainList.stream().findFirst().get().getPackageName();
             mainList.stream().forEach(tepGenMasterInfoEO -> {
                 if (tepGenMasterInfoEO.getMethodType().equals("Q")) {

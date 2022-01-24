@@ -690,7 +690,8 @@
       </if>
     </where>
   </select>
-  <insert id="insertTepGenControllerUnitMethodList" parameterType="com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO">
+  <insert id="insertTepGenControllerUnitMethodList"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO">
     INSERT INTO tep_gen_controller_unit_method
     (
     method_seq
@@ -730,35 +731,37 @@
       )
     </foreach>
   </insert>
-  <update id="updateTepGenControllerUnitMethodList" parameterType="com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO">
+  <update id="updateTepGenControllerUnitMethodList"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO">
     <foreach separator=";" item="item" collection="list">
       UPDATE tep_gen_controller_unit_method
       SET
-      method_seq	=	#{item.methodSeq}
-      ,package_no	=	#{item.packageNo}
-      ,controller_package_name	=	#{item.controllerPackageName}
-      ,controller_class_name	=	#{item.controllerClassName}
-      ,method_annotation_name	=	#{item.methodAnnotationName}
-      ,method_accessor	=	#{item.methodAccessor}
-      ,method_return_class_name	=	#{item.methodReturnClassName}
-      ,controller_method_name	=	#{item.controllerMethodName}
-      ,dataset_seq	=	#{item.datasetSeq}
-      ,method_name	=	#{item.methodName}
-      ,method_param_class_name	=	#{item.methodParamClassName}
-      ,method_param_instant_name	=	#{item.methodParamInstantName}
-      ,method_contents	=	#{item.methodContents}
-      ,table_name	=	#{item.tableName}
-      ,add_dataset_param	=	#{item.addDatasetParam}
+      method_seq = #{item.methodSeq}
+      ,package_no = #{item.packageNo}
+      ,controller_package_name = #{item.controllerPackageName}
+      ,controller_class_name = #{item.controllerClassName}
+      ,method_annotation_name = #{item.methodAnnotationName}
+      ,method_accessor = #{item.methodAccessor}
+      ,method_return_class_name = #{item.methodReturnClassName}
+      ,controller_method_name = #{item.controllerMethodName}
+      ,dataset_seq = #{item.datasetSeq}
+      ,method_name = #{item.methodName}
+      ,method_param_class_name = #{item.methodParamClassName}
+      ,method_param_instant_name = #{item.methodParamInstantName}
+      ,method_contents = #{item.methodContents}
+      ,table_name = #{item.tableName}
+      ,add_dataset_param = #{item.addDatasetParam}
       WHERE 1=1
-      AND method_seq	=	#{item.methodSeq}
+      AND method_seq = #{item.methodSeq}
     </foreach>
   </update>
-  <delete id="deleteTepGenControllerUnitMethodList" parameterType="com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO">
+  <delete id="deleteTepGenControllerUnitMethodList"
+    parameterType="com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO">
     DELETE FROM tep_gen_controller_unit_method
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
         (
-        method_seq	=	#{item.methodSeq}
+        method_seq = #{item.methodSeq}
         )
       </foreach>
     </where>
@@ -787,7 +790,7 @@
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
         (
-        method_seq	=	#{item.methodSeq}
+        method_seq = #{item.methodSeq}
         )
       </foreach>
     </where>
@@ -815,22 +818,72 @@
     ,add_dataset_param
     FROM tep_gen_controller_unit_method
     <where>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodSeq)'>AND method_seq=#{methodSeq}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND package_no=#{packageNo}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerPackageName)'>AND controller_package_name=#{controllerPackageName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerClassName)'>AND controller_class_name=#{controllerClassName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodAnnotationName)'>AND method_annotation_name=#{methodAnnotationName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodAccessor)'>AND method_accessor=#{methodAccessor}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodReturnClassName)'>AND method_return_class_name=#{methodReturnClassName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerMethodName)'>AND controller_method_name=#{controllerMethodName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(datasetSeq)'>AND dataset_seq=#{datasetSeq}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodName)'>AND method_name=#{methodName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodParamClassName)'>AND method_param_class_name=#{methodParamClassName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodParamInstantName)'>AND method_param_instant_name=#{methodParamInstantName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodContents)'>AND method_contents=#{methodContents}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND table_name=#{tableName}</if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(addDatasetParam)'>AND add_dataset_param=#{addDatasetParam}</if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodSeq)'>AND
+        method_seq=#{methodSeq}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(packageNo)'>AND
+        package_no=#{packageNo}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerPackageName)'>AND
+        controller_package_name=#{controllerPackageName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerClassName)'>AND
+        controller_class_name=#{controllerClassName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodAnnotationName)'>AND
+        method_annotation_name=#{methodAnnotationName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodAccessor)'>AND
+        method_accessor=#{methodAccessor}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodReturnClassName)'>AND
+        method_return_class_name=#{methodReturnClassName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerMethodName)'>AND
+        controller_method_name=#{controllerMethodName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(datasetSeq)'>AND
+        dataset_seq=#{datasetSeq}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodName)'>AND
+        method_name=#{methodName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodParamClassName)'>AND
+        method_param_class_name=#{methodParamClassName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodParamInstantName)'>AND
+        method_param_instant_name=#{methodParamInstantName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(methodContents)'>AND
+        method_contents=#{methodContents}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(tableName)'>AND
+        table_name=#{tableName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(addDatasetParam)'>AND
+        add_dataset_param=#{addDatasetParam}
+      </if>
     </where>
     order by package_no,controller_method_name, dataset_seq
   </select>
+  <delete id="clearMetaData">
+    delete
+    from tep_gen_method_info
+    where package_no = #{packageNo};
+    delete
+    from tep_gen_service_method_info
+    where package_no = #{packageNo};
+    delete
+    from tep_gen_controller_method_info
+    where package_no = #{packageNo};
+    delete
+    from tep_gen_controller_unit_method
+    where package_no = #{packageNo};
+    delete
+    from tep_gen_file_info
+    where package_no = #{packageNo};
+    delete
+    from tep_gen_mapper_method_info
+    where package_no = #{packageNo};
+  </delete>
 </mapper>

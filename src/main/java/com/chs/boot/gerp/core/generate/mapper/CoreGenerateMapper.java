@@ -56,4 +56,5 @@ public interface CoreGenerateMapper {
     void deleteTepGenControllerUnitMethodList(List<TepGenControllerUnitMethodEO> tepGenControllerUnitMethodEOList);
     List<TepGenControllerUnitMethodEO> retrieveTepGenControllerUnitMethodListByPk(List<TepGenControllerUnitMethodEO> tepGenControllerUnitMethodEOList);
     List<TepGenControllerUnitMethodEO> retrieveTepGenControllerUnitMethodListAll(TepGenControllerUnitMethodEO tepGenControllerUnitMethodEO);
+    void clearMetaData(Long packageNo);
 }
