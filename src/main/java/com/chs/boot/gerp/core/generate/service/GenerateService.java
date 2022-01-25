@@ -4,7 +4,6 @@ import static com.chs.boot.common.constant.SystemConstant.BOF;
 import static com.chs.boot.common.util.CommonUtil.getListSize;
 import static com.chs.boot.common.util.CommonUtil.isNotNullAndEmpty;
 import static com.chs.boot.common.util.CommonUtil.nullToEmpty;
-import static com.chs.boot.common.util.CommonUtil.replaceSidoName;
 import static com.chs.boot.common.util.MyBatisUtil.isEmpty;
 import static com.chs.boot.common.util.MyBatisUtil.isNotEmpty;
 import static com.chs.boot.common.util.StringUtil.getNewLineString;
@@ -123,6 +122,7 @@ public class GenerateService {
             makeServiceImplJava(packageNo, packageName);
             makeControllerJava(packageNo, packageName);
             makeReactTSFile(packageNo, packageName);
+            makeReactUtilFile(packageNo, packageName);
         }
     }
 
@@ -196,9 +196,13 @@ public class GenerateService {
                 "reactTypeInterfaceContentApi");
             reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace(
                 "@apiInterfaceParam", apiInterfaceParam);
+
             reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("@conditionType",
                 conditionType);
-
+            if (apiInterfaceParam.startsWith("ISave")) {
+                reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("/*", "")
+                    .replace("*/", "");
+            }
             StringBuilder datasetString = new StringBuilder("");
             StringBuilder reqDatasetString = new StringBuilder("");
             LinkedHashMap<String, String> datasetMap = new LinkedHashMap();
@@ -232,6 +236,108 @@ public class GenerateService {
         return returnString.toString();
     }
 
+
+    private String getReactUtilString(Long packageNo) {
+        StringBuilder returnString = new StringBuilder("");
+        TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
+        tepGenModelInfoEO.setPackageNo(packageNo);
+        tepGenModelInfoEO.setLookupYn("N");
+        Map<String, String> interfaceNameMap = new HashMap<>();
+        Map<String, String> utilMethodMap = new HashMap<>();
+        Map<String, String> apiInterfaceParamMap = new HashMap<>();
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream()
+            .forEach(tepGenModelInfoEO1 -> {
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
+                        interfaceNameMap.put(tepGenModelInfoEO1.getInterfaceName(),
+                            tepGenModelInfoEO1.getApiInterfaceParam());
+                    }
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getUtilApiGetMethodName())) {
+                        utilMethodMap.put(tepGenModelInfoEO1.getUtilApiGetMethodName(),
+                            tepGenModelInfoEO1.getApiInterfaceParam());
+                    }
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getApiInterfaceParam())) {
+                        apiInterfaceParamMap.put(tepGenModelInfoEO1.getApiInterfaceParam(),
+                            "S");
+                    }
+
+                }
+            );
+
+        String tsMainTemplateString = getTemplateSqlStmtString("reactUtil");
+        StringBuilder apiString = new StringBuilder("");
+        AtomicReference<String> importString = new AtomicReference<>("");
+        interfaceNameMap.forEach((key, dummy) -> {
+            importString.set(importString + key + ",");
+        });
+        apiInterfaceParamMap.forEach((key, dummy) -> {
+            importString.set(importString + key + ",");
+        });
+        tsMainTemplateString = tsMainTemplateString.replace("@interfaceName",
+            importString.toString());
+
+        StringBuilder contentString = new StringBuilder("");
+        utilMethodMap.forEach((utilApiGetMethodName, apiInterfaceParam) -> {
+            String reactUtilContentApiInstance = getTemplateSqlStmtString(
+                "reactUtilContentApiInstance");
+            reactUtilContentApiInstance = reactUtilContentApiInstance.replace(
+                "@utilApiGetMethodName", utilApiGetMethodName);
+            reactUtilContentApiInstance = reactUtilContentApiInstance.replace(
+                "@apiInterfaceParam", apiInterfaceParam);
+
+            TepGenModelInfoEO condtionFindEO = new TepGenModelInfoEO();
+            condtionFindEO.setPackageNo(packageNo);
+            condtionFindEO.setUtilApiGetMethodName(utilApiGetMethodName);
+            String conditionType = coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO)
+                .stream().filter(
+                    tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getVoName())
+                        && tepGenModelInfoEO1.getVoName().indexOf("ConditionVO") >= 0
+                ).findFirst().orElseGet(() -> {
+                    return coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO)
+                        .stream().findFirst().get();
+                }).getInterfaceName();
+            reactUtilContentApiInstance = reactUtilContentApiInstance.replace("@conditionType",
+                conditionType);
+
+            StringBuilder datasetString = new StringBuilder("");
+            StringBuilder reqDatasetString = new StringBuilder("");
+            LinkedHashMap<String, String> datasetMap = new LinkedHashMap();
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream()
+                .filter(tepGenModelInfoEO1 ->
+                    isEmpty(tepGenModelInfoEO1.getVoName())
+                        || tepGenModelInfoEO1.getVoName().indexOf("ConditionVO") < 0)
+                .forEach(tepGenModelInfoEO1 -> {
+                    datasetMap.put(tepGenModelInfoEO1.getDatasetName(),
+                        tepGenModelInfoEO1.getInterfaceName());
+                });
+            datasetMap.forEach((dataSetName, interfaceName) -> {
+                datasetString.append(getNewLineString()).append(getTabString(2))
+                    .append(getTemplateSqlStmtString("reactUtilApiRespDemoContents")
+                        .replace("@datasetName", dataSetName)
+                        .replace("@interfaceName", interfaceName));
+                reqDatasetString.append(getNewLineString()).append(getTabString(2))
+                    .append(getTemplateSqlStmtString("reactUtilApiReqDemoContents")
+                        .replace("@datasetName", dataSetName)
+                        .replace("@interfaceName", interfaceName));
+
+
+            });
+            if (apiInterfaceParam.startsWith("ISave")) {
+                reactUtilContentApiInstance = reactUtilContentApiInstance.replace("/*", "")
+                    .replace("*/", "");
+            }
+            apiString.append(getNewLineString()).append(
+                reactUtilContentApiInstance.replace("@apiRespDemoContents", datasetString)
+                    .replace("@apiReqDemoContents", reqDatasetString));
+
+        });
+
+        contentString.append(apiString.toString());
+
+        returnString = new StringBuilder(
+            tsMainTemplateString.replace("//@genContents", contentString));
+        return returnString.toString();
+    }
+
     public void doLookupJob(Long packageNo, String packageName, String methodType,
         String methodName,
         String sqlStmt, String voName, String controllerYn, String serviceYn, String initYn,
@@ -262,6 +368,9 @@ public class GenerateService {
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
             tepGenModelInfoEO.setApiInterfaceParam(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
+            tepGenModelInfoEO.setUtilApiGetMethodName(
+                "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance"
+            );
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         }
     }
@@ -371,6 +480,19 @@ public class GenerateService {
         //file 생성정보
         coreGenerateMapper.insertMulti(List.of(
             TepGenFileInfoEO.builder().fileName(upperCaseFirst(lastPackName) + ".types.ts")
+                .packageName(packageName).packageNo(packageNo).fileType("controller")
+                .fileContents(tsString).build()));
+
+    }
+
+    private void makeReactUtilFile(Long packageNo, String packageName) {
+        String tsString = getReactUtilString(packageNo);
+        String[] g = packageName.split("[.]");
+        String lastPackName = g[g.length - 1];
+        createFrontFile(packageName, upperCaseFirst(lastPackName) + ".util.ts", tsString);
+        //file 생성정보
+        coreGenerateMapper.insertMulti(List.of(
+            TepGenFileInfoEO.builder().fileName(upperCaseFirst(lastPackName) + ".util.ts")
                 .packageName(packageName).packageNo(packageNo).fileType("controller")
                 .fileContents(tsString).build()));
 
@@ -1686,6 +1808,9 @@ public class GenerateService {
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
             tepGenModelInfoEO.setApiInterfaceParam(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
+            tepGenModelInfoEO.setUtilApiGetMethodName(
+                "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance"
+            );
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -2022,6 +2147,9 @@ public class GenerateService {
                     datasetMethodSeq == null ? 0 : datasetMethodSeq);
                 tepGenModelInfoEO.setApiInterfaceParam(
                     "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
+                tepGenModelInfoEO.setUtilApiGetMethodName(
+                    "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance"
+                );
                 coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 
             }

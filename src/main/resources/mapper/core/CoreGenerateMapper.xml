@@ -912,6 +912,8 @@
     ,controller_method_name
     ,controller_dataset_method_seq
     ,api_interface_param
+    ,util_api_get_method_name
+    ,util_api_get_method_contents
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -933,6 +935,9 @@
       ,#{item.controllerMethodName}
       ,#{item.controllerDatasetMethodSeq}
       ,#{item.apiInterfaceParam}
+      ,#{item.utilApiGetMethodName}
+      ,#{item.utilApiGetMethodContents}
+
       )
     </foreach>
   </insert>
@@ -995,6 +1000,8 @@
     ,controller_method_name
     ,controller_dataset_method_seq
     ,api_interface_param
+    ,util_api_get_method_name
+    ,util_api_get_method_contents
     FROM tep_gen_model_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -1027,6 +1034,8 @@
     ,controller_method_name
     ,controller_dataset_method_seq
     ,api_interface_param
+    ,util_api_get_method_name
+    ,util_api_get_method_contents
     FROM tep_gen_model_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(modelSeq)'>AND
@@ -1076,6 +1085,12 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerMethodName)'>AND
         controller_method_name = #{controllerMethodName}
       </if>
+
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(utilApiGetMethodName)'>AND
+        util_api_get_method_name = #{utilApiGetMethodName}
+      </if><if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(utilApiGetMethodContents)'>AND
+      util_api_get_method_contents = #{utilApiGetMethodContents}
+    </if>
 
     </where>
 
