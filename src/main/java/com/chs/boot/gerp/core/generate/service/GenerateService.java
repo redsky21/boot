@@ -177,10 +177,10 @@ public class GenerateService {
         Map<String, String> apiMap = new HashMap<>();
         coreGenerateMapper.retrieveTepGenModelInfoListAll(apiEO).stream().forEach(
             tepGenModelInfoEO1 -> {
-                apiMap.put(tepGenModelInfoEO1.getApiInterfaceParam(), "S");
+                apiMap.put(tepGenModelInfoEO1.getApiInterfaceParam(), tepGenModelInfoEO1.getApiInterfaceRespData());
             }
         );
-        apiMap.forEach((apiInterfaceParam, dummy) -> {
+        apiMap.forEach((apiInterfaceParam, apiInterfaceRespData) -> {
             TepGenModelInfoEO condtionFindEO = new TepGenModelInfoEO();
             condtionFindEO.setPackageNo(packageNo);
             condtionFindEO.setApiInterfaceParam(apiInterfaceParam);
@@ -196,6 +196,8 @@ public class GenerateService {
                 "reactTypeInterfaceContentApi");
             reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace(
                 "@apiInterfaceParam", apiInterfaceParam);
+            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace(
+                "@apiInterfaceRespData", apiInterfaceRespData);
 
             reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace("@conditionType",
                 conditionType);
@@ -215,9 +217,10 @@ public class GenerateService {
                         tepGenModelInfoEO1.getInterfaceName());
                 });
             datasetMap.forEach((dataSetName, interfaceName) -> {
-                datasetString.append(getNewLineString()).append(getTabString(2))
+                datasetString.append(getNewLineString()).append(getTabString(1))
                     .append(getTemplateSqlStmtString("reactTypeInterfaceApiRespDatasetContents")
-                        .replace("@datasetName", dataSetName));
+                        .replace("@datasetName", dataSetName)
+                        .replace("@interfaceName", interfaceName));
                 reqDatasetString.append(getNewLineString()).append(getTabString(2))
                     .append(getTemplateSqlStmtString("reactTypeInterfaceApiReqDatasetContents")
                         .replace("@datasetName", dataSetName)
@@ -245,6 +248,7 @@ public class GenerateService {
         Map<String, String> interfaceNameMap = new HashMap<>();
         Map<String, String> utilMethodMap = new HashMap<>();
         Map<String, String> apiInterfaceParamMap = new HashMap<>();
+        String a = "1";
         coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream()
             .forEach(tepGenModelInfoEO1 -> {
                     if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
@@ -290,7 +294,7 @@ public class GenerateService {
             String conditionType = coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO)
                 .stream().filter(
                     tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getVoName())
-                        && tepGenModelInfoEO1.getVoName().indexOf("ConditionVO") >= 0
+                        && tepGenModelInfoEO1.getVoName().contains("ConditionVO")
                 ).findFirst().orElseGet(() -> {
                     return coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO)
                         .stream().findFirst().get();
@@ -300,11 +304,11 @@ public class GenerateService {
 
             StringBuilder datasetString = new StringBuilder("");
             StringBuilder reqDatasetString = new StringBuilder("");
-            LinkedHashMap<String, String> datasetMap = new LinkedHashMap();
+            LinkedHashMap<String, String> datasetMap = new LinkedHashMap<>();
             coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream()
                 .filter(tepGenModelInfoEO1 ->
                     isEmpty(tepGenModelInfoEO1.getVoName())
-                        || tepGenModelInfoEO1.getVoName().indexOf("ConditionVO") < 0)
+                        || !tepGenModelInfoEO1.getVoName().contains("ConditionVO"))
                 .forEach(tepGenModelInfoEO1 -> {
                     datasetMap.put(tepGenModelInfoEO1.getDatasetName(),
                         tepGenModelInfoEO1.getInterfaceName());
@@ -367,10 +371,12 @@ public class GenerateService {
             tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
             tepGenModelInfoEO.setApiInterfaceParam(
-                "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
+                "I" + upperCaseFirst(controllerMethodName) + "ApiReqParam");
             tepGenModelInfoEO.setUtilApiGetMethodName(
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance"
             );
+            tepGenModelInfoEO.setApiInterfaceRespData(
+                "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         }
     }
@@ -1807,10 +1813,12 @@ public class GenerateService {
             tepGenModelInfoEO.setControllerMethodName(controllerMethodName);
             tepGenModelInfoEO.setControllerDatasetMethodSeq(datasetSeq == null ? 0 : datasetSeq);
             tepGenModelInfoEO.setApiInterfaceParam(
-                "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
+                "I" + upperCaseFirst(controllerMethodName) + "ApiReqParam");
             tepGenModelInfoEO.setUtilApiGetMethodName(
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance"
             );
+            tepGenModelInfoEO.setApiInterfaceRespData(
+                "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -2146,10 +2154,12 @@ public class GenerateService {
                 tepGenModelInfoEO.setControllerDatasetMethodSeq(
                     datasetMethodSeq == null ? 0 : datasetMethodSeq);
                 tepGenModelInfoEO.setApiInterfaceParam(
-                    "I" + upperCaseFirst(controllerMethodName) + "ApiParam");
+                    "I" + upperCaseFirst(controllerMethodName) + "ApiReqParam");
                 tepGenModelInfoEO.setUtilApiGetMethodName(
                     "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance"
                 );
+                tepGenModelInfoEO.setApiInterfaceRespData(
+                    "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
                 coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 
             }
