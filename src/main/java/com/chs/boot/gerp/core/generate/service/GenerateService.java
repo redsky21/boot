@@ -134,6 +134,8 @@ public class GenerateService {
         tepGenModelInfoEO.setLookupYn("N");
         Map<String, String> interfaceNameMap = new HashMap<>();
         coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream()
+            .filter(tepGenModelInfoEO1 ->
+                isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
             .forEach(tepGenModelInfoEO1 -> {
                     if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
                         interfaceNameMap.put(tepGenModelInfoEO1.getInterfaceName(),
@@ -311,7 +313,8 @@ public class GenerateService {
         Map<String, String> utilMethodMap = new HashMap<>();
         Map<String, String> apiInterfaceParamMap = new HashMap<>();
         String a = "1";
-        coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream()
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream().filter(
+                tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
             .forEach(tepGenModelInfoEO1 -> {
                     if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
                         interfaceNameMap.put(tepGenModelInfoEO1.getInterfaceName(),
@@ -561,7 +564,8 @@ public class GenerateService {
 
         TepGenModelInfoEO conditionEO = new TepGenModelInfoEO();
         conditionEO.setPackageNo(packageNo);
-        coreGenerateMapper.retrieveTepGenModelInfoListAll(conditionEO)
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(conditionEO).stream().filter(
+                tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
             .forEach((tepGenModelInfoEO -> {
                 if (isNotNullAndEmpty(tepGenModelInfoEO.getControllerMethodName())) {
                     controllerMethodMap.put(tepGenModelInfoEO.getControllerMethodName(),
@@ -888,7 +892,8 @@ public class GenerateService {
         TepGenServiceMethodInfoEO tepGenServiceMethodInfoEO = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
                 TepGenServiceMethodInfoEO.builder().packageNo(packageNo).build()).stream().findFirst()
             .get();
-        return "import " + tepGenServiceMethodInfoEO.getServicePackageName().toLowerCase(Locale.ROOT) + "."
+        return "import " + tepGenServiceMethodInfoEO.getServicePackageName()
+            .toLowerCase(Locale.ROOT) + "."
             + tepGenServiceMethodInfoEO.getServiceClassName() + ";";
     }
 
@@ -1971,7 +1976,8 @@ public class GenerateService {
 //                returnString.append(getNewLineString())
 //                );
                 distinctMap.put(
-                    (new StringBuilder().append("import ").append(tepGenFileInfoVO.getPackageName().toLowerCase(
+                    (new StringBuilder().append("import ")
+                        .append(tepGenFileInfoVO.getPackageName().toLowerCase(
                             Locale.ROOT))
                         .append(".model.")
                         .append(tepGenFileInfoVO.getFileName().replace(".java", ";"))).toString(),
@@ -2296,7 +2302,8 @@ public class GenerateService {
         //3 eo name replace
         returnString = templateString.replace("//@EONameHere", eoClassName);
         returnString = returnString.replace("//@GenHere", replaceString);
-        returnString = returnString.replace("//@PackageNameHere", packageName.toLowerCase(Locale.ROOT));
+        returnString = returnString.replace("//@PackageNameHere",
+            packageName.toLowerCase(Locale.ROOT));
         return returnString;
     }
 
