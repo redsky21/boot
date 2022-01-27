@@ -720,7 +720,9 @@ public class GenerateService {
                             upperCaseFirst(datasetName))
                         .replace("@datasetName", datasetName)
                         .replace("@factorName", factorInterfaceName)
-                        .replace("@fetchListName", fetchedListName);
+                        .replace("@fetchListName", fetchedListName)
+                        .replace("@interfaceName",rowEO.getInterfaceName());
+
                     action.append(getNewLineString()).append(reactStoreUpdateCudsMethod);
                 }
 
