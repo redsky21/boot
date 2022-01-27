@@ -124,6 +124,7 @@ public class GenerateService {
             makeReactTSFile(packageNo, packageName);
             makeReactUtilFile(packageNo, packageName);
             makeReactApiFile(packageNo, packageName);
+            makeReactStoreFile(packageNo, packageName);
         }
     }
 
@@ -303,6 +304,7 @@ public class GenerateService {
         returnString.append(tsMainTemplateString);
         return returnString.toString();
     }
+
 
     private String getReactUtilString(Long packageNo) {
         StringBuilder returnString = new StringBuilder("");
@@ -599,6 +601,81 @@ public class GenerateService {
                 .packageName(packageName).packageNo(packageNo).fileType(".util.ts")
                 .fileContents(tsString).build()));
 
+    }
+
+    private void makeReactStoreFile(Long packageNo, String packageName) {
+        String[] g = packageName.split("[.]");
+        String lastPackName = upperCaseFirst(g[g.length - 1]);
+        String tsString = getReactStoreString(packageNo, lastPackName);
+
+        createFrontFile(packageName, upperCaseFirst(lastPackName) + ".store.ts", tsString);
+        //file 생성정보
+        coreGenerateMapper.insertMulti(List.of(
+            TepGenFileInfoEO.builder().fileName(upperCaseFirst(lastPackName) + ".store.ts")
+                .packageName(packageName).packageNo(packageNo).fileType(".store.ts")
+                .fileContents(tsString).build()));
+
+    }
+
+    private String getReactStoreString(Long packageNo, String storeName) {
+        String returnString = "";
+        TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
+        tepGenModelInfoEO.setPackageNo(packageNo);
+        tepGenModelInfoEO.setLookupYn("N");
+        Map<String, TepGenModelInfoEO> interfaceNameMap = new HashMap<>();
+        String a = "1";
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream().filter(
+                tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
+            .forEach(tepGenModelInfoEO1 -> {
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
+                        interfaceNameMap.put(tepGenModelInfoEO1.getInterfaceName(),
+                            tepGenModelInfoEO1);
+                    }
+                }
+            );
+
+        String tsMainTemplateString = getTemplateSqlStmtString("reactStore");
+        StringBuilder importModelString = new StringBuilder("");
+        StringBuilder observable = new StringBuilder("");
+        StringBuilder computed = new StringBuilder("");
+        StringBuilder action = new StringBuilder("");
+        tsMainTemplateString = tsMainTemplateString.replace("@storeName", storeName + "Store");
+        final Integer[] inx = {0};
+        interfaceNameMap.forEach(
+            (interfaceName, rowEO) -> {
+
+                importModelString.append(interfaceName).append(",");
+                if (inx[0] == 0) {
+                    if (isNotNullAndEmpty(rowEO.getUtilApiGetMethodName())) {
+                        importModelString.append(rowEO.getUtilApiGetMethodName()).append(",");
+                    }
+                    if (isNotNullAndEmpty(rowEO.getApiInterfaceParam())) {
+                        importModelString.append(rowEO.getApiInterfaceParam()).append(",");
+                    }
+                    if (isNotNullAndEmpty(rowEO.getApiInterfaceRespData())) {
+                        importModelString.append(rowEO.getApiInterfaceRespData()).append(",");
+                    }
+                }
+                //observable
+                observable.append(getNewLineString()).append(getTabString(1))
+                    .append(rowEO.getDatasetName())
+                    .append(" : ")
+                    .append(rowEO.getInterfaceName())
+                    .append(rowEO.getDatasetName().endsWith("ConditionDataset") ? "=" : "[]=")
+                    .append(
+                        rowEO.getDatasetName().endsWith("ConditionDataset") ? "getNewDataObject();"
+                            : "[] as ")
+                    .append(rowEO.getDatasetName().endsWith("ConditionDataset") ? ""
+                        : rowEO.getInterfaceName() + "[];");
+
+
+                inx[0]++;
+            }
+        );
+        returnString = tsMainTemplateString.replace("@importModelString", importModelString.toString());
+        returnString = returnString.replace("//@observable",observable.toString());
+
+        return returnString;
     }
 
     public String makeControllerJava(Long packageNo, String packageName) {
