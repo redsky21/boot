@@ -615,7 +615,8 @@ public class GenerateService {
                 controllerPackage.set(tepGenControllerMethodInfoEO.getControllerPackageName());
                 controllerClassName.set(tepGenControllerMethodInfoEO.getControllerClassName());
             });
-            String controllerFullPath = controllerPackage.get();
+//            String controllerFullPath = controllerPackage.get();
+            String controllerFullPath = packageName.toLowerCase(Locale.ROOT) + ".controller";
             String importModelString = getImportModelString(packageNo);
             String importServiceString = getImportServiceString(packageNo);
             String serviceClassName = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
@@ -887,7 +888,7 @@ public class GenerateService {
         TepGenServiceMethodInfoEO tepGenServiceMethodInfoEO = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
                 TepGenServiceMethodInfoEO.builder().packageNo(packageNo).build()).stream().findFirst()
             .get();
-        return "import " + tepGenServiceMethodInfoEO.getServicePackageName() + "."
+        return "import " + tepGenServiceMethodInfoEO.getServicePackageName().toLowerCase(Locale.ROOT) + "."
             + tepGenServiceMethodInfoEO.getServiceClassName() + ";";
     }
 
@@ -1222,8 +1223,10 @@ public class GenerateService {
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         //LG CNS Co., Ltd.~  5000 User License
         //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
-        String conditionVOFullPathName = packageName + "." + "model." + conditionVOName;
-        String resultVOFullPathName = packageName + "." + "model." + voName;
+        String conditionVOFullPathName =
+            packageName.toLowerCase(Locale.ROOT) + "." + "model." + conditionVOName;
+        String resultVOFullPathName =
+            packageName.toLowerCase(Locale.ROOT) + "." + "model." + voName;
 
         StringBuilder whereString = new StringBuilder("");
         if (isNotNullAndEmpty(resultMap)) {
@@ -1267,8 +1270,10 @@ public class GenerateService {
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         //LG CNS Co., Ltd.~  5000 User License
         //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
-        String conditionVOFullPathName = packageName + "." + "model." + eoName;
-        String resultVOFullPathName = packageName + "." + "model." + eoName;
+        String conditionVOFullPathName =
+            packageName.toLowerCase(Locale.ROOT) + "." + "model." + eoName;
+        String resultVOFullPathName =
+            packageName.toLowerCase(Locale.ROOT) + "." + "model." + eoName;
 
         SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
         schemaColumnConditionVO.setTableName(tableName);
@@ -1343,7 +1348,7 @@ public class GenerateService {
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         //LG CNS Co., Ltd.~  5000 User License
         //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
-        String eoFullPathName = packageName + "." + "model." + eoName;
+        String eoFullPathName = packageName.toLowerCase(Locale.ROOT) + "." + "model." + eoName;
 
         SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
         schemaColumnConditionVO.setTableName(tableName);
@@ -1429,7 +1434,7 @@ public class GenerateService {
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
         //LG CNS Co., Ltd.~  5000 User License
         //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
-        String eoFullPathName = packageName + "." + "model." + eoName;
+        String eoFullPathName = packageName.toLowerCase(Locale.ROOT) + "." + "model." + eoName;
 
         SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
         schemaColumnConditionVO.setTableName(tableName);
@@ -1719,7 +1724,7 @@ public class GenerateService {
         String templateString = getTemplateSqlStmtString("MapperXmlUpdate");
 //        String methodName =
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
-        String eoFullPathName = packageName + "." + "model." + eoName;
+        String eoFullPathName = packageName.toLowerCase(Locale.ROOT) + "." + "model." + eoName;
 
         SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
         schemaColumnConditionVO.setTableName(tableName);
@@ -1799,7 +1804,7 @@ public class GenerateService {
         String templateString = getTemplateSqlStmtString("MapperXmlInsert");
 //        String methodName =
 //            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
-        String eoFullPathName = packageName + "." + "model." + eoName;
+        String eoFullPathName = packageName.toLowerCase(Locale.ROOT) + "." + "model." + eoName;
         SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
         schemaColumnConditionVO.setTableName(tableName);
 
@@ -1939,7 +1944,8 @@ public class GenerateService {
                 mapperXmlName.set(tepGenMapperMethodInfoVO.getMapperXmlName());
                 mapperClassName.set(tepGenMapperMethodInfoVO.getMapperClassName());
             });
-            String mapperFullPath = mapperPackage.get() + "." + mapperClassName.get();
+            String mapperFullPath =
+                mapperPackage.get().toLowerCase(Locale.ROOT) + "." + mapperClassName.get();
 
             xmlMapperTemplateString = xmlMapperTemplateString.replace("@mapperFullPath",
                 mapperFullPath);
@@ -1965,7 +1971,8 @@ public class GenerateService {
 //                returnString.append(getNewLineString())
 //                );
                 distinctMap.put(
-                    (new StringBuilder().append("import ").append(tepGenFileInfoVO.getPackageName())
+                    (new StringBuilder().append("import ").append(tepGenFileInfoVO.getPackageName().toLowerCase(
+                            Locale.ROOT))
                         .append(".model.")
                         .append(tepGenFileInfoVO.getFileName().replace(".java", ";"))).toString(),
                     "");
@@ -1996,8 +2003,8 @@ public class GenerateService {
                 servicePackage.set(tepGenMapperMethodInfoVO.getServicePackageName());
                 serviceClassName.set(tepGenMapperMethodInfoVO.getServiceClassName());
             });
-            String serviceFullPath = servicePackage.get();
-
+//            String serviceFullPath = servicePackage.get();
+            String serviceFullPath = packageName.toLowerCase(Locale.ROOT) + ".service";
             serviceImplJavaString = serviceImplJavaString.replace("@serviceFullPath",
                 serviceFullPath);
             serviceImplJavaString = serviceImplJavaString.replace("@importModelString",
@@ -2063,8 +2070,8 @@ public class GenerateService {
                 servicePackage.set(tepGenMapperMethodInfoVO.getServicePackageName());
                 serviceClassName.set(tepGenMapperMethodInfoVO.getServiceClassName());
             });
-            String serviceFullPath = servicePackage.get();
-
+//            String serviceFullPath = servicePackage.get();
+            String serviceFullPath = packageName.toLowerCase(Locale.ROOT) + ".service";
             serviceJavaString = serviceJavaString.replace("@serviceFullPath", serviceFullPath);
             serviceJavaString = serviceJavaString.replace("@importModelString",
                 getImportModelString(packageNo));
@@ -2113,7 +2120,7 @@ public class GenerateService {
                 mapperPackage.set(tepGenMapperMethodInfoVO.getMapperPackageName());
                 mapperClassName.set(tepGenMapperMethodInfoVO.getMapperClassName());
             });
-            String mapperFullPath = mapperPackage.get();
+            String mapperFullPath = mapperPackage.get().toLowerCase(Locale.ROOT);
 
             mapperJavaString = mapperJavaString.replace("@mapperFullPath", mapperFullPath);
             mapperJavaString = mapperJavaString.replace("@importModelString",
@@ -2234,7 +2241,8 @@ public class GenerateService {
         //3 eo name replace
         returnString = templateString.replace("//@EONameHere", voClassName);
         returnString = returnString.replace("//@GenHere", replaceString.toString());
-        returnString = returnString.replace("//@PackageNameHere", packageName);
+        returnString = returnString.replace("//@PackageNameHere",
+            packageName.toLowerCase(Locale.ROOT));
         return returnString;
     }
 
@@ -2288,7 +2296,7 @@ public class GenerateService {
         //3 eo name replace
         returnString = templateString.replace("//@EONameHere", eoClassName);
         returnString = returnString.replace("//@GenHere", replaceString);
-        returnString = returnString.replace("//@PackageNameHere", packageName);
+        returnString = returnString.replace("//@PackageNameHere", packageName.toLowerCase(Locale.ROOT));
         return returnString;
     }
 
