@@ -621,14 +621,21 @@ public class GenerateService {
         String returnString = "";
         TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
         tepGenModelInfoEO.setPackageNo(packageNo);
-        tepGenModelInfoEO.setLookupYn("N");
-        Map<String, TepGenModelInfoEO> interfaceNameMap = new HashMap<>();
+//        tepGenModelInfoEO.setLookupYn("N");
+        Map<String, TepGenModelInfoEO> interfaceNameMap = new LinkedHashMap<>();
+        Map<String, TepGenModelInfoEO> datasetNameMap = new LinkedHashMap<>();
         String a = "1";
+        Map<String, String> fetchedDatasetMap = new HashMap<>();
+        Map<String, String> interfaceFactorMap = new HashMap<>();
         coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream().filter(
                 tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
             .forEach(tepGenModelInfoEO1 -> {
                     if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
                         interfaceNameMap.put(tepGenModelInfoEO1.getInterfaceName(),
+                            tepGenModelInfoEO1);
+                    }
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getDatasetName())) {
+                        datasetNameMap.put(tepGenModelInfoEO1.getDatasetName(),
                             tepGenModelInfoEO1);
                     }
                 }
@@ -643,8 +650,11 @@ public class GenerateService {
         final Integer[] inx = {0};
         interfaceNameMap.forEach(
             (interfaceName, rowEO) -> {
-
-                importModelString.append(interfaceName).append(",");
+                if (rowEO.getLookupYn().equals("N")) {
+                    importModelString.append(interfaceName).append(",");
+                    importModelString.append(interfaceName).append("Factor,");
+                    interfaceFactorMap.put(interfaceName, interfaceName + "Factor");
+                }
                 if (inx[0] == 0) {
                     if (isNotNullAndEmpty(rowEO.getUtilApiGetMethodName())) {
                         importModelString.append(rowEO.getUtilApiGetMethodName()).append(",");
@@ -668,12 +678,60 @@ public class GenerateService {
                     .append(rowEO.getDatasetName().endsWith("ConditionDataset") ? ""
                         : rowEO.getInterfaceName() + "[];");
 
+                if (!rowEO.getDatasetName().endsWith("ConditionDataset")) {
+                    String fetchedDatasetName = replaceLast(rowEO.getDatasetName(), "Dataset",
+                        "FetchedList");
+                    fetchedDatasetMap.put(rowEO.getDatasetName(), fetchedDatasetName);
+                    observable.append(getNewLineString()).append(getTabString(1))
+                        .append(fetchedDatasetName)
+                        .append(" : ")
+                        .append(rowEO.getInterfaceName())
+                        .append("[]=")
+                        .append("[] as ").append(rowEO.getInterfaceName()).append("[];");
+                }
 
                 inx[0]++;
             }
         );
-        returnString = tsMainTemplateString.replace("@importModelString", importModelString.toString());
-        returnString = returnString.replace("//@observable",observable.toString());
+        //computed
+        datasetNameMap.forEach((datasetName, rowEO) -> {
+            if (!datasetName.endsWith("ConditionDataset")) {
+                String reactStoreJsonMethod = getTemplateSqlStmtString("reactStoreJsonMethod");
+                String interfaceName = rowEO.getInterfaceName();
+                String factorInterfaceName = interfaceFactorMap.get(interfaceName);
+                if (isNotNullAndEmpty(factorInterfaceName) && isNotNullAndEmpty(
+                    factorInterfaceName)) {
+                    String datasetMethod = reactStoreJsonMethod.replace("@datasetName", datasetName)
+                        .replace("@factorName", factorInterfaceName);
+                    computed.append(getNewLineString()).append(datasetMethod);
+                }
+                String fetchedListName = fetchedDatasetMap.get(datasetName);
+
+                if (isNotNullAndEmpty(fetchedListName) && isNotNullAndEmpty(factorInterfaceName)) {
+                    String fetchedListMethod = reactStoreJsonMethod.replace("@datasetName",
+                            fetchedListName)
+                        .replace("@factorName", factorInterfaceName);
+                    computed.append(getNewLineString()).append(fetchedListMethod);
+
+                    String reactStoreUpdateCudsMethod = getTemplateSqlStmtString(
+                        "reactStoreUpdateCudsMethod");
+                    reactStoreUpdateCudsMethod = reactStoreUpdateCudsMethod.replace(
+                            "@upperDasetName",
+                            upperCaseFirst(datasetName))
+                        .replace("@datasetName", datasetName)
+                        .replace("@factorName", factorInterfaceName)
+                        .replace("@fetchListName", fetchedListName);
+                    action.append(getNewLineString()).append(reactStoreUpdateCudsMethod);
+                }
+
+
+            }
+        });
+        returnString = tsMainTemplateString.replace("@importModelString",
+            importModelString.toString());
+        returnString = returnString.replace("//@observable", observable.toString());
+        returnString = returnString.replace("//@computed", computed.toString());
+        returnString = returnString.replace("//@action", action.toString());
 
         return returnString;
     }
