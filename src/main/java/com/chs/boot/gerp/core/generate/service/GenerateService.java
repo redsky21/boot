@@ -123,6 +123,7 @@ public class GenerateService {
             makeControllerJava(packageNo, packageName);
             makeReactTSFile(packageNo, packageName);
             makeReactUtilFile(packageNo, packageName);
+            makeReactApiFile(packageNo, packageName);
         }
     }
 
@@ -177,7 +178,8 @@ public class GenerateService {
         Map<String, String> apiMap = new HashMap<>();
         coreGenerateMapper.retrieveTepGenModelInfoListAll(apiEO).stream().forEach(
             tepGenModelInfoEO1 -> {
-                apiMap.put(tepGenModelInfoEO1.getApiInterfaceParam(), tepGenModelInfoEO1.getApiInterfaceRespData());
+                apiMap.put(tepGenModelInfoEO1.getApiInterfaceParam(),
+                    tepGenModelInfoEO1.getApiInterfaceRespData());
             }
         );
         apiMap.forEach((apiInterfaceParam, apiInterfaceRespData) -> {
@@ -239,6 +241,66 @@ public class GenerateService {
         return returnString.toString();
     }
 
+    private String getReactApiString(Long packageNo, String controllerMethod, String fullUrl) {
+        StringBuilder returnString = new StringBuilder("");
+        TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
+        tepGenModelInfoEO.setPackageNo(packageNo);
+        tepGenModelInfoEO.setControllerMethodName(controllerMethod);
+        Map<String, TepGenModelInfoEO> controllerMap = new LinkedHashMap<>();
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO)
+            .forEach(tepGenModelInfoEO1 -> {
+                    controllerMap.put(tepGenModelInfoEO1.getDatasetName(), tepGenModelInfoEO1);
+                }
+            );
+
+        AtomicReference<String> tsMainTemplateString = new AtomicReference<>(
+            getTemplateSqlStmtString("reactApi"));
+        tsMainTemplateString.set(
+            tsMainTemplateString.get().replace("//@methodName", controllerMethod)
+                .replace("//@fullUrlString", fullUrl)
+                .replace("@errorApiName", fullUrl.replace("/", "Api.")));
+
+        AtomicReference<String> finalTsMainTemplateString = tsMainTemplateString;
+        StringBuilder hasDatasetString = new StringBuilder("true");
+        StringBuilder dasetConstString = new StringBuilder("");
+        StringBuilder reactApiDatasetReturnString = new StringBuilder("");
+        StringBuilder importModelString = new StringBuilder("");
+
+        controllerMap.forEach((datasetName, rowEO) -> {
+            if (!datasetName.endsWith("ConditionDataset")) {
+                finalTsMainTemplateString.set(finalTsMainTemplateString.get()
+                    .replace("//@requestParamInterfaeName", rowEO.getApiInterfaceParam())
+                    .replace("//@ApiInterfaceRespData", rowEO.getApiInterfaceRespData()));
+
+                String hasDatasetTemplateString = getTemplateSqlStmtString("reactApiHasDataset");
+                hasDatasetTemplateString = hasDatasetTemplateString.replace("@datasetName",
+                    datasetName);
+                hasDatasetString.append(hasDatasetTemplateString);
+                reactApiDatasetReturnString.append(
+                    getTemplateSqlStmtString("reactApiDatasetReturnString").replace("@datasetName",
+                        datasetName));
+                dasetConstString.append(
+                    getTemplateSqlStmtString("reactApiDasetConstString").replace("@datasetName",
+                        datasetName).replace("@interfaceRowName", rowEO.getInterfaceName()));
+                if (!rowEO.getLookupYn().equals("Y")) {
+                    importModelString.append(",").append(rowEO.getInterfaceName());
+                }
+
+            }
+
+        });
+
+        tsMainTemplateString.set(
+            tsMainTemplateString.get()
+                .replace("//@hasDataset", hasDatasetString.toString().replace("true&&", ""))
+                .replace("@dasetConstString", dasetConstString)
+                .replace("//@datasetListString", reactApiDatasetReturnString)
+                .replace("//@importModelString", importModelString)
+        );
+
+        returnString.append(tsMainTemplateString);
+        return returnString.toString();
+    }
 
     private String getReactUtilString(Long packageNo) {
         StringBuilder returnString = new StringBuilder("");
@@ -491,6 +553,37 @@ public class GenerateService {
 
     }
 
+    private void makeReactApiFile(Long packageNo, String packageName) {
+
+        String[] g = packageName.split("[.]");
+        String lastPackName = g[g.length - 1];
+        Map<String, String> controllerMethodMap = new HashMap<>();
+
+        TepGenModelInfoEO conditionEO = new TepGenModelInfoEO();
+        conditionEO.setPackageNo(packageNo);
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(conditionEO)
+            .forEach((tepGenModelInfoEO -> {
+                if (isNotNullAndEmpty(tepGenModelInfoEO.getControllerMethodName())) {
+                    controllerMethodMap.put(tepGenModelInfoEO.getControllerMethodName(),
+                        lastIndexString(packageName, ".") + "/"
+                            + tepGenModelInfoEO.getControllerMethodName());
+                }
+            }
+            ));
+
+        controllerMethodMap.forEach((controllerMethod, fullUrl) -> {
+            String tsString = getReactApiString(packageNo, controllerMethod, fullUrl);
+            createFrontApiFile(packageName, controllerMethod + ".apiform.ts", tsString);
+            //file 생성정보
+            coreGenerateMapper.insertMulti(List.of(
+                TepGenFileInfoEO.builder().fileName(controllerMethod + ".apiform.ts")
+                    .packageName(packageName).packageNo(packageNo).fileType(".apiform.ts")
+                    .fileContents(tsString).build()));
+        });
+
+
+    }
+
     private void makeReactUtilFile(Long packageNo, String packageName) {
         String tsString = getReactUtilString(packageNo);
         String[] g = packageName.split("[.]");
@@ -499,7 +592,7 @@ public class GenerateService {
         //file 생성정보
         coreGenerateMapper.insertMulti(List.of(
             TepGenFileInfoEO.builder().fileName(upperCaseFirst(lastPackName) + ".util.ts")
-                .packageName(packageName).packageNo(packageNo).fileType("controller")
+                .packageName(packageName).packageNo(packageNo).fileType(".util.ts")
                 .fileContents(tsString).build()));
 
     }
@@ -2039,7 +2132,35 @@ public class GenerateService {
         return mapperJavaFileName;
     }
 
-    public void createFrontFile(String packageName, String fileName, String fileContents) {
+    private void createFrontApiFile(String packageName, String fileName, String fileContents) {
+        File mainDir = new File("c:" + File.separatorChar + "chsWorkNew");
+        //한폴더에 몰자
+        String[] g = packageName.split("[.]");
+        String strDir = g[g.length - 1];
+        String dirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir
+            + File.separatorChar + "front" + File.separatorChar + "api";
+        if (!mainDir.isDirectory()) {
+            mainDir.mkdir();
+        }
+        File dir = new File(dirName);
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+        Path filePath = Paths.get(dirName, File.separatorChar + fileName);
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+
+        try {
+            fw = new FileWriter(filePath.toString(), false);
+            bw = new BufferedWriter(fw);
+            bw.write(fileContents);
+            bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createFrontFile(String packageName, String fileName, String fileContents) {
         File mainDir = new File("c:" + File.separatorChar + "chsWorkNew");
         //한폴더에 몰자
         String[] g = packageName.split("[.]");
