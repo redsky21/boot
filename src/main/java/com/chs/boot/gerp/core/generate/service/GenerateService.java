@@ -629,6 +629,7 @@ public class GenerateService {
         String a = "1";
         Map<String, String> fetchedDatasetMap = new HashMap<>();
         Map<String, String> interfaceFactorMap = new HashMap<>();
+        Map<String, TepGenModelInfoEO> utilMethodMap = new HashMap<>();
 
         coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream().filter(
                 tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
@@ -645,6 +646,10 @@ public class GenerateService {
                         apiMethodMap.put(tepGenModelInfoEO1.getControllerMethodName(),
                             tepGenModelInfoEO1);
                     }
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getUtilApiGetMethodName())) {
+                        utilMethodMap.put(tepGenModelInfoEO1.getUtilApiGetMethodName(),
+                            tepGenModelInfoEO1);
+                    }
                 }
             );
 
@@ -654,7 +659,7 @@ public class GenerateService {
         StringBuilder computed = new StringBuilder("");
         StringBuilder action = new StringBuilder("");
         StringBuilder importApiString = new StringBuilder();
-        apiMethodMap.forEach((controllerMethodName,rowEO)->{
+        apiMethodMap.forEach((controllerMethodName, rowEO) -> {
             importApiString.append(controllerMethodName).append(",");
         });
 
@@ -668,9 +673,9 @@ public class GenerateService {
                     interfaceFactorMap.put(interfaceName, interfaceName + "Factor");
                 }
                 if (inx[0] == 0) {
-                    if (isNotNullAndEmpty(rowEO.getUtilApiGetMethodName())) {
-                        importModelString.append(rowEO.getUtilApiGetMethodName()).append(",");
-                    }
+//                    if (isNotNullAndEmpty(rowEO.getUtilApiGetMethodName())) {
+//                        importModelString.append(rowEO.getUtilApiGetMethodName()).append(",");
+//                    }
                     if (isNotNullAndEmpty(rowEO.getApiInterfaceParam())) {
                         importModelString.append(rowEO.getApiInterfaceParam()).append(",");
                     }
@@ -705,6 +710,9 @@ public class GenerateService {
                 inx[0]++;
             }
         );
+        utilMethodMap.forEach((methodName,rowEO)->{
+            importModelString.append(methodName).append(",");
+        });
         //computed
         datasetNameMap.forEach((datasetName, rowEO) -> {
             if (!datasetName.endsWith("ConditionDataset")) {
@@ -782,22 +790,30 @@ public class GenerateService {
                 if (!innerEO.getControllerMethodName().startsWith("save")) {
                     reactStoreDataSetContents = "//" + reactStoreDataSetContents;
                 }
-                dataSetContentsString.append(reactStoreDataSetContents);
-
-                String reactStoreApiSuccessContents = getTemplateSqlStmtString(
-                    "reactStoreApiSuccessContents");
-                reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace("@datasetName",
-                    innerDatasetName);
-                String fetchedListName = fetchedDatasetMap.get(innerDatasetName);
-                if (isEmpty(fetchedListName)) {
-                    reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
-                        "//this.@datasetFetchList = _.cloneDeep(data.processResult.@datasetName);",
-                        "");
-                } else {
-                    reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
-                        "@datasetFetchList", fetchedListName).replace("//", "");
+                if (!nullToEmpty(innerEO.getVoName()).endsWith("ConditionVO")) {
+                    dataSetContentsString.append(getNewLineString())
+                        .append(reactStoreDataSetContents);
                 }
-                storeApiSuccessContentsString.append(reactStoreApiSuccessContents);
+
+                if (!nullToEmpty(innerEO.getVoName()).endsWith("ConditionVO")) {
+                    String reactStoreApiSuccessContents = getTemplateSqlStmtString(
+                        "reactStoreApiSuccessContents");
+                    reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                        "@datasetName",
+                        innerDatasetName);
+                    String fetchedListName = fetchedDatasetMap.get(innerDatasetName);
+                    if (isEmpty(fetchedListName)) {
+                        reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                            "//this.@datasetFetchList = _.cloneDeep(data.processResult.@datasetName);",
+                            "");
+                    } else {
+                        reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                            "@datasetFetchList", fetchedListName).replace("//", "");
+                    }
+                    storeApiSuccessContentsString.append(getNewLineString())
+                        .append(reactStoreApiSuccessContents);
+                }
+
             });
             reactStoreApiMethod = reactStoreApiMethod.replace("@dataSetContents",
                     dataSetContentsString)
@@ -809,7 +825,7 @@ public class GenerateService {
 
         returnString = tsMainTemplateString.replace("@importModelString",
             importModelString.toString());
-        returnString = tsMainTemplateString.replace("@importApiString",
+        returnString = returnString.replace("@importApiString",
             importApiString.toString());
         returnString = returnString.replace("//@observable", observable.toString());
         returnString = returnString.replace("//@computed", computed.toString());
