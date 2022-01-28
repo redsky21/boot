@@ -333,7 +333,7 @@ public class GenerateService {
             innerConditionEO.setInterfaceName(key);
             coreGenerateMapper.retrieveTepGenModelInfoListAll(innerConditionEO)
                 .forEach((innerRowEO)->{
-                    factorNullString.append(getNewLineString()).append(innerRowEO.getMemberName()).append("=null;");
+                    factorNullString.append(getNewLineString()).append("returnVal.").append(innerRowEO.getMemberName()).append("=null;");
                 });
 
 
