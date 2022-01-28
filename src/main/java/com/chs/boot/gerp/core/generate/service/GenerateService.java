@@ -150,6 +150,9 @@ public class GenerateService {
             StringBuilder columnString = new StringBuilder("");
             coreGenerateMapper.retrieveTepGenModelInfoListAll(rowConditionEO).stream()
                 .forEach(rowEO -> {
+                    if(rowEO.getInterfaceName().equals("IOmResourceCondition")){
+                        String breakPoint ="";
+                    }
                     String reactTypeInterfaceContentAtom = getTemplateSqlStmtString(
                         "reactTypeInterfaceContentAtom");
                     reactTypeInterfaceContentAtom = reactTypeInterfaceContentAtom.replace(
