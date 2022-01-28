@@ -12,6 +12,6 @@ public class ElasticController {
 
     @GetMapping("/noHello")
     public void saveEla() {
-        blogEsRepository.searchSimilar()
+//        blogEsRepository.searchSimilar()
     }
 }
