@@ -685,12 +685,13 @@ public class GenerateService {
                 if (isNotNullAndEmpty(rowEO.getApiInterfaceRespData())) {
                     importModelString.append(rowEO.getApiInterfaceRespData()).append(",");
                 }
-                if (isNotNullAndEmpty(rowEO.getUtilGetFactorMethodName())) {
-                    importModelString.append(rowEO.getUtilGetFactorMethodName()).append(",");
-                }
-                if (isNotNullAndEmpty(rowEO.getUtilGetObjectMethodName())) {
-                    importModelString.append(rowEO.getUtilGetObjectMethodName()).append(",");
-                }
+
+            }
+            if (isNotNullAndEmpty(rowEO.getUtilGetFactorMethodName())) {
+                importModelString.append(rowEO.getUtilGetFactorMethodName()).append(",");
+            }
+            if (isNotNullAndEmpty(rowEO.getUtilGetObjectMethodName())) {
+                importModelString.append(rowEO.getUtilGetObjectMethodName()).append(",");
             }
             //observable
             observable.append(getNewLineString()).append(getTabString(1))
@@ -724,7 +725,8 @@ public class GenerateService {
                 if (isNotNullAndEmpty(factorInterfaceName) && isNotNullAndEmpty(
                     factorInterfaceName)) {
                     String datasetMethod = reactStoreJsonMethod.replace("@datasetName", datasetName)
-                        .replace("@factorName", factorInterfaceName);
+                        .replace("@factorName", factorInterfaceName)
+                        .replace("@getUtilGetObjectMethodName", rowEO.getUtilGetFactorMethodName());
                     computed.append(getNewLineString()).append(datasetMethod);
                 }
                 String fetchedListName = fetchedDatasetMap.get(datasetName);
@@ -732,7 +734,7 @@ public class GenerateService {
                 if (isNotNullAndEmpty(fetchedListName) && isNotNullAndEmpty(factorInterfaceName)) {
                     String fetchedListMethod = reactStoreJsonMethod.replace("@datasetName",
                             fetchedListName).replace("@factorName", factorInterfaceName)
-                        .replace("@getUtilGetObjectMethodName", rowEO.getUtilGetObjectMethodName());
+                        .replace("@getUtilGetObjectMethodName", rowEO.getUtilGetFactorMethodName());
                     computed.append(getNewLineString()).append(fetchedListMethod);
 
                     String reactStoreUpdateCudsMethod = getTemplateSqlStmtString(
@@ -743,7 +745,8 @@ public class GenerateService {
                         .replace("@factorName", factorInterfaceName)
                         .replace("@fetchListName", fetchedListName)
                         .replace("@interfaceName", rowEO.getInterfaceName()
-                        ).replace("@getUtilGetObjectMethodName",rowEO.getUtilGetObjectMethodName());
+                        )
+                        .replace("@getUtilGetObjectMethodName", rowEO.getUtilGetObjectMethodName());
 
                     action.append(getNewLineString()).append(reactStoreUpdateCudsMethod);
                 }
