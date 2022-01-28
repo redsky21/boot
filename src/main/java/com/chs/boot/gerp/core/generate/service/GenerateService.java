@@ -297,7 +297,7 @@ public class GenerateService {
         TepGenModelInfoEO tepGenModelInfoEO = new TepGenModelInfoEO();
         tepGenModelInfoEO.setPackageNo(packageNo);
         tepGenModelInfoEO.setLookupYn("N");
-        Map<String, String> interfaceNameMap = new HashMap<>();
+        Map<String, TepGenModelInfoEO> interfaceNameMap = new HashMap<>();
         Map<String, String> utilMethodMap = new HashMap<>();
         Map<String, String> apiInterfaceParamMap = new HashMap<>();
         String a = "1";
@@ -306,7 +306,7 @@ public class GenerateService {
             .forEach(tepGenModelInfoEO1 -> {
                 if (isNotNullAndEmpty(tepGenModelInfoEO1.getInterfaceName())) {
                     interfaceNameMap.put(tepGenModelInfoEO1.getInterfaceName(),
-                        tepGenModelInfoEO1.getApiInterfaceParam());
+                        tepGenModelInfoEO1);
                 }
                 if (isNotNullAndEmpty(tepGenModelInfoEO1.getUtilApiGetMethodName())) {
                     utilMethodMap.put(tepGenModelInfoEO1.getUtilApiGetMethodName(),
@@ -320,10 +320,23 @@ public class GenerateService {
 
         String tsMainTemplateString = getTemplateSqlStmtString("reactUtil");
         StringBuilder apiString = new StringBuilder("");
+        StringBuilder getInstanceString = new StringBuilder("");
         AtomicReference<String> importString = new AtomicReference<>("");
-        interfaceNameMap.forEach((key, dummy) -> {
+        interfaceNameMap.forEach((key, rowEO) -> {
             importString.set(importString + key + ",");
+            importString.set(importString + key + "Factor,");
+
+            String reactUtilGetInstanceMethod = getTemplateSqlStmtString("reactUtilGetInstanceMethod");
+            StringBuilder factorNullString = new StringBuilder("");
+            Tep
+            reactUtilGetInstanceMethod = reactUtilGetInstanceMethod.replace("@getFactorMethodName",rowEO.getUtilGetFactorMethodName())
+                .replace("@factorInterfaceName",key + "Factor")
+                .replace("@getObjectMethodName",rowEO.getUtilGetObjectMethodName())
+                .replace("@obejctInterfaceName",key);
+            getInstanceString.append(getNewLineString()).append(reactUtilGetInstanceMethod);
         });
+        tsMainTemplateString = tsMainTemplateString.replace("//@genGetMethod",getInstanceString.toString());
+
         apiInterfaceParamMap.forEach((key, dummy) -> {
             importString.set(importString + key + ",");
         });
@@ -423,6 +436,8 @@ public class GenerateService {
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance");
             tepGenModelInfoEO.setApiInterfaceRespData(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
+//            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"FactorObject");
+//            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"Object");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         }
     }
@@ -2099,6 +2114,8 @@ public class GenerateService {
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance");
             tepGenModelInfoEO.setApiInterfaceRespData(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
+            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(voClassName, "VO", "")+"FactorInstance");
+            tepGenModelInfoEO.setUtilGetObjectMethodName("getNew"+ replaceLast(voClassName, "VO", "")+"Instance");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -2467,6 +2484,8 @@ public class GenerateService {
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance");
             tepGenModelInfoEO.setApiInterfaceRespData(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
+            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"FactorInstance");
+            tepGenModelInfoEO.setUtilGetObjectMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"Instance");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 
         });

@@ -915,6 +915,8 @@
     ,util_api_get_method_name
     ,util_api_get_method_contents
     ,api_interface_resp_data
+    ,util_get_factor_method_name
+    ,util_get_object_method_name
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -939,6 +941,8 @@
       ,#{item.utilApiGetMethodName}
       ,#{item.utilApiGetMethodContents}
       ,#{item.apiInterfaceRespData}
+      ,#{item.utilGetFactorMethodName}
+      ,#{item.utilGetObjectMethodName}
       )
     </foreach>
   </insert>
@@ -1004,6 +1008,8 @@
     ,util_api_get_method_name
     ,util_api_get_method_contents
     ,api_interface_resp_data
+    ,util_get_factor_method_name
+    ,util_get_object_method_name
     FROM tep_gen_model_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -1039,6 +1045,8 @@
     ,util_api_get_method_name
     ,util_api_get_method_contents
     ,api_interface_resp_data
+    ,util_get_factor_method_name
+    ,util_get_object_method_name
     FROM tep_gen_model_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(modelSeq)'>AND
@@ -1100,7 +1108,12 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceRespData)'>AND
         api_interface_resp_data = #{apiInterfaceRespData}
       </if>
-
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceRespData)'>AND
+        util_get_factor_method_name = #{utilGetFactorMethodName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceRespData)'>AND
+        util_get_object_method_name = #{utilGetObjectMethodName}
+      </if>
     </where>
 
   </select>

@@ -27,4 +27,6 @@ public class TepGenModelInfoEO {
     private String utilApiGetMethodName;
     private String utilApiGetMethodContents;
     private String apiInterfaceRespData;
+    private String utilGetFactorMethodName;
+    private String utilGetObjectMethodName;
 }
