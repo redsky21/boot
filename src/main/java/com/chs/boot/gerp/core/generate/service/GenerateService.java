@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -624,9 +625,11 @@ public class GenerateService {
 //        tepGenModelInfoEO.setLookupYn("N");
         Map<String, TepGenModelInfoEO> interfaceNameMap = new LinkedHashMap<>();
         Map<String, TepGenModelInfoEO> datasetNameMap = new LinkedHashMap<>();
+        Map<String, TepGenModelInfoEO> apiMethodMap = new LinkedHashMap<>();
         String a = "1";
         Map<String, String> fetchedDatasetMap = new HashMap<>();
         Map<String, String> interfaceFactorMap = new HashMap<>();
+
         coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream().filter(
                 tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
             .forEach(tepGenModelInfoEO1 -> {
@@ -638,6 +641,10 @@ public class GenerateService {
                         datasetNameMap.put(tepGenModelInfoEO1.getDatasetName(),
                             tepGenModelInfoEO1);
                     }
+                    if (isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName())) {
+                        apiMethodMap.put(tepGenModelInfoEO1.getControllerMethodName(),
+                            tepGenModelInfoEO1);
+                    }
                 }
             );
 
@@ -646,6 +653,11 @@ public class GenerateService {
         StringBuilder observable = new StringBuilder("");
         StringBuilder computed = new StringBuilder("");
         StringBuilder action = new StringBuilder("");
+        StringBuilder importApiString = new StringBuilder();
+        apiMethodMap.forEach((controllerMethodName,rowEO)->{
+            importApiString.append(controllerMethodName).append(",");
+        });
+
         tsMainTemplateString = tsMainTemplateString.replace("@storeName", storeName + "Store");
         final Integer[] inx = {0};
         interfaceNameMap.forEach(
@@ -721,16 +733,84 @@ public class GenerateService {
                         .replace("@datasetName", datasetName)
                         .replace("@factorName", factorInterfaceName)
                         .replace("@fetchListName", fetchedListName)
-                        .replace("@interfaceName",rowEO.getInterfaceName());
+                        .replace("@interfaceName", rowEO.getInterfaceName());
 
                     action.append(getNewLineString()).append(reactStoreUpdateCudsMethod);
                 }
-
-
             }
         });
+        //api
+        StringBuilder apiString = new StringBuilder("");
+        apiMethodMap.forEach((controllerMethodName, rowEO) -> {
+            String reactStoreApiMethod = getTemplateSqlStmtString("reactStoreApiMethod");
+            reactStoreApiMethod = reactStoreApiMethod.replace("@apiMethodName",
+                    controllerMethodName)
+                .replace("@utilApiGetMethodName", rowEO.getUtilApiGetMethodName());
+            TepGenModelInfoEO conditionEO = new TepGenModelInfoEO();
+            conditionEO.setPackageNo(rowEO.getPackageNo());
+            conditionEO.setControllerMethodName(rowEO.getControllerMethodName());
+            String conditionDatasetName = coreGenerateMapper.retrieveTepGenModelInfoListAll(
+                    conditionEO)
+                .stream().filter((conditionRowEO) ->
+                    isNotNullAndEmpty(conditionRowEO.getVoName()) && conditionRowEO.getVoName()
+                        .endsWith("ConditionVO"))
+                .findFirst().orElseGet(TepGenModelInfoEO::new).getDatasetName();
+            if (isNotNullAndEmpty(conditionDatasetName)) {
+                reactStoreApiMethod = reactStoreApiMethod.replace("//requestData.conditions",
+                        "requestData.conditions")
+                    .replace("@conditionDatasetName", conditionDatasetName);
+            } else {
+                reactStoreApiMethod = reactStoreApiMethod.replace(
+                    "//requestData.conditions = this.@conditionDatasetName;", "");
+            }
+            Map<String, TepGenModelInfoEO> apiDatasetMap = new LinkedHashMap<>();
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(
+                conditionEO).forEach((innerEO) -> {
+                apiDatasetMap.put(innerEO.getDatasetName(), innerEO);
+            });
+            StringBuilder dataSetContentsString = new StringBuilder("");
+            StringBuilder storeApiSuccessContentsString = new StringBuilder("");
+
+            apiDatasetMap.forEach((innerDatasetName, innerEO) -> {
+                String reactStoreDataSetContents = getTemplateSqlStmtString(
+                    "reactStoreDataSetContents");
+                reactStoreDataSetContents = reactStoreDataSetContents.replace(
+                        "@controllerDatasetMethodSeq",
+                        innerEO.getControllerDatasetMethodSeq() == null ? "0"
+                            : innerEO.getControllerDatasetMethodSeq().toString())
+                    .replace("@datasetName", innerDatasetName);
+                if (!innerEO.getControllerMethodName().startsWith("save")) {
+                    reactStoreDataSetContents = "//" + reactStoreDataSetContents;
+                }
+                dataSetContentsString.append(reactStoreDataSetContents);
+
+                String reactStoreApiSuccessContents = getTemplateSqlStmtString(
+                    "reactStoreApiSuccessContents");
+                reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace("@datasetName",
+                    innerDatasetName);
+                String fetchedListName = fetchedDatasetMap.get(innerDatasetName);
+                if (isEmpty(fetchedListName)) {
+                    reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                        "//this.@datasetFetchList = _.cloneDeep(data.processResult.@datasetName);",
+                        "");
+                } else {
+                    reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                        "@datasetFetchList", fetchedListName).replace("//", "");
+                }
+                storeApiSuccessContentsString.append(reactStoreApiSuccessContents);
+            });
+            reactStoreApiMethod = reactStoreApiMethod.replace("@dataSetContents",
+                    dataSetContentsString)
+                .replace("@storeApiSuccessContents", storeApiSuccessContentsString);
+            apiString.append(getNewLineString()).append(reactStoreApiMethod);
+        });
+
+        action.append(apiString);
+
         returnString = tsMainTemplateString.replace("@importModelString",
             importModelString.toString());
+        returnString = tsMainTemplateString.replace("@importApiString",
+            importApiString.toString());
         returnString = returnString.replace("//@observable", observable.toString());
         returnString = returnString.replace("//@computed", computed.toString());
         returnString = returnString.replace("//@action", action.toString());
