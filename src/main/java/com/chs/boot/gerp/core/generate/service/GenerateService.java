@@ -682,6 +682,12 @@ public class GenerateService {
                 if (isNotNullAndEmpty(rowEO.getApiInterfaceRespData())) {
                     importModelString.append(rowEO.getApiInterfaceRespData()).append(",");
                 }
+                if( isNotNullAndEmpty(rowEO.getUtilGetFactorMethodName())){
+                    importModelString.append(rowEO.getUtilGetFactorMethodName()).append(",");
+                }
+                if( isNotNullAndEmpty(rowEO.getUtilGetObjectMethodName())){
+                    importModelString.append(rowEO.getUtilGetObjectMethodName()).append(",");
+                }
             }
             //observable
             observable.append(getNewLineString()).append(getTabString(1))
