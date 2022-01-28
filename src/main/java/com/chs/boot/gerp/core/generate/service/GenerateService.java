@@ -328,11 +328,20 @@ public class GenerateService {
 
             String reactUtilGetInstanceMethod = getTemplateSqlStmtString("reactUtilGetInstanceMethod");
             StringBuilder factorNullString = new StringBuilder("");
-            Tep
+            TepGenModelInfoEO innerConditionEO = new TepGenModelInfoEO();
+            innerConditionEO.setPackageNo(packageNo);
+            innerConditionEO.setInterfaceName(key);
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(innerConditionEO)
+                .forEach((innerRowEO)->{
+                    factorNullString.append(getNewLineString()).append(innerRowEO.getMemberName()).append("=null;");
+                });
+
+
             reactUtilGetInstanceMethod = reactUtilGetInstanceMethod.replace("@getFactorMethodName",rowEO.getUtilGetFactorMethodName())
                 .replace("@factorInterfaceName",key + "Factor")
                 .replace("@getObjectMethodName",rowEO.getUtilGetObjectMethodName())
-                .replace("@obejctInterfaceName",key);
+                .replace("@obejctInterfaceName",key)
+                .replace("//@factorNullString",factorNullString.toString());
             getInstanceString.append(getNewLineString()).append(reactUtilGetInstanceMethod);
         });
         tsMainTemplateString = tsMainTemplateString.replace("//@genGetMethod",getInstanceString.toString());
