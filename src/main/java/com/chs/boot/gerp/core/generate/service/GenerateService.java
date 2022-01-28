@@ -150,8 +150,8 @@ public class GenerateService {
             StringBuilder columnString = new StringBuilder("");
             coreGenerateMapper.retrieveTepGenModelInfoListAll(rowConditionEO).stream()
                 .forEach(rowEO -> {
-                    if(rowEO.getInterfaceName().equals("IOmResourceCondition")){
-                        String breakPoint ="";
+                    if (rowEO.getInterfaceName().equals("IOmResourceCondition")) {
+                        String breakPoint = "";
                     }
                     String reactTypeInterfaceContentAtom = getTemplateSqlStmtString(
                         "reactTypeInterfaceContentAtom");
@@ -329,25 +329,28 @@ public class GenerateService {
             importString.set(importString + key + ",");
             importString.set(importString + key + "Factor,");
 
-            String reactUtilGetInstanceMethod = getTemplateSqlStmtString("reactUtilGetInstanceMethod");
+            String reactUtilGetInstanceMethod = getTemplateSqlStmtString(
+                "reactUtilGetInstanceMethod");
             StringBuilder factorNullString = new StringBuilder("");
             TepGenModelInfoEO innerConditionEO = new TepGenModelInfoEO();
             innerConditionEO.setPackageNo(packageNo);
             innerConditionEO.setInterfaceName(key);
             coreGenerateMapper.retrieveTepGenModelInfoListAll(innerConditionEO)
-                .forEach((innerRowEO)->{
-                    factorNullString.append(getNewLineString()).append("returnVal.").append(innerRowEO.getMemberName()).append("=null;");
+                .forEach((innerRowEO) -> {
+                    factorNullString.append(getNewLineString()).append("returnVal.")
+                        .append(innerRowEO.getMemberName()).append("=null;");
                 });
 
-
-            reactUtilGetInstanceMethod = reactUtilGetInstanceMethod.replace("@getFactorMethodName",rowEO.getUtilGetFactorMethodName())
-                .replace("@factorInterfaceName",key + "Factor")
-                .replace("@getObjectMethodName",rowEO.getUtilGetObjectMethodName())
-                .replace("@obejctInterfaceName",key)
-                .replace("//@factorNullString",factorNullString.toString());
+            reactUtilGetInstanceMethod = reactUtilGetInstanceMethod.replace("@getFactorMethodName",
+                    rowEO.getUtilGetFactorMethodName())
+                .replace("@factorInterfaceName", key + "Factor")
+                .replace("@getObjectMethodName", rowEO.getUtilGetObjectMethodName())
+                .replace("@obejctInterfaceName", key)
+                .replace("//@factorNullString", factorNullString.toString());
             getInstanceString.append(getNewLineString()).append(reactUtilGetInstanceMethod);
         });
-        tsMainTemplateString = tsMainTemplateString.replace("//@genGetMethod",getInstanceString.toString());
+        tsMainTemplateString = tsMainTemplateString.replace("//@genGetMethod",
+            getInstanceString.toString());
 
         apiInterfaceParamMap.forEach((key, dummy) -> {
             importString.set(importString + key + ",");
@@ -682,10 +685,10 @@ public class GenerateService {
                 if (isNotNullAndEmpty(rowEO.getApiInterfaceRespData())) {
                     importModelString.append(rowEO.getApiInterfaceRespData()).append(",");
                 }
-                if( isNotNullAndEmpty(rowEO.getUtilGetFactorMethodName())){
+                if (isNotNullAndEmpty(rowEO.getUtilGetFactorMethodName())) {
                     importModelString.append(rowEO.getUtilGetFactorMethodName()).append(",");
                 }
-                if( isNotNullAndEmpty(rowEO.getUtilGetObjectMethodName())){
+                if (isNotNullAndEmpty(rowEO.getUtilGetObjectMethodName())) {
                     importModelString.append(rowEO.getUtilGetObjectMethodName()).append(",");
                 }
             }
@@ -693,7 +696,8 @@ public class GenerateService {
             observable.append(getNewLineString()).append(getTabString(1))
                 .append(rowEO.getDatasetName()).append(" : ").append(rowEO.getInterfaceName())
                 .append(rowEO.getDatasetName().endsWith("ConditionDataset") ? "=" : "[]=").append(
-                    rowEO.getDatasetName().endsWith("ConditionDataset") ? "getNewDataObject();"
+                    rowEO.getDatasetName().endsWith("ConditionDataset") ?
+                        rowEO.getUtilGetObjectMethodName() + "();"
                         : "[] as ").append(rowEO.getDatasetName().endsWith("ConditionDataset") ? ""
                     : rowEO.getInterfaceName() + "[];");
 
@@ -727,7 +731,8 @@ public class GenerateService {
 
                 if (isNotNullAndEmpty(fetchedListName) && isNotNullAndEmpty(factorInterfaceName)) {
                     String fetchedListMethod = reactStoreJsonMethod.replace("@datasetName",
-                        fetchedListName).replace("@factorName", factorInterfaceName);
+                            fetchedListName).replace("@factorName", factorInterfaceName)
+                        .replace("@getUtilGetObjectMethodName", rowEO.getUtilGetObjectMethodName());
                     computed.append(getNewLineString()).append(fetchedListMethod);
 
                     String reactStoreUpdateCudsMethod = getTemplateSqlStmtString(
@@ -737,7 +742,8 @@ public class GenerateService {
                         .replace("@datasetName", datasetName)
                         .replace("@factorName", factorInterfaceName)
                         .replace("@fetchListName", fetchedListName)
-                        .replace("@interfaceName", rowEO.getInterfaceName());
+                        .replace("@interfaceName", rowEO.getInterfaceName()
+                        ).replace("@getUtilGetObjectMethodName",rowEO.getUtilGetObjectMethodName());
 
                     action.append(getNewLineString()).append(reactStoreUpdateCudsMethod);
                 }
@@ -2132,8 +2138,10 @@ public class GenerateService {
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance");
             tepGenModelInfoEO.setApiInterfaceRespData(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
-            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(voClassName, "VO", "")+"FactorInstance");
-            tepGenModelInfoEO.setUtilGetObjectMethodName("getNew"+ replaceLast(voClassName, "VO", "")+"Instance");
+            tepGenModelInfoEO.setUtilGetFactorMethodName(
+                "getNew" + replaceLast(voClassName, "VO", "") + "FactorInstance");
+            tepGenModelInfoEO.setUtilGetObjectMethodName(
+                "getNew" + replaceLast(voClassName, "VO", "") + "Instance");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -2502,8 +2510,10 @@ public class GenerateService {
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance");
             tepGenModelInfoEO.setApiInterfaceRespData(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
-            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"FactorInstance");
-            tepGenModelInfoEO.setUtilGetObjectMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"Instance");
+            tepGenModelInfoEO.setUtilGetFactorMethodName(
+                "getNew" + replaceLast(eoClassName, "VO", "") + "FactorInstance");
+            tepGenModelInfoEO.setUtilGetObjectMethodName(
+                "getNew" + replaceLast(eoClassName, "VO", "") + "Instance");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 
         });
