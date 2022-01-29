@@ -1,7 +1,7 @@
 package com.chs.boot;
 
 import com.chs.boot.elastic.model.Blog;
-import com.chs.boot.elastic.model.BlogEsRepository;
+import com.chs.boot.elastic.repository.BlogEsRepository;
 import javax.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

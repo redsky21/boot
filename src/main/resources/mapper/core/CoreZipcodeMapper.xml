@@ -169,29 +169,29 @@
 			,insert_dt
 		FROM bof_zip_code
 		<where>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(zipSeq)'>AND zip_seq=#{zipSeq}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(corporationCode)'>AND corporation_code=#{corporationCode}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(zipcdId)'>AND zipcd_id=#{zipcdId}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(zipcd)'>AND zipcd=#{zipcd}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(zipcdInfo)'>AND zipcd_info=#{zipcdInfo}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(city)'>AND city=#{city}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(gungu)'>AND gungu=#{gungu}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(dong)'>AND dong=#{dong}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(bunji)'>AND bunji=#{bunji}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(rgstDate)'>AND rgst_date=#{rgstDate}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(rgstUser)'>AND rgst_user=#{rgstUser}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(updtDate)'>AND updt_date=#{updtDate}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(updtUser)'>AND updt_user=#{updtUser}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(useYn)'>AND use_yn=#{useYn}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(localRgstDate)'>AND local_rgst_date=#{localRgstDate}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(localUpdtDate)'>AND local_updt_date=#{localUpdtDate}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(postType)'>AND post_type=#{postType}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(roadNm)'>AND road_nm=#{roadNm}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(basementFg)'>AND basement_fg=#{basementFg}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(dongNm)'>AND dong_nm=#{dongNm}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(buildingNm)'>AND building_nm=#{buildingNm}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(expireDt)'>AND expire_dt=#{expireDt}</if>
-				<if test='@com.lge.common.util.CommonUtil@isNotNullAndEmpty(insertDt)'>AND insert_dt=#{insertDt}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipSeq)'>AND zip_seq=#{zipSeq}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(corporationCode)'>AND corporation_code=#{corporationCode}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcdId)'>AND zipcd_id=#{zipcdId}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcd)'>AND zipcd=#{zipcd}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcdInfo)'>AND zipcd_info=#{zipcdInfo}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(city)'>AND city=#{city}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(gungu)'>AND gungu=#{gungu}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(dong)'>AND dong=#{dong}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(bunji)'>AND bunji=#{bunji}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(rgstDate)'>AND rgst_date=#{rgstDate}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(rgstUser)'>AND rgst_user=#{rgstUser}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(updtDate)'>AND updt_date=#{updtDate}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(updtUser)'>AND updt_user=#{updtUser}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(useYn)'>AND use_yn=#{useYn}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(localRgstDate)'>AND local_rgst_date=#{localRgstDate}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(localUpdtDate)'>AND local_updt_date=#{localUpdtDate}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(postType)'>AND post_type=#{postType}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(roadNm)'>AND road_nm=#{roadNm}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(basementFg)'>AND basement_fg=#{basementFg}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(dongNm)'>AND dong_nm=#{dongNm}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(buildingNm)'>AND building_nm=#{buildingNm}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(expireDt)'>AND expire_dt=#{expireDt}</if>
+				<if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(insertDt)'>AND insert_dt=#{insertDt}</if>
 		</where>
 	</select>
 </mapper>

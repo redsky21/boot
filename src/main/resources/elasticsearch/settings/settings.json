@@ -1,0 +1,25 @@
+{
+  "analysis": {
+    "analyzer": {
+      "address_with_nori": {
+        "tokenizer": "custom_nori_tokenizer",
+        "filter": ["do_synonyms", "do_shingle"]
+      }
+    },
+    "tokenizer": {
+      "custom_nori_tokenizer": {
+        "type": "nori_tokenizer"
+      }
+    },
+    "filter": {
+      "do_synonyms": {
+        "type": "synonym",
+        "synonyms": ["전남, 전라, 남도", "전북, 전라, 북도", "충북, 충청, 북도", "충남, 충청, 남도", "경남, 경상, 남도", "경북, 경상, 북도", "경기, 경기, 도"]
+      },
+      "do_shingle": {
+        "type": "shingle",
+        "token_separator": ""
+      }
+    }
+  }
+}

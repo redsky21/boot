@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "address_name": {
+      "type": "text",
+      "fields": {
+        "analyzed": {
+          "type": "text",
+          "analyzer": "address_with_nori"
+        }
+      }
+    }
+  }
+}

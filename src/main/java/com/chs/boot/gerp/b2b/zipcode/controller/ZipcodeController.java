@@ -21,7 +21,8 @@ public class ZipcodeController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/zipcode/retrieveZipCode")
     public void retrieveZipCode() throws Exception {
-        zipcodeService.doTransfer();
+//        zipcodeService.doTransfer();
+        zipcodeService.doSearch();
     }
 
 }
