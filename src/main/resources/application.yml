@@ -11,14 +11,14 @@ spring:
 #        username: admin
 #        password: ENC(ygFNq7EQhAmpEamBGAqudiERJjmFX4mr)
       core:
-#        driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-#        jdbc-url: jdbc:log4jdbc:mariadb://redsky21.duckdns.org:3306/boot_db?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC8&allowMultiQueries=true
-#        username: boot
-#        password: ENC(o+ftwnfkXzYGXdIYlkeCP8+GNDKn/UYN)
         driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-        jdbc-url: jdbc:log4jdbc:mariadb://redsky21-db1.cb1vehi7zfck.ap-northeast-2.rds.amazonaws.com:3306/redsky21_db1?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC8&allowMultiQueries=true
-        username: admin
-        password: ENC(ygFNq7EQhAmpEamBGAqudiERJjmFX4mr)
+        jdbc-url: jdbc:log4jdbc:mariadb://redsky21.duckdns.org:3306/boot_db?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC8&allowMultiQueries=true
+        username: boot
+        password: ENC(o+ftwnfkXzYGXdIYlkeCP8+GNDKn/UYN)
+#        driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+#        jdbc-url: jdbc:log4jdbc:mariadb://redsky21-db1.cb1vehi7zfck.ap-northeast-2.rds.amazonaws.com:3306/redsky21_db1?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC8&allowMultiQueries=true
+#        username: admin
+#        password: ENC(ygFNq7EQhAmpEamBGAqudiERJjmFX4mr)
 
       b2b:
         driverClassName: net.sf.log4jdbc.sql.jdbcapi.DriverSpy  #로컬에서만 사용

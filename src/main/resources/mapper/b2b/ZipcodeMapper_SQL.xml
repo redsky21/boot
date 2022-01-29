@@ -1,0 +1,135 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chs.boot.gerp.b2b.zipcode.mapper.ZipcodeMapper">
+
+  <select id="retrieveZipCode"
+    parameterType="com.chs.boot.gerp.b2b.zipcode.model.ZipCodeVO"
+    resultType="com.chs.boot.gerp.b2b.zipcode.model.ZipCodeVO"
+  >
+    SELECT BZ.* FROM bof_zip_code BZ WHERE 1=1
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipSeq)'>AND
+      zip_seq=#{zipSeq}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(corporationCode)'>AND
+      corporation_code=#{corporationCode}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcdId)'>AND
+      zipcd_id=#{zipcdId}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcd)'>AND zipcd=#{zipcd}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcdInfo)'>AND
+      zipcd_info=#{zipcdInfo}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(city)'>AND city=#{city}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(gungu)'>AND gungu=#{gungu}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(bunji)'>AND bunji=#{bunji}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(rgstDate)'>AND
+      rgst_date=#{rgstDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(rgstUser)'>AND
+      rgst_user=#{rgstUser}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(updtDate)'>AND
+      updt_date=#{updtDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(updtUser)'>AND
+      updt_user=#{updtUser}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(useYn)'>AND use_yn=#{useYn}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(localRgstDate)'>AND
+      local_rgst_date=#{localRgstDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(localUpdtDate)'>AND
+      local_updt_date=#{localUpdtDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(postType)'>AND
+      post_type=#{postType}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(roadNm)'>AND
+      road_nm=#{roadNm}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(basementFg)'>AND
+      basement_fg=#{basementFg}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(dongNm)'>AND
+      dong_nm=#{dongNm}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(expireDt)'>AND
+      expire_dt=#{expireDt}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(insertDt)'>AND
+      insert_dt=#{insertDt}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(dong)'>AND dong=#{dong}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(buildingNm)'>AND
+      building_nm=#{buildingNm}
+    </if>
+  </select>
+  <select id="retrieveDistinctZipCode"
+    parameterType="com.chs.boot.gerp.b2b.zipcode.model.ZipCodeConditionVO"
+    resultType="com.chs.boot.gerp.b2b.zipcode.model.ZipCodeVO"
+  >
+    SELECT distinct city,gungu,post_type FROM bof_zip_code BZ WHERE 1=1
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipSeq)'>AND
+      zip_seq=#{zipSeq}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(corporationCode)'>AND
+      corporation_code=#{corporationCode}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcdId)'>AND
+      zipcd_id=#{zipcdId}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcd)'>AND zipcd=#{zipcd}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(zipcdInfo)'>AND
+      zipcd_info=#{zipcdInfo}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(city)'>AND city=#{city}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(gungu)'>AND gungu=#{gungu}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(bunji)'>AND bunji=#{bunji}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(rgstDate)'>AND
+      rgst_date=#{rgstDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(rgstUser)'>AND
+      rgst_user=#{rgstUser}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(updtDate)'>AND
+      updt_date=#{updtDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(updtUser)'>AND
+      updt_user=#{updtUser}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(useYn)'>AND use_yn=#{useYn}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(localRgstDate)'>AND
+      local_rgst_date=#{localRgstDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(localUpdtDate)'>AND
+      local_updt_date=#{localUpdtDate}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(postType)'>AND
+      post_type=#{postType}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(roadNm)'>AND
+      road_nm=#{roadNm}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(basementFg)'>AND
+      basement_fg=#{basementFg}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(dongNm)'>AND
+      dong_nm=#{dongNm}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(expireDt)'>AND
+      expire_dt=#{expireDt}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(insertDt)'>AND
+      insert_dt=#{insertDt}
+    </if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(dong)'>AND dong=#{dong}</if>
+    <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(buildingNm)'>AND
+      building_nm=#{buildingNm}
+    </if>
+  </select>
+</mapper>
