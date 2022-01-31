@@ -15,7 +15,7 @@ class JasyptApplicationTests {
     void jasypt() {
         String url = "";
         String username = "my_db_username";
-        String password = "lwhi33!ct";
+        String password = "!lohi33akl";
 
         System.out.println(jasyptEncoding(url));
         System.out.println(jasyptEncoding(username));

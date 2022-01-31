@@ -30,7 +30,8 @@ public class SyncService {
 //                tableMap.forEach((innerTableName,createStatement)->{
 //                    doDDL((String) innerTableName, String.valueOf(createStatement));
 //                });
-//                doDDL(tableName, (String) tableMap.get("Create Table").toString().replace("\"",""));
+//                doDDL(tableName,
+//                    (String) tableMap.get("Create Table").toString().replace("\"", ""));
                 if( tableVO.getTableType().equals("BASE TABLE") ){
                     getTableData(tableName);
                 }
@@ -43,16 +44,17 @@ public class SyncService {
         List<LinkedHashMap<String, Object>> data = b2bSyncMapper.selectTableData(tableName);
         if (!data.isEmpty()) {
             coreSyncMapper.truncateTable(tableName);
-            if(tableName.equals("cmn_time_zone")){
-                for(LinkedHashMap<String, Object> changeRow :data){
+            if (tableName.equals("cmn_time_zone")) {
+                for (LinkedHashMap<String, Object> changeRow : data) {
                     Date existsData = (Date) changeRow.get("apply_year");
                     Calendar cal = Calendar.getInstance();
                     cal.setTime(existsData);
                     LocalDate date = LocalDate.of(cal.get(Calendar.YEAR),
                         cal.get(Calendar.MONTH) + 1,
                         cal.get(Calendar.DAY_OF_MONTH));
-                    changeRow.put("apply_year",date.getYear());
-                };
+                    changeRow.put("apply_year", date.getYear());
+                }
+                ;
             }
             coreSyncMapper.insertCoreDataTable(
                 CoreSyncTableDataVO.builder().tableName(tableName).headerMap(data.get(0))
@@ -63,6 +65,14 @@ public class SyncService {
     }
 
     private void doDDL(String tableName, String createStatement) {
+        if (tableName.equals("cmn_resp_attr")) {
+//            createStatement =createStatement.replace("varchar(2000)","varchar(500)");
+            createStatement = createStatement.replace("PRIMARY KEY (resp_attr_id),",
+                "PRIMARY KEY (resp_attr_id)").replace(
+                "UNIQUE KEY CMN_RESP_ATTR_U01 (system_code,resp_code,resp_attr_value1,resp_attr_value2,resp_attr_value3,resp_attr_value4) USING HASH",
+                "");
+        }
+
         coreSyncMapper.dropTable(tableName);
         coreSyncMapper.createNewTable(createStatement);
     }
