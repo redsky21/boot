@@ -8,7 +8,8 @@
     FROM INFORMATION_SCHEMA.TABLES
     where TABLE_SCHEMA = 'redsky21_db1'
       and TABLE_TYPE = 'BASE TABLE'
-
+    and table_name != 'dual'
+    order by table_name
   </select>
 
   <select id="showCreateTable" resultType="java.util.Map" parameterType="java.lang.String">
