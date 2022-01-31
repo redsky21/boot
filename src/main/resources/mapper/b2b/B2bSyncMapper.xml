@@ -1,0 +1,20 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chs.boot.gerp.b2b.sync.mapper.B2bSyncMapper">
+  <select id="getTableSchema" resultType="com.chs.boot.gerp.b2b.sync.model.TableVO">
+    SELECT *
+    FROM INFORMATION_SCHEMA.TABLES
+    where TABLE_SCHEMA = 'redsky21_db1'
+      and TABLE_TYPE = 'BASE TABLE'
+
+  </select>
+
+  <select id="showCreateTable" resultType="java.util.Map" parameterType="java.lang.String">
+    show create table ${value}
+  </select>
+
+
+
+</mapper>

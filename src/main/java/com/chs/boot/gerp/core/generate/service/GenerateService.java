@@ -158,7 +158,7 @@ public class GenerateService {
                     reactTypeInterfaceContentAtom = reactTypeInterfaceContentAtom.replace(
                         "@memberName", rowEO.getMemberName());
                     reactTypeInterfaceContentAtom = reactTypeInterfaceContentAtom.replace("@tsType",
-                        rowEO.getTsType());
+                        isEmpty(rowEO.getTsType())?"string":rowEO.getTsType());
                     columnString.append(getNewLineString()).append(reactTypeInterfaceContentAtom);
                 });
             reactTypeInterfaceContent = reactTypeInterfaceContent.replace("@interfaceName",
