@@ -16,6 +16,9 @@
     show create table ${value}
   </select>
 
+  <select id="selectTableData" resultType="java.util.LinkedHashMap" parameterType="java.lang.String">
+    select * from ${tableName}
+  </select>
 
 
 </mapper>

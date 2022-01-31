@@ -10,7 +10,41 @@
     ${value}
   </update>
   <update id="truncateTable" parameterType="java.lang.String">
-    truncateTable ${tableName}
+    truncate Table ${tableName}
   </update>
+
+<!--  <insert id="insertCoreDataTable" parameterType="com.chs.boot.gerp.core.sync.model.CoreSyncTableDataVO">-->
+<!--    INSERT INTO ${tableName}-->
+<!--    (-->
+<!--    <foreach item="value" index="key" collection="headerMap" separator=",">-->
+<!--      ${key}-->
+<!--    </foreach>-->
+<!--    ) VALUES-->
+<!--    <foreach item="item" index="key" collection="dataListMap" separator=",">-->
+<!--      (-->
+<!--      <foreach item="value" index="key" collection="item.entrySet()" separator=",">-->
+<!--        #{value}-->
+<!--      </foreach>-->
+<!--      )-->
+<!--    </foreach>-->
+<!--  </insert>-->
+  <insert id="insertCoreDataTable" parameterType="com.chs.boot.gerp.core.sync.model.CoreSyncTableDataVO">
+
+    <foreach item="item" index="key" collection="dataListMap" separator=";">
+      INSERT INTO ${tableName}
+      (
+      <foreach item="value" index="key" collection="item" separator=",">
+        ${key}
+      </foreach>
+      ) VALUES
+      (
+      <foreach item="value" index="key" collection="item.entrySet()" separator=",">
+        #{value}
+      </foreach>
+      )
+    </foreach>
+  </insert>
+
+
 
 </mapper>
