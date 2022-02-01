@@ -534,6 +534,8 @@
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
+    ,controller_save_method_name
+    ,controller_save_method_seq
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -551,8 +553,10 @@
       ,#{item.initYn}
       ,#{item.initOrderSeq}
       ,#{item.lookupType}
-      ,#{controllerMethodName}
-      ,#{controllerDatasetMethodSeq}
+      ,#{item.controllerMethodName}
+      ,#{item.controllerDatasetMethodSeq}
+      ,#{item.controllerSaveMethodName}
+      ,#{item.controllerSaveMethodSeq}
       )
     </foreach>
   </insert>
@@ -574,8 +578,10 @@
       ,init_yn = #{item.initYn}
       ,init_order_seq = #{item.initOrderSeq}
       ,lookup_type = #{item.lookupType}
-      ,controller_method_name = #{controllerMethodName}
-      ,controller_dataset_method_seq = #{controllerDatasetMethodSeq}
+      ,controller_method_name = #{item.controllerMethodName}
+      ,controller_dataset_method_seq = #{item.controllerDatasetMethodSeq}
+      ,controller_save_method_name = #{item.controllerSaveMethodName}
+      ,controller_save_method_seq = #{item.controllerSaveMethodSeq}
       WHERE 1=1
       AND master_seq = #{item.masterSeq}
     </foreach>
@@ -611,6 +617,8 @@
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
+    ,controller_save_method_name
+    ,controller_save_method_seq
     FROM tep_gen_master_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -641,6 +649,8 @@
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
+    ,controller_save_method_name
+    ,controller_save_method_seq
     FROM tep_gen_master_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(masterSeq)'>AND
@@ -686,7 +696,15 @@
         controller_method_name=#{controllerMethodName}
       </if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerDatasetMethodSeq)'>
-        AND controller_dataset_method_seq=#{controllerDatasetMethodSeq}
+        AND
+        controller_dataset_method_seq=#{controllerDatasetMethodSeq}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerSaveMethodName)'>
+        AND
+        controller_save_method_name=#{controllerSaveMethodName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerSaveMethodSeq)'>AND
+        controller_save_method_seq=#{controllerSaveMethodSeq}
       </if>
     </where>
   </select>
@@ -902,12 +920,12 @@
     ,column_type
     ,vo_name
     ,interface_name
+    ,dataset_name
     ,member_name
     ,java_type
     ,ts_type
     ,null_yn
     ,lookup_yn
-    ,dataset_name
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
@@ -917,6 +935,8 @@
     ,api_interface_resp_data
     ,util_get_factor_method_name
     ,util_get_object_method_name
+    ,controller_save_method_name
+    ,controller_save_method_seq
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -928,12 +948,12 @@
       ,#{item.columnType}
       ,#{item.voName}
       ,#{item.interfaceName}
+      ,#{item.datasetName}
       ,#{item.memberName}
       ,#{item.javaType}
       ,#{item.tsType}
       ,#{item.nullYn}
       ,#{item.lookupYn}
-      ,#{item.datasetName}
       ,#{item.lookupType}
       ,#{item.controllerMethodName}
       ,#{item.controllerDatasetMethodSeq}
@@ -943,6 +963,8 @@
       ,#{item.apiInterfaceRespData}
       ,#{item.utilGetFactorMethodName}
       ,#{item.utilGetObjectMethodName}
+      ,#{item.controllerSaveMethodName}
+      ,#{item.controllerSaveMethodSeq}
       )
     </foreach>
   </insert>
@@ -958,16 +980,23 @@
       ,column_type = #{item.columnType}
       ,vo_name = #{item.voName}
       ,interface_name = #{item.interfaceName}
+      ,dataset_name = #{item.datasetName}
       ,member_name = #{item.memberName}
       ,java_type = #{item.javaType}
       ,ts_type = #{item.tsType}
       ,null_yn = #{item.nullYn}
       ,lookup_yn = #{item.lookupYn}
-      ,dataset_name = #{item.datasetName}
       ,lookup_type = #{item.lookupType}
       ,controller_method_name = #{item.controllerMethodName}
       ,controller_dataset_method_seq = #{item.controllerDatasetMethodSeq}
       ,api_interface_param = #{item.apiInterfaceParam}
+      ,util_api_get_method_name = #{item.utilApiGetMethodName}
+      ,util_api_get_method_contents = #{item.utilApiGetMethodContents}
+      ,api_interface_resp_data = #{item.apiInterfaceRespData}
+      ,util_get_factor_method_name = #{item.utilGetFactorMethodName}
+      ,util_get_object_method_name = #{item.utilGetObjectMethodName}
+      ,controller_save_method_name = #{item.controllerSaveMethodName}
+      ,controller_save_method_seq = #{item.controllerSaveMethodSeq}
       WHERE 1=1
       AND model_seq = #{item.modelSeq}
     </foreach>
@@ -995,12 +1024,12 @@
     ,column_type
     ,vo_name
     ,interface_name
+    ,dataset_name
     ,member_name
     ,java_type
     ,ts_type
     ,null_yn
     ,lookup_yn
-    ,dataset_name
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
@@ -1010,6 +1039,8 @@
     ,api_interface_resp_data
     ,util_get_factor_method_name
     ,util_get_object_method_name
+    ,controller_save_method_name
+    ,controller_save_method_seq
     FROM tep_gen_model_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -1032,12 +1063,12 @@
     ,column_type
     ,vo_name
     ,interface_name
+    ,dataset_name
     ,member_name
     ,java_type
     ,ts_type
     ,null_yn
     ,lookup_yn
-    ,dataset_name
     ,lookup_type
     ,controller_method_name
     ,controller_dataset_method_seq
@@ -1047,6 +1078,8 @@
     ,api_interface_resp_data
     ,util_get_factor_method_name
     ,util_get_object_method_name
+    ,controller_save_method_name
+    ,controller_save_method_seq
     FROM tep_gen_model_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(modelSeq)'>AND
@@ -1070,6 +1103,9 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(interfaceName)'>AND
         interface_name=#{interfaceName}
       </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(datasetName)'>AND
+        dataset_name=#{datasetName}
+      </if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(memberName)'>AND
         member_name=#{memberName}
       </if>
@@ -1085,36 +1121,39 @@
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(lookupYn)'>AND
         lookup_yn=#{lookupYn}
       </if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(datasetName)'>AND
-        dataset_name=#{datasetName}
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(lookupType)'>AND
+        lookup_type=#{lookupType}
       </if>
-
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceParam)'>AND
-        api_interface_param = #{apiInterfaceParam}
-      </if>
-
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerMethodName)'>AND
-        controller_method_name = #{controllerMethodName}
+        controller_method_name=#{controllerMethodName}
       </if>
-
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerDatasetMethodSeq)'>
+        AND controller_dataset_method_seq=#{controllerDatasetMethodSeq}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceParam)'>AND
+        api_interface_param=#{apiInterfaceParam}
+      </if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(utilApiGetMethodName)'>AND
-        util_api_get_method_name = #{utilApiGetMethodName}
+        util_api_get_method_name=#{utilApiGetMethodName}
       </if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(utilApiGetMethodContents)'>
-        AND
-        util_api_get_method_contents = #{utilApiGetMethodContents}
-      </if>
-
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceRespData)'>AND
-        api_interface_resp_data = #{apiInterfaceRespData}
+        AND util_api_get_method_contents=#{utilApiGetMethodContents}
       </if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceRespData)'>AND
-        util_get_factor_method_name = #{utilGetFactorMethodName}
+        api_interface_resp_data=#{apiInterfaceRespData}
       </if>
-      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(apiInterfaceRespData)'>AND
-        util_get_object_method_name = #{utilGetObjectMethodName}
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(utilGetFactorMethodName)'>AND
+        util_get_factor_method_name=#{utilGetFactorMethodName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(utilGetObjectMethodName)'>AND
+        util_get_object_method_name=#{utilGetObjectMethodName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerSaveMethodName)'>
+        AND controller_save_method_name=#{controllerSaveMethodName}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerSaveMethodSeq)'>AND
+        controller_save_method_seq=#{controllerSaveMethodSeq}
       </if>
     </where>
-
   </select>
 </mapper>

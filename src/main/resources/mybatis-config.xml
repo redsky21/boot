@@ -20,8 +20,11 @@
     <setting name="localCacheScope"
       value="SESSION"/>     <!-- 로컬캐시 사용여부(SESSION: 세션을 사용해서 모든쿼리를 캐시) -->
     <setting name="jdbcTypeForNull"
-      value="OTHER"/>        <!-- mybatis로 넘어오는 parameter가 null인 경우, jdbcType을 Setting -->
+      value="NULL"/>        <!-- mybatis로 넘어오는 parameter가 null인 경우, jdbcType을 Setting -->
     <setting name="lazyLoadTriggerMethods"
       value="equals,clone,hashCode,toString"/><!-- 지연로딩을 야기하는 객체의 메소드를 명시 -->
+    <setting name="callSettersOnNulls" value="true"/>
   </settings>
+
+
 </configuration>

@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,19 @@ public class GenerateService {
                         tepGenMasterInfoEO.getInitOrderSeq(), tepGenMasterInfoEO.getLookupType(),
                         tepGenMasterInfoEO.getControllerMethodName(),
                         tepGenMasterInfoEO.getControllerDatasetMethodSeq());
+                } else if (tepGenMasterInfoEO.getMethodType().equals("C")) {
+                    doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
+                        tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
+                        tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
+                        tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
+                        tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
+                        tepGenMasterInfoEO.getLookupType(),
+                        tepGenMasterInfoEO.getControllerMethodName(),
+                        tepGenMasterInfoEO.getControllerDatasetMethodSeq());
+                    if (isNotEmpty(tepGenMasterInfoEO.getControllerSaveMethodName()) && isNotEmpty(
+                        tepGenMasterInfoEO.getTableName())) {
+                        doComplexJob(tepGenMasterInfoEO);
+                    }
                 }
 
             });
@@ -158,7 +172,7 @@ public class GenerateService {
                     reactTypeInterfaceContentAtom = reactTypeInterfaceContentAtom.replace(
                         "@memberName", rowEO.getMemberName());
                     reactTypeInterfaceContentAtom = reactTypeInterfaceContentAtom.replace("@tsType",
-                        isEmpty(rowEO.getTsType())?"string":rowEO.getTsType());
+                        isEmpty(rowEO.getTsType()) ? "string" : rowEO.getTsType());
                     columnString.append(getNewLineString()).append(reactTypeInterfaceContentAtom);
                 });
             reactTypeInterfaceContent = reactTypeInterfaceContent.replace("@interfaceName",
@@ -510,6 +524,323 @@ public class GenerateService {
 //        makeControllerJava(packageNo, packageName);
 //        getSaveMethodString(packageNo, tableName, eoName, "save");
     }
+
+
+    public void doComplexJob(TepGenMasterInfoEO tepGenMasterInfoEO) {
+
+        insertMapperMethodForComplex(tepGenMasterInfoEO.getPackageNo(),
+            tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
+            tepGenMasterInfoEO.getVoName());
+//        insertServiceMethodForTable(packageNo, packageName, tableName, voName);
+//        insertControllerMethodForTable(packageNo, packageName, tableName, voName);
+
+    }
+
+    private String insertMapperMethodForComplex(Long packageNo, String packageName,
+        String tableName,
+        String voName) {
+        String mapperXmlFileName = "";
+        String mapperPackageName = packageName + ".mapper";
+        String mapperXmlName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper_SQL.xml";
+        String mapperClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Mapper";
+        String methodAnnotationName = "@Transactional";
+        String methodParamClassName = "List<" + voName + ">";
+        String methodParamInstantName = lowerCaseFirst(voName) + "List";
+        //insert method 만들기
+        insertInsertMapperMethodForComplex(packageNo, packageName, tableName, voName,
+            mapperPackageName,
+            mapperXmlName, mapperClassName, methodAnnotationName, methodParamClassName,
+            methodParamInstantName);
+        //update method 만들기
+        insertUpdateMapperMethodForComplex(packageNo, packageName, tableName, voName, mapperPackageName,
+            mapperXmlName, mapperClassName, methodAnnotationName, methodParamClassName,
+            methodParamInstantName);
+//        //delete method 만들기
+        insertDeleteMapperMethodForComplex(packageNo, packageName, tableName, voName, mapperPackageName,
+            mapperXmlName, mapperClassName, methodAnnotationName, methodParamClassName,
+            methodParamInstantName);
+//        //select by pk 만들기
+//        insertSelectByPkMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
+//            mapperXmlName, mapperClassName, methodAnnotationName, methodParamClassName,
+//            methodParamInstantName);
+//        //select all 만들기
+//        insertSelectListMapperMethod(packageNo, packageName, tableName, eoName, mapperPackageName,
+//            mapperXmlName, mapperClassName, methodAnnotationName, eoName, lowerCaseFirst(eoName),
+//            methodParamClassName);
+        //validation
+
+        return mapperXmlFileName;
+    }
+
+    private void insertDeleteMapperMethodForComplex(Long packageNo, String packageName, String tableName,
+        String voName, String mapperPackageName, String mapperXmlName, String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName) {
+        //insert method 만들기
+        String methodName =
+            "delete" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
+                + "List";
+        String xmlMethodType = "delete";
+        String sqlStmt = getDeleteStringForComplex(packageNo, packageName, tableName, voName, methodName);
+
+        coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
+            TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
+                .packageNo(packageNo).mapperXmlName(mapperXmlName).mapperClassName(mapperClassName)
+                .methodAnnotationName(methodAnnotationName).methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName).xmlMethodType(xmlMethodType)
+                .tableName(tableName).sqlStmt(sqlStmt).build()));
+    }
+    private String getDeleteStringForComplex(Long packageNo, String packageName, String tableName, String voName,
+        String methodName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("MapperXmlDelete");
+//        String methodName =
+//            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        //LG CNS Co., Ltd.~  5000 User License
+        //GIJWD-MQIJY-OLQWY-KKEMR-PCQMK-KAIKU-NQONU-TIJMS
+        String eoFullPathName = packageName.toLowerCase(Locale.ROOT) + "." + "model." + voName;
+
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+
+        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(schemaColumnConditionVO);
+        schemaColumnVOList = convertValidColumnVO(packageNo,voName,schemaColumnVOList);
+        StringBuilder whereString = new StringBuilder("");
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            final int[] inx = {0};
+            whereString.append(getTabString(3));
+            whereString.append("(");
+            schemaColumnVOList.forEach(schemaColumnVO -> {
+
+                if (nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI")) {
+                    whereString.append(getNewLineString());
+                    whereString.append(getTabString(3));
+                    inx[0] = inx[0] + 1;
+                    if (inx[0] > 1) {
+                        whereString.append("AND ");
+                    }
+
+                    whereString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                    whereString.append(getTabString(1));
+                    whereString.append("=");
+                    whereString.append(getTabString(1));
+                    whereString.append("#{item.");
+                    whereString.append(CaseUtils.toCamelCase(
+                        schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT), false, '_'));
+                    whereString.append("}");
+                }
+            });
+            whereString.append(getNewLineString());
+            whereString.append(getTabString(3));
+            whereString.append(")");
+        }
+        returnString = templateString;
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@eoFullPathName", eoFullPathName);
+        returnString = returnString.replace("@tableName", tableName);
+        returnString = returnString.replace("@whereString", whereString.toString());
+
+        return returnString;
+    }
+    private void insertUpdateMapperMethodForComplex(Long packageNo, String packageName, String tableName,
+        String voName, String mapperPackageName, String mapperXmlName, String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName) {
+        //insert method 만들기
+        String methodName =
+            "update" + voName
+                + "List";
+        String xmlMethodType = "update";
+        String sqlStmt = getUpdateStringForComplex(packageNo,packageName, tableName, voName, methodName);
+
+        coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
+            TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
+                .packageNo(packageNo).mapperXmlName(mapperXmlName).mapperClassName(mapperClassName)
+                .methodAnnotationName(methodAnnotationName).methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName).xmlMethodType(xmlMethodType)
+                .tableName(tableName).sqlStmt(sqlStmt).build()));
+    }
+
+    private String getUpdateStringForComplex(Long packageNo, String packageName, String tableName, String voName,
+        String methodName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("MapperXmlUpdate");
+//        String methodName =
+//            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        String eoFullPathName = packageName.toLowerCase(Locale.ROOT) + "." + "model." + voName;
+
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+
+        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(schemaColumnConditionVO);
+        schemaColumnVOList = convertValidColumnVO(packageNo,voName,schemaColumnVOList);
+
+        StringBuilder matchString = new StringBuilder("");
+        StringBuilder whereString = new StringBuilder("");
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            final int[] inx = {0};
+            final int[] whereInx = {0};
+            schemaColumnVOList.stream().filter(schemaColumnVO ->
+                !schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT).equals("created_by")
+                    && !schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT)
+                    .equals("creation_date")).forEach(schemaColumnVO -> {
+
+                inx[0] = inx[0] + 1;
+                if (inx[0] > 1) {
+                    matchString.append(getNewLineString());
+                    matchString.append(getTabString(4));
+                    matchString.append(",");
+
+                } else {
+                    matchString.append(getTabString(4));
+                    matchString.append(" ");
+                }
+                matchString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                matchString.append(getTabString(1));
+                matchString.append("=");
+                matchString.append(getTabString(1));
+                if (schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT)
+                    .equals("last_update_date")) {
+                    matchString.append("now()");
+                } else {
+                    matchString.append("#{item.");
+                    matchString.append(CaseUtils.toCamelCase(
+                        schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT), false, '_'));
+                    matchString.append("}");
+
+                }
+
+                if (nullToEmpty(schemaColumnVO.getColumnKey()).equals("PRI")) {
+                    whereInx[0] = whereInx[0] + 1;
+                    if (whereInx[0] > 1) {
+                        whereString.append(getNewLineString());
+                    }
+                    whereString.append(getTabString(4));
+                    whereString.append("AND ");
+                    whereString.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+                    whereString.append(getTabString(1));
+                    whereString.append("=");
+                    whereString.append(getTabString(1));
+
+                    whereString.append("#{item.");
+                    whereString.append(CaseUtils.toCamelCase(
+                        schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT), false, '_'));
+                    whereString.append("}");
+                }
+            });
+        }
+        returnString = templateString;
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@eoFullPathName", eoFullPathName);
+        returnString = returnString.replace("@tableName", tableName);
+        returnString = returnString.replace("@matchString", matchString.toString());
+        returnString = returnString.replace("@whereString", whereString.toString());
+
+        return returnString;
+    }
+
+    private void insertInsertMapperMethodForComplex(Long packageNo, String packageName,
+        String tableName,
+        String voName, String mapperPackageName, String mapperXmlName, String mapperClassName,
+        String methodAnnotationName, String methodParamClassName, String methodParamInstantName) {
+        //insert method 만들기
+        String methodName =
+            "insert" + voName
+                + "List";
+        String xmlMethodType = "insert";
+        String sqlStmt = getInsertStringForComplex(packageNo, packageName, tableName, voName,
+            methodName);
+
+        coreGenerateMapper.insertMultiTepGenMapperMethodInfo(List.of(
+            TepGenMapperMethodInfoEO.builder().mapperPackageName(mapperPackageName)
+                .packageNo(packageNo).mapperXmlName(mapperXmlName).mapperClassName(mapperClassName)
+                .methodAnnotationName(methodAnnotationName).methodName(methodName)
+                .methodParamClassName(methodParamClassName)
+                .methodParamInstantName(methodParamInstantName).xmlMethodType(xmlMethodType)
+                .tableName(tableName).sqlStmt(sqlStmt).build()));
+    }
+
+    private List<SchemaColumnVO> convertValidColumnVO(Long packageNo, String voName,
+        List<SchemaColumnVO> schemaColumnVOList) {
+        List<SchemaColumnVO> returnList = new ArrayList<>();
+        if (isNotNullAndEmpty(schemaColumnVOList) && isNotNullAndEmpty(voName)) {
+            //model 정보 조회
+            Map<String, TepGenModelInfoEO> voMap = coreGenerateMapper.retrieveTepGenModelInfoListAll(
+                    TepGenModelInfoEO.builder()
+                        .packageNo(packageNo)
+                        .voName(voName)
+                        .build()).stream()
+                .collect(Collectors.toMap(TepGenModelInfoEO::getMemberName, Function.identity()));
+
+            returnList = schemaColumnVOList.stream().filter(rowEO -> {
+                return isNotNullAndEmpty(
+                    voMap.get(CaseUtils.toCamelCase(rowEO.getColumnName(), false, '_')));
+            }).collect(Collectors.toList());
+        }
+        return returnList;
+    }
+
+    private String getInsertStringForComplex(Long packageNo, String packageName, String tableName,
+        String voName,
+        String methodName) {
+        String returnString = "";
+        String templateString = getTemplateSqlStmtString("MapperXmlInsert");
+//        String methodName =
+//            "insertMulti" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_');
+        String eoFullPathName = packageName.toLowerCase(Locale.ROOT) + "." + "model." + voName;
+        SchemaColumnConditionVO schemaColumnConditionVO = new SchemaColumnConditionVO();
+        schemaColumnConditionVO.setTableName(tableName);
+        List<SchemaColumnVO> schemaColumnVOList = retrieveColumnSchema(schemaColumnConditionVO);
+        schemaColumnVOList = convertValidColumnVO(packageNo, voName, schemaColumnVOList);
+        StringBuilder columnName = new StringBuilder("");
+        StringBuilder variableName = new StringBuilder("");
+        if (isNotNullAndEmpty(schemaColumnVOList)) {
+            final int[] inx = {0};
+            schemaColumnVOList.forEach(schemaColumnVO -> {
+
+                inx[0] = inx[0] + 1;
+                if (inx[0] > 1) {
+                    columnName.append(getNewLineString());
+                    columnName.append(getTabString(3));
+                    columnName.append(",");
+                } else {
+                    columnName.append(getTabString(3));
+                    columnName.append(" ");
+                }
+                columnName.append(schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT));
+
+//                variableName.append(getNewLineString());
+//                variableName.append(getTabString(3));
+                if (inx[0] > 1) {
+                    variableName.append(getNewLineString());
+                    variableName.append(getTabString(3));
+                    variableName.append(",");
+                } else {
+                    variableName.append(getTabString(3));
+                    variableName.append(" ");
+                }
+                if (schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT).equals("creation_date")
+                    || schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT)
+                    .equals("last_update_date")) {
+                    variableName.append("now()");
+                } else {
+                    variableName.append("#{item.");
+                    variableName.append(CaseUtils.toCamelCase(
+                        schemaColumnVO.getColumnName().toLowerCase(Locale.ROOT), false, '_'));
+                    variableName.append("}");
+                }
+            });
+        }
+        returnString = templateString;
+        returnString = returnString.replace("@methodName", methodName);
+        returnString = returnString.replace("@eoFullPathName", eoFullPathName);
+        returnString = returnString.replace("@tableName", tableName);
+        returnString = returnString.replace("@columnName", columnName.toString());
+        returnString = returnString.replace("@variableName", variableName.toString());
+
+        return returnString;
+    }
+
 
     private LinkedHashMap<String, Object> getMapProtoType(
         List<LinkedHashMap<String, Object>> maps) {

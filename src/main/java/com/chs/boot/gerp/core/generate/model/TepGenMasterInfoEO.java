@@ -1,9 +1,16 @@
 package com.chs.boot.gerp.core.generate.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Data
-public class TepGenMasterInfoEO  {
+public class TepGenMasterInfoEO {
+	private String rowKey;
 	private Long masterSeq;
 	private Long packageNo;
 	private String packageName;
@@ -19,4 +26,7 @@ public class TepGenMasterInfoEO  {
 	private String lookupType;
 	private String controllerMethodName;
 	private Long controllerDatasetMethodSeq;
+	private String controllerSaveMethodName;
+	private Long controllerSaveMethodSeq;
+
 }
