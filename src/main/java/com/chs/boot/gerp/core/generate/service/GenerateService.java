@@ -1694,7 +1694,7 @@ public class GenerateService {
             methodAnnotationName, "public", methodParamInstantName,masterSeq);
         //validation
         insertValidationServiceMethod(packageNo, servicePackageName, tableName, eoName,
-            serviceClassName, methodAnnotationName, "private", methodParamInstantName,masterSeq);
+            serviceClassName, null, "private", methodParamInstantName,masterSeq);
 //        getValidationString(packageNo,tableName,eoName,"AA",eoName,methodParamInstantName);
 
         return mapperXmlFileName;
@@ -1766,7 +1766,7 @@ public class GenerateService {
             methodAnnotationName, "public", methodParamInstantName, masterSeq);
         //validation
         insertValidationServiceMethodForComplex(packageNo, servicePackageName, tableName, voName,
-            serviceClassName, methodAnnotationName, "private", methodParamInstantName,eoName,masterSeq);
+            serviceClassName, null, "private", methodParamInstantName,eoName,masterSeq);
 //        getValidationString(packageNo,tableName,eoName,"AA",eoName,methodParamInstantName);
 
         return mapperXmlFileName;
