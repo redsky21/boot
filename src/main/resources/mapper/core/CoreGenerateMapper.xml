@@ -271,6 +271,9 @@
     <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(tableName)'>AND
       table_name=#{tableName}
     </if>
+    <if test='@com.chs.boot.common.util.MyBatisUtil@isNotEmpty(masterSeq)'>AND
+      master_seq=#{masterSeq}
+    </if>
   </select>
   <insert id="insertMultiTepGenServiceMethodInfo"
     parameterType="com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO">
@@ -289,6 +292,7 @@
     ,method_contents
     ,table_name
     ,add_dataset_param
+    ,master_seq
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -306,6 +310,7 @@
       ,#{item.methodContents}
       ,#{item.tableName}
       ,#{item.addDatasetParam}
+      ,#{item.masterSeq}
       )
     </foreach>
   </insert>
@@ -334,6 +339,7 @@
       ,method_param_instant_Name = #{item.methodParamInstantName}
       ,method_contents = #{item.methodContents}
       ,table_name = #{item.tableName}
+      ,master_seq = #{item.masterSeq}
       WHERE method_seq = #{item.methodSeq}
     </foreach>
   </update>
@@ -1153,6 +1159,9 @@
       </if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(controllerSaveMethodSeq)'>AND
         controller_save_method_seq=#{controllerSaveMethodSeq}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(forReactYN)'>AND
+        controller_method_name is not null
       </if>
     </where>
   </select>

@@ -19,4 +19,5 @@ public class TepGenServiceMethodInfoConditionVO {
     private String methodParamInstantName;
     private String methodContents;
     private String tableName;
+    private Long masterSeq;
 }

@@ -35,4 +35,5 @@ public class TepGenModelInfoEO {
     private String utilGetObjectMethodName;
     private String controllerSaveMethodName;
     private Long controllerSaveMethodSeq;
+    private String forReactYN;
 }
