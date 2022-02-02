@@ -944,6 +944,9 @@
     ,util_get_object_method_name
     ,controller_save_method_name
     ,controller_save_method_seq
+    ,master_seq
+    ,save_api_interface_param
+    ,save_util_api_get_method_name
     )
     VALUES
     <foreach separator="," item="item" collection="list">
@@ -972,6 +975,9 @@
       ,#{item.utilGetObjectMethodName}
       ,#{item.controllerSaveMethodName}
       ,#{item.controllerSaveMethodSeq}
+      ,#{item.masterSeq}
+      ,#{item.saveApiInterfaceParam}
+      ,#{item.saveUtilApiGetMethodName}
       )
     </foreach>
   </insert>
@@ -1004,6 +1010,9 @@
       ,util_get_object_method_name = #{item.utilGetObjectMethodName}
       ,controller_save_method_name = #{item.controllerSaveMethodName}
       ,controller_save_method_seq = #{item.controllerSaveMethodSeq}
+      ,master_seq = #{item.masterSeq}
+      ,save_api_interface_param = #{item.saveApiInterfaceParam}
+      ,save_util_api_get_method_name = #{item.saveUtilApiGetMethodName}
       WHERE 1=1
       AND model_seq = #{item.modelSeq}
     </foreach>
@@ -1048,6 +1057,11 @@
     ,util_get_object_method_name
     ,controller_save_method_name
     ,controller_save_method_seq
+    ,master_seq
+    ,save_api_interface_param
+    ,save_util_api_get_method_name
+    ,save_api_interface_param
+    ,save_util_api_get_method_name
     FROM tep_gen_model_info
     <where>
       <foreach collection="list" item="item" open="" close="" separator="OR">
@@ -1087,6 +1101,9 @@
     ,util_get_object_method_name
     ,controller_save_method_name
     ,controller_save_method_seq
+    ,save_api_interface_param
+    ,save_util_api_get_method_name
+    ,master_seq
     FROM tep_gen_model_info
     <where>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(modelSeq)'>AND
@@ -1163,6 +1180,15 @@
       </if>
       <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(forReactYN)'>AND
         controller_method_name is not null
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(masterSeq)'>AND
+        master_seq=#{masterSeq}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(saveApiInterfaceParam)'>AND
+        save_api_interface_param=#{saveApiInterfaceParam}
+      </if>
+      <if test='@com.chs.boot.common.util.CommonUtil@isNotNullAndEmpty(saveUtilApiGetMethodName)'>AND
+        save_util_api_get_method_name=#{saveUtilApiGetMethodName}
       </if>
     </where>
   </select>

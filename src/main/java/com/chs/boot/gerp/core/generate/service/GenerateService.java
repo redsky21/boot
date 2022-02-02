@@ -335,7 +335,61 @@ public class GenerateService {
                 reactTypeInterfaceContentApi.replace("@apiRespDatasetContents", datasetString)
                     .replace("@apiReqDatasetContents", reqDatasetString));
         });
-        contentString.append(apiString.toString());
+
+        //saveApi 추가
+        StringBuilder saveApiString = new StringBuilder("");
+        TepGenModelInfoEO saveApiEO = new TepGenModelInfoEO();
+        saveApiEO.setPackageNo(packageNo);
+        saveApiEO.setForReactYN("Y");
+        Map<String, TepGenModelInfoEO> saveApiMap = new HashMap<>();
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(saveApiEO).stream()
+            .forEach(tepGenModelInfoEO1 -> {
+                if(isNotNullAndEmpty(tepGenModelInfoEO1.getSaveApiInterfaceParam())){
+                    saveApiMap.put(tepGenModelInfoEO1.getSaveApiInterfaceParam(),
+                        tepGenModelInfoEO1);
+                }
+
+            });
+        saveApiMap.forEach((saveApiInterfaceParam, rowEO) -> {
+            TepGenModelInfoEO condtionFindEO = new TepGenModelInfoEO();
+            condtionFindEO.setPackageNo(packageNo);
+            condtionFindEO.setSaveApiInterfaceParam(saveApiInterfaceParam);
+
+            String reactTypeInterfaceContentApi = getTemplateSqlStmtString(
+                "reactTypeSaveInterfaceContentApi");
+            if(isEmpty(saveApiInterfaceParam) ){
+                String breakpoint ="";
+            }
+            reactTypeInterfaceContentApi = reactTypeInterfaceContentApi.replace(
+                "@apiInterfaceParam", saveApiInterfaceParam);
+
+//            StringBuilder datasetString = new StringBuilder("");
+            StringBuilder reqDatasetString = new StringBuilder("");
+            LinkedHashMap<String, String> datasetMap = new LinkedHashMap();
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(condtionFindEO).stream().filter(
+                    tepGenModelInfoEO1 -> isEmpty(tepGenModelInfoEO1.getVoName())
+                        || tepGenModelInfoEO1.getVoName().indexOf("ConditionVO") < 0)
+                .forEach(tepGenModelInfoEO1 -> {
+                    datasetMap.put(tepGenModelInfoEO1.getDatasetName(),
+                        tepGenModelInfoEO1.getInterfaceName());
+                });
+            datasetMap.forEach((dataSetName, interfaceName) -> {
+//                datasetString.append(getNewLineString()).append(getTabString(1)).append(
+//                    getTemplateSqlStmtString("reactTypeInterfaceApiRespDatasetContents").replace(
+//                        "@datasetName", dataSetName).replace("@interfaceName", interfaceName));
+                reqDatasetString.append(getNewLineString()).append(getTabString(2)).append(
+                    getTemplateSqlStmtString("reactTypeInterfaceApiReqDatasetContents").replace(
+                        "@datasetName", dataSetName).replace("@interfaceName", interfaceName));
+
+
+            });
+            saveApiString.append(getNewLineString()).append(
+                reactTypeInterfaceContentApi
+//                    .replace("@apiRespDatasetContents", datasetString)
+                    .replace("@apiReqDatasetContents", reqDatasetString));
+        });
+        // save Api end
+        contentString.append(apiString.toString()).append(saveApiString.toString());
 
         returnString = new StringBuilder(
             tsMainTemplateString.replace("//@interfaceContent", contentString));
@@ -561,6 +615,7 @@ public class GenerateService {
                 "getNew" + upperCaseFirst(controllerMethodName) + "ApiReqInstance");
             tepGenModelInfoEO.setApiInterfaceRespData(
                 "I" + upperCaseFirst(controllerMethodName) + "ApiRespData");
+            tepGenModelInfoEO.setMasterSeq(masterSeq);
 //            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"FactorObject");
 //            tepGenModelInfoEO.setUtilGetFactorMethodName("getNew"+ replaceLast(eoClassName, "VO", "")+"Object");
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
@@ -582,11 +637,13 @@ public class GenerateService {
             voName = voName + "VO";
         }
         makeVOFile(packageNo, packageName, voName, resultMap,
-            isEmpty(controllerMethodName) ? methodName : controllerMethodName, datasetSeq);
+            isEmpty(controllerMethodName) ? methodName : controllerMethodName, datasetSeq,
+            masterSeq);
         //2. makeConditionVO
         String voConditionName = replaceLast(voName, "VO", "ConditionVO");
         makeVOFile(packageNo, packageName, voConditionName, resultMap,
-            isEmpty(controllerMethodName) ? methodName : controllerMethodName, datasetSeq);
+            isEmpty(controllerMethodName) ? methodName : controllerMethodName, datasetSeq,
+            masterSeq);
 
         //3. insert mapper info
 //        insertMapperMethodForSql(packageNo, packageName, tableName, eoName);
@@ -608,7 +665,7 @@ public class GenerateService {
         //1 make EO File
         String methodName =
             "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_') + "List";
-        String eoName = makeEOFile(packageNo, packageName, tableName, methodName);
+        String eoName = makeEOFile(packageNo, packageName, tableName, methodName, masterSeq);
         //2 insert mapper info
         insertMapperMethodForTable(packageNo, packageName, tableName, eoName);
         //3. insert service info
@@ -627,7 +684,7 @@ public class GenerateService {
     public void doComplexJob(TepGenMasterInfoEO tepGenMasterInfoEO) {
         String eoName = makeEOFile(tepGenMasterInfoEO.getPackageNo(),
             tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
-            null);
+            null, tepGenMasterInfoEO.getMasterSeq());
         insertMapperMethodForComplex(tepGenMasterInfoEO.getPackageNo(),
             tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
             tepGenMasterInfoEO.getVoName(), eoName);
@@ -635,6 +692,33 @@ public class GenerateService {
             tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
             tepGenMasterInfoEO.getVoName(), eoName, tepGenMasterInfoEO.getMasterSeq());
 //        insertControllerMethodForComplex(packageNo, packageName, tableName, voName);
+        updateModelInfoForComplex(tepGenMasterInfoEO);
+
+    }
+
+    private void updateModelInfoForComplex(TepGenMasterInfoEO tepGenMasterInfoEO) {
+        coreGenerateMapper.retrieveTepGenModelInfoListAll(TepGenModelInfoEO.builder()
+            .packageNo(tepGenMasterInfoEO.getPackageNo())
+            .forReactYN("Y")
+            .masterSeq(tepGenMasterInfoEO.getMasterSeq())
+            .build()).forEach((tepGenModelInfoEO ->
+            {
+                tepGenModelInfoEO.setControllerSaveMethodSeq(
+                    tepGenMasterInfoEO.getControllerSaveMethodSeq());
+                tepGenModelInfoEO.setControllerSaveMethodName(
+                    tepGenMasterInfoEO.getControllerSaveMethodName());
+                tepGenModelInfoEO.setSaveApiInterfaceParam(
+                    "I" + upperCaseFirst(tepGenMasterInfoEO.getControllerSaveMethodName())
+                        + "ApiReqParam");
+                tepGenModelInfoEO.setSaveUtilApiGetMethodName(
+                    "getNew" + upperCaseFirst(tepGenMasterInfoEO.getControllerSaveMethodName())
+                        + "ApiReqInstance");
+                coreGenerateMapper.updateTepGenModelInfoList(List.of(tepGenModelInfoEO));
+
+            }
+            )
+
+        );
 
     }
 
@@ -2913,14 +2997,14 @@ public class GenerateService {
     }
 
     public String makeEOFile(Long packageNo, String packageName, String tableName,
-        String controllerMethodName) {
+        String controllerMethodName, Long masterSeq) {
         String eoClassName = CaseUtils.toCamelCase(tableName, true, '_') + "EO";
         if (getListSize(coreGenerateMapper.retrieveTepGenFileInfo(
             TepGenFileInfoConditionVO.builder().fileName(eoClassName + ".java")
                 .packageName(packageName)
                 .packageNo(packageNo).fileType("model").build())) == 0) {
             String eoString = getEOString(packageNo, packageName, tableName, eoClassName,
-                controllerMethodName, 0L);
+                controllerMethodName, 0L, masterSeq);
             String fileName = eoClassName + ".java";
 
             createFile(packageName, fileName, eoString, "model");
@@ -2936,7 +3020,8 @@ public class GenerateService {
     }
 
     public String makeVOFile(Long packageNo, String packageName, String voClassName,
-        LinkedHashMap<String, String> resultMap, String controllerMethodName, Long datasetSeq) {
+        LinkedHashMap<String, String> resultMap, String controllerMethodName, Long datasetSeq
+        , Long masterSeq) {
 
         String voString = getVOString(packageName, resultMap, voClassName);
         String fileName = voClassName + ".java";
@@ -2979,6 +3064,7 @@ public class GenerateService {
                 "getNew" + replaceLast(voClassName, "VO", "") + "FactorInstance");
             tepGenModelInfoEO.setUtilGetObjectMethodName(
                 "getNew" + replaceLast(voClassName, "VO", "") + "Instance");
+            tepGenModelInfoEO.setMasterSeq(masterSeq);
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
         });
 
@@ -3329,7 +3415,7 @@ public class GenerateService {
     }
 
     public String getEOString(Long packageNo, String packageName, String tableName,
-        String eoClassName, String controllerMethodName, Long datasetMethodSeq) {
+        String eoClassName, String controllerMethodName, Long datasetMethodSeq, Long masterSeq) {
         String returnString = "";
         //1 get EO Template
         String templateString = getTemplateSqlStmtString("EO");
@@ -3377,6 +3463,7 @@ public class GenerateService {
                 tepGenModelInfoEO.setUtilGetObjectMethodName(
                     "getNew" + replaceLast(eoClassName, "VO", "") + "Instance");
             }
+            tepGenModelInfoEO.setMasterSeq(masterSeq);
 
             coreGenerateMapper.insertTepGenModelInfoList(List.of(tepGenModelInfoEO));
 

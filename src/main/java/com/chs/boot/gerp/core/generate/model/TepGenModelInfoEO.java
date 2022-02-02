@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 public class TepGenModelInfoEO {
+
     private String rowKey;
     private Long modelSeq;
     private Long packageNo;
@@ -36,4 +37,7 @@ public class TepGenModelInfoEO {
     private String controllerSaveMethodName;
     private Long controllerSaveMethodSeq;
     private String forReactYN;
+    private Long masterSeq;
+    private String saveApiInterfaceParam;
+    private String saveUtilApiGetMethodName;
 }
