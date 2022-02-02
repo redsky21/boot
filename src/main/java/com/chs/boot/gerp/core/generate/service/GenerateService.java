@@ -1362,6 +1362,9 @@ public class GenerateService {
         Map<String, String> interfaceFactorMap = new HashMap<>();
         Map<String, TepGenModelInfoEO> utilMethodMap = new HashMap<>();
 
+        Map<String, TepGenModelInfoEO> saveApiMethodMap = new HashMap<>();
+
+
         coreGenerateMapper.retrieveTepGenModelInfoListAll(tepGenModelInfoEO).stream().filter(
                 tepGenModelInfoEO1 -> isNotNullAndEmpty(tepGenModelInfoEO1.getControllerMethodName()))
             .forEach(tepGenModelInfoEO1 -> {
@@ -1375,10 +1378,16 @@ public class GenerateService {
                     apiMethodMap.put(tepGenModelInfoEO1.getControllerMethodName(),
                         tepGenModelInfoEO1);
                 }
+
                 if (isNotNullAndEmpty(tepGenModelInfoEO1.getUtilApiGetMethodName())) {
                     utilMethodMap.put(tepGenModelInfoEO1.getUtilApiGetMethodName(),
                         tepGenModelInfoEO1);
                 }
+                if (isNotNullAndEmpty(tepGenModelInfoEO1.getControllerSaveMethodName())) {
+                    saveApiMethodMap.put(tepGenModelInfoEO1.getControllerSaveMethodName(),
+                        tepGenModelInfoEO1);
+                }
+
             });
 
         String tsMainTemplateString = getTemplateSqlStmtString("reactStore");
@@ -1440,6 +1449,14 @@ public class GenerateService {
         utilMethodMap.forEach((methodName, rowEO) -> {
             importModelString.append(methodName).append(",");
         });
+        saveApiMethodMap.forEach((methodName, rowEO) -> {
+            importModelString.append(methodName).append(",")
+                .append(rowEO.getSaveUtilApiGetMethodName()).append(",")
+                .append(rowEO.getSaveApiInterfaceParam()).append(",")
+            ;
+            importApiString.append(rowEO.getControllerSaveMethodName()).append(",");
+        });
+
         //computed
         datasetNameMap.forEach((datasetName, rowEO) -> {
             if (!datasetName.endsWith("ConditionDataset")) {
@@ -1547,7 +1564,66 @@ public class GenerateService {
                 .replace("@storeApiSuccessContents", storeApiSuccessContentsString);
             apiString.append(getNewLineString()).append(reactStoreApiMethod);
         });
+        //save api
+        saveApiMethodMap.forEach((saveControllerMethodName, rowEO) -> {
+            String reactStoreApiMethod = getTemplateSqlStmtString("reactStoreApiMethod");
+            reactStoreApiMethod = reactStoreApiMethod.replace("@apiMethodName",
+                    saveControllerMethodName)
+                .replace("@utilApiGetMethodName", rowEO.getSaveUtilApiGetMethodName());
+            TepGenModelInfoEO conditionEO = new TepGenModelInfoEO();
+            conditionEO.setPackageNo(rowEO.getPackageNo());
+            conditionEO.setControllerSaveMethodName(rowEO.getControllerSaveMethodName());
+            conditionEO.setForReactYN("Y");
 
+            reactStoreApiMethod = reactStoreApiMethod.replace(
+                "//requestData.conditions = this.@conditionDatasetName;", "");
+
+            Map<String, TepGenModelInfoEO> apiDatasetMap = new LinkedHashMap<>();
+            coreGenerateMapper.retrieveTepGenModelInfoListAll(conditionEO).forEach((innerEO) -> {
+                apiDatasetMap.put(innerEO.getDatasetName(), innerEO);
+            });
+            StringBuilder dataSetContentsString = new StringBuilder("");
+            StringBuilder storeApiSuccessContentsString = new StringBuilder("");
+
+            apiDatasetMap.forEach((innerDatasetName, innerEO) -> {
+                String reactStoreDataSetContents = getTemplateSqlStmtString(
+                    "reactStoreDataSetContents");
+                reactStoreDataSetContents = reactStoreDataSetContents.replace(
+                        "@controllerDatasetMethodSeq",
+                        innerEO.getControllerDatasetMethodSeq() == null ? "0"
+                            : innerEO.getControllerDatasetMethodSeq().toString())
+                    .replace("@datasetName", innerDatasetName);
+
+                if (!nullToEmpty(innerEO.getVoName()).endsWith("ConditionVO")) {
+                    dataSetContentsString.append(getNewLineString())
+                        .append(reactStoreDataSetContents);
+                }
+
+                if (!nullToEmpty(innerEO.getVoName()).endsWith("ConditionVO")) {
+                    String reactStoreApiSuccessContents = getTemplateSqlStmtString(
+                        "reactStoreApiSuccessContents");
+                    reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                        "@datasetName", innerDatasetName);
+                    String fetchedListName = fetchedDatasetMap.get(innerDatasetName);
+                    if (isEmpty(fetchedListName)) {
+                        reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                            "//this.@datasetFetchList = _.cloneDeep(data.processResult.@datasetName);",
+                            "");
+                    } else {
+                        reactStoreApiSuccessContents = reactStoreApiSuccessContents.replace(
+                            "@datasetFetchList", fetchedListName).replace("//", "");
+                    }
+                    storeApiSuccessContentsString.append(getNewLineString())
+                        .append(reactStoreApiSuccessContents);
+                }
+
+            });
+            reactStoreApiMethod = reactStoreApiMethod.replace("@dataSetContents",
+                    dataSetContentsString)
+                .replace("@storeApiSuccessContents", storeApiSuccessContentsString);
+            apiString.append(getNewLineString()).append(reactStoreApiMethod);
+        });
+        //end save api
         action.append(apiString);
 
         returnString = tsMainTemplateString.replace("@importModelString",
