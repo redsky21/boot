@@ -13,6 +13,7 @@ import static com.chs.boot.common.util.StringUtil.lowerCaseFirst;
 import static com.chs.boot.common.util.StringUtil.replaceLast;
 import static com.chs.boot.common.util.StringUtil.upperCaseFirst;
 
+import com.chs.boot.common.util.StringUtil;
 import com.chs.boot.gerp.b2b.generate.mapper.B2bGenerateMapper;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
@@ -83,10 +84,12 @@ public class GenerateService {
                         tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
                         tepGenMasterInfoEO.getLookupType(),
                         tepGenMasterInfoEO.getControllerMethodName(),
-                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),tepGenMasterInfoEO.getMasterSeq());
+                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
+                        tepGenMasterInfoEO.getMasterSeq());
                 } else if (tepGenMasterInfoEO.getMethodType().equals("T")) {
                     doTableJob(tepGenMasterInfoEO.getPackageNo(),
-                        tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),tepGenMasterInfoEO.getMasterSeq());
+                        tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
+                        tepGenMasterInfoEO.getMasterSeq());
                 } else if (tepGenMasterInfoEO.getMethodType().equals("L")) {
                     doLookupJob(tepGenMasterInfoEO.getPackageNo(),
                         tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getMethodType(),
@@ -95,7 +98,8 @@ public class GenerateService {
                         tepGenMasterInfoEO.getServiceYn(), tepGenMasterInfoEO.getInitYn(),
                         tepGenMasterInfoEO.getInitOrderSeq(), tepGenMasterInfoEO.getLookupType(),
                         tepGenMasterInfoEO.getControllerMethodName(),
-                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),tepGenMasterInfoEO.getMasterSeq());
+                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
+                        tepGenMasterInfoEO.getMasterSeq());
                 } else if (tepGenMasterInfoEO.getMethodType().equals("C")) {
                     doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
                         tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
@@ -104,7 +108,8 @@ public class GenerateService {
                         tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
                         tepGenMasterInfoEO.getLookupType(),
                         tepGenMasterInfoEO.getControllerMethodName(),
-                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),tepGenMasterInfoEO.getMasterSeq());
+                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
+                        tepGenMasterInfoEO.getMasterSeq());
                     if (isNotEmpty(tepGenMasterInfoEO.getControllerSaveMethodName()) && isNotEmpty(
                         tepGenMasterInfoEO.getTableName())) {
                         doComplexJob(tepGenMasterInfoEO);
@@ -126,6 +131,8 @@ public class GenerateService {
                         mapPackageNo, packageName, mapControllerMethodName));
                 //insertControllerMethodForSql
             }
+            //complex 작업
+            makeComplexController(packageNo);
             makeMapperXml(packageNo, packageName);
             makeMapperJava(packageNo, packageName);
             makeServiceJava(packageNo, packageName);
@@ -136,6 +143,86 @@ public class GenerateService {
             makeReactApiFile(packageNo, packageName);
             makeReactStoreFile(packageNo, packageName);
         }
+    }
+
+    private void makeComplexController(Long packageNo) {
+        //check
+        Map<String, TepGenMasterInfoEO> complexMap = new LinkedHashMap<>();
+        coreGenerateMapper.retrieveTepGenMasterInfoListAll(TepGenMasterInfoEO.builder()
+            .packageNo(packageNo)
+            .methodType("C")
+            .build()).forEach(tepGenMasterInfoEO -> {
+            complexMap.put(tepGenMasterInfoEO.getControllerSaveMethodName(), tepGenMasterInfoEO);
+        });
+        complexMap.forEach((controllerSaveMethodName, tepGenMasterInfoEO) -> {
+            String controllerJavaSaveComplexMethod = getTemplateSqlStmtString(
+                "ControllerJavaSaveComplexMethod");
+            StringBuilder lineString = new StringBuilder("");
+            coreGenerateMapper.retrieveTepGenMasterInfoListAll(TepGenMasterInfoEO.builder()
+                .packageNo(packageNo)
+                .controllerSaveMethodName(controllerSaveMethodName)
+                .build()).forEach((rowEO -> {
+                    String controllerJavaSaveComplexAtom = getTemplateSqlStmtString(
+                        "ControllerJavaSaveComplexAtom");
+                    String voName = rowEO.getVoName();
+                    String voInstanceName = lowerCaseFirst(rowEO.getVoName());
+                    String simpleDatasetName = replaceLast(voInstanceName, "VO", "DatasetName");
+                    Long datasetIndex = rowEO.getControllerDatasetMethodSeq() == null ? 0L
+                        : rowEO.getControllerDatasetMethodSeq();
+                    TepGenServiceMethodInfoEO tepGenServiceMethodInfoEO = coreGenerateMapper.retrieveTepGenServiceMethodInfo(
+                        TepGenServiceMethodInfoEO.builder()
+                            .masterSeq(rowEO.getMasterSeq())
+                            .methodAnnotationName("@Transactional")
+                            .build()).stream().findFirst().orElseGet(null);
+                    if (tepGenServiceMethodInfoEO == null) {
+                        return;
+                    }
+                    String serviceName = lowerCaseFirst(
+                        tepGenServiceMethodInfoEO.getServiceClassName());
+                    String serviceMethodName = tepGenServiceMethodInfoEO.getMethodName();
+
+                    controllerJavaSaveComplexAtom = controllerJavaSaveComplexAtom.replace("@voName",
+                            voName)
+                        .replace("@voInstanceName", voInstanceName)
+                        .replace("@simpleDatasetName", simpleDatasetName)
+                        .replace("@datasetIndex", datasetIndex.toString())
+                        .replace("@serviceName", serviceName)
+                        .replace("@serviceMethodName", serviceMethodName);
+                    lineString.append(getNewLineString()).append(getTabString(1))
+                        .append(controllerJavaSaveComplexAtom);
+                })
+            );
+            String urlPath = lastIndexString(tepGenMasterInfoEO.getPackageName(), ".");
+            controllerJavaSaveComplexMethod = controllerJavaSaveComplexMethod.replace("@urlPath",
+                    urlPath)
+                .replace("@methodName", controllerSaveMethodName)
+                .replace("//@complexSaveContents", lineString);
+            ;
+
+            String packageName = tepGenMasterInfoEO.getPackageName();
+            String controllerPackageName = packageName + ".controller";
+            String methodAccessor = "public";
+            String controllerClassName =
+                upperCaseFirst(lastIndexString(packageName, ".")) + "Controller";
+            ;
+            String methodAnnotationName = "@Transactional";
+            String methodReturnClassName = "ResponseModel";
+            String methodParamClassName = "@RequestBody RequestModel";
+            String methodParamInstantName = "requestModel";
+            String methodName = tepGenMasterInfoEO.getControllerSaveMethodName();
+            String methodContents = controllerJavaSaveComplexMethod;
+
+            coreGenerateMapper.insertTepGenControllerMethodInfoList(List.of(
+                TepGenControllerMethodInfoEO.builder().controllerPackageName(controllerPackageName)
+                    .packageNo(packageNo).controllerClassName(controllerClassName)
+                    .methodAnnotationName(methodAnnotationName).methodAccessor(methodAccessor)
+                    .methodReturnClassName(methodReturnClassName).methodName(methodName)
+                    .methodParamClassName(methodParamClassName)
+                    .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
+                    .build()));
+
+
+        });
     }
 
     private String getReactTsString(Long packageNo) {
@@ -483,7 +570,8 @@ public class GenerateService {
 
     public void doSqlJob(Long packageNo, String packageName, String methodType, String methodName,
         String sqlStmt, String voName, String controllerYn, String serviceYn, String initYn,
-        Long initOrderSeq, String lookupType, String controllerMethodName, Long datasetSeq,Long masterSeq) {
+        Long initOrderSeq, String lookupType, String controllerMethodName, Long datasetSeq,
+        Long masterSeq) {
         //1. make VO File
         List<LinkedHashMap<String, Object>> result = b2bGenerateMapper.selectSqlStmt(sqlStmt);
         LinkedHashMap<String, Object> protoTypeMap = getMapProtoType(result);
@@ -506,7 +594,8 @@ public class GenerateService {
         insertMapperMethodForSql(packageNo, packageName, voName, voConditionName, sqlStmt,
             methodName, protoTypeMap);
         //3. insert service info
-        insertSqlServiceMethod(packageNo, packageName, voName, voConditionName, methodName, masterSeq);
+        insertSqlServiceMethod(packageNo, packageName, voName, voConditionName, methodName,
+            masterSeq);
         //4. insert controller info
 //        insertSqlServiceMethod(packageNo,packageName,voName,voConditionName,methodName);
 //        insertControllerMethodForSql(packageNo, packageName, methodName, voConditionName, voName);
@@ -515,7 +604,7 @@ public class GenerateService {
             voConditionName, voName, datasetSeq == null ? 0 : datasetSeq);
     }
 
-    public void doTableJob(Long packageNo, String packageName, String tableName,Long masterSeq) {
+    public void doTableJob(Long packageNo, String packageName, String tableName, Long masterSeq) {
         //1 make EO File
         String methodName =
             "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_') + "List";
@@ -523,7 +612,7 @@ public class GenerateService {
         //2 insert mapper info
         insertMapperMethodForTable(packageNo, packageName, tableName, eoName);
         //3. insert service info
-        insertServiceMethodForTable(packageNo, packageName, tableName, eoName,masterSeq);
+        insertServiceMethodForTable(packageNo, packageName, tableName, eoName, masterSeq);
         //4. insert controller info
         insertControllerMethodForTable(packageNo, packageName, tableName, eoName);
 //        makeMapperXml(packageNo, packageName);
@@ -544,10 +633,38 @@ public class GenerateService {
             tepGenMasterInfoEO.getVoName(), eoName);
         insertServiceMethodForComplex(tepGenMasterInfoEO.getPackageNo(),
             tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
-            tepGenMasterInfoEO.getVoName(),eoName, tepGenMasterInfoEO.getMasterSeq());
-//        insertControllerMethodForTable(packageNo, packageName, tableName, voName);
+            tepGenMasterInfoEO.getVoName(), eoName, tepGenMasterInfoEO.getMasterSeq());
+//        insertControllerMethodForComplex(packageNo, packageName, tableName, voName);
 
     }
+
+//    private void insertControllerUnitForComplex(Long packageNo, String packageName,
+//        String controllerMethodName, String methodName, String conditionVOName, String voName,
+//        Long datasetSeq) {
+//        //insert method 만들기
+//        String controllerPackageName = packageName + ".controller";
+//        String methodAccessor = "public";
+//        String controllerClassName =
+//            upperCaseFirst(lastIndexString(packageName, ".")) + "Controller";
+//
+//        String methodAnnotationName = null;
+//        String methodReturnClassName = "ResponseModel";
+//        String methodParamClassName = "@RequestBody RequestModel";
+//        String methodParamInstantName = "requestModel";
+//        String methodContents = getControllerUnitSqlStringForComplex(packageName, methodName, conditionVOName,
+//            voName, datasetSeq);
+//
+//        coreGenerateMapper.insertTepGenControllerUnitMethodList(List.of(
+//            TepGenControllerUnitMethodEO.builder().controllerPackageName(controllerPackageName)
+//                .packageNo(packageNo).controllerClassName(controllerClassName)
+//                .methodAnnotationName(methodAnnotationName).methodAccessor(methodAccessor)
+//                .controllerMethodName(controllerMethodName)
+//                .methodReturnClassName(methodReturnClassName).methodName(methodName)
+//                .methodParamClassName(methodParamClassName)
+//                .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
+//                .datasetSeq(datasetSeq).build()));
+//    }
+
 
     private String insertMapperMethodForComplex(Long packageNo, String packageName,
         String tableName,
@@ -582,7 +699,7 @@ public class GenerateService {
         insertSelectListMapperMethodForComplex(packageNo, packageName, tableName, eoName,
             mapperPackageName,
             mapperXmlName, mapperClassName, methodAnnotationName, eoName, lowerCaseFirst(eoName),
-            methodParamClassName);
+            "List<" + eoName + ">");
         //validation
 
         return mapperXmlFileName;
@@ -1273,7 +1390,8 @@ public class GenerateService {
             controllerJavaString = controllerJavaString.replace("@controllerClassName",
                 controllerClassName.get());
 
-            createFile(packageName, controllerClassName.get() + ".java", controllerJavaString);
+            createFile(packageName, controllerClassName.get() + ".java", controllerJavaString,
+                "controller");
             //file 생성정보
             coreGenerateMapper.insertMulti(List.of(
                 TepGenFileInfoEO.builder().fileName(controllerClassName.get() + ".java")
@@ -1691,10 +1809,10 @@ public class GenerateService {
         //save method 만들기
         insertSaveServiceMethod(packageNo, servicePackageName, tableName, eoName,
             serviceClassName,
-            methodAnnotationName, "public", methodParamInstantName,masterSeq);
+            methodAnnotationName, "public", methodParamInstantName, masterSeq);
         //validation
         insertValidationServiceMethod(packageNo, servicePackageName, tableName, eoName,
-            serviceClassName, null, "private", methodParamInstantName,masterSeq);
+            serviceClassName, null, "private", methodParamInstantName, masterSeq);
 //        getValidationString(packageNo,tableName,eoName,"AA",eoName,methodParamInstantName);
 
         return mapperXmlFileName;
@@ -1737,7 +1855,8 @@ public class GenerateService {
         String mapperUpdateMethodName = getMapperMethodName(packageNo, tableName, "update", voName);
         //@mapperInsertMethodName
         String mapperInsertMethodName = getMapperMethodName(packageNo, tableName, "insert", voName);
-        String templateString = getTemplateSqlStmtString("ServiceSaveMethod");
+//        String templateString = getTemplateSqlStmtString("ServiceSaveMethod");
+        String templateString = getTemplateSqlStmtString("ServiceSaveMethodNew");
 
         templateString = templateString.replace("@methodName", methodName);
         templateString = templateString.replace("@methodParamClassName", methodParamClassName);
@@ -1754,7 +1873,7 @@ public class GenerateService {
 
     private String insertServiceMethodForComplex(Long packageNo, String packageName,
         String tableName,
-        String voName,String eoName, Long masterSeq) {
+        String voName, String eoName, Long masterSeq) {
         String mapperXmlFileName = "";
         String servicePackageName = packageName + ".service";
         String serviceClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Service";
@@ -1766,7 +1885,7 @@ public class GenerateService {
             methodAnnotationName, "public", methodParamInstantName, masterSeq);
         //validation
         insertValidationServiceMethodForComplex(packageNo, servicePackageName, tableName, voName,
-            serviceClassName, null, "private", methodParamInstantName,eoName,masterSeq);
+            serviceClassName, null, "private", methodParamInstantName, eoName, masterSeq);
 //        getValidationString(packageNo,tableName,eoName,"AA",eoName,methodParamInstantName);
 
         return mapperXmlFileName;
@@ -1774,12 +1893,12 @@ public class GenerateService {
 
     private void insertValidationServiceMethodForComplex(Long packageNo, String servicePackageName,
         String tableName, String voName, String serviceClassName, String methodAnnotationName,
-        String methodAccessor, String methodParamInstantName,String eoName,Long masterSeq) {
+        String methodAccessor, String methodParamInstantName, String eoName, Long masterSeq) {
         String methodName = "validation" + voName;
         ;
         String methodContents = getValidationStringForComplex(packageNo, tableName, voName,
             methodName,
-            voName, methodParamInstantName,eoName);
+            voName, methodParamInstantName, eoName);
         coreGenerateMapper.insertMultiTepGenServiceMethodInfo(List.of(
             TepGenServiceMethodInfoEO.builder().packageNo(packageNo)
                 .servicePackageName(servicePackageName).serviceClassName(serviceClassName)
@@ -1790,7 +1909,8 @@ public class GenerateService {
     }
 
     private String getValidationStringForComplex(Long packageNo, String tableName, String voName,
-        String methodName, String methodParamClassName, String methodParamInstantName, String eoName) {
+        String methodName, String methodParamClassName, String methodParamInstantName,
+        String eoName) {
         String returnString = "";
         String loopEOInstance = lowerCaseFirst(voName);
         String mapperInstanceName = lowerCaseFirst(getMapperClassName(packageNo));
@@ -1806,7 +1926,7 @@ public class GenerateService {
             getNullValidationStringForComplex(packageNo, loopEOInstance, tableName, voName));
 //        String a = getDupValidationStringForComplex(packageNo, voName, loopEOInstance, tableName);
         templateString = templateString.replace("//@dupCheck",
-            getDupValidationStringForComplex(packageNo, voName, loopEOInstance, tableName,eoName));
+            getDupValidationStringForComplex(packageNo, voName, loopEOInstance, tableName, eoName));
         templateString = templateString.replace("@methodParamInstantName", methodParamInstantName);
         templateString = templateString.replace("@mapperInstanceName", mapperInstanceName);
 
@@ -1826,10 +1946,9 @@ public class GenerateService {
         if (isNotNullAndEmpty(voMap) && isNotNullAndEmpty(tableConstraintsVOList)) {
             Map<String, TableConstraintsVO> constMap = new LinkedHashMap<>();
 
-                tableConstraintsVOList.stream().forEach(tableConstraintsVO -> {
-                    constMap.put(tableConstraintsVO.getConstraintName(),tableConstraintsVO);
-                    });
-
+            tableConstraintsVOList.stream().forEach(tableConstraintsVO -> {
+                constMap.put(tableConstraintsVO.getConstraintName(), tableConstraintsVO);
+            });
 
             constMap.forEach((key, dummy) -> {
                 tableConstraintsVOList.stream().filter(
@@ -1855,7 +1974,7 @@ public class GenerateService {
     }
 
     private String getDupValidationStringForComplex(Long packageNo, String voName,
-        String loopEOInstance, String tableName , String eoName) {
+        String loopEOInstance, String tableName, String eoName) {
         String returnString = "";
 
         TableConstraintsVO conditionVO = new TableConstraintsVO();
@@ -1865,7 +1984,7 @@ public class GenerateService {
             conditionVO);
         if (isNotNullAndEmpty(tableConstraintsVOList)) {
             returnString = getTemplateSqlStmtString("serviceValidationDupCheck");
-            returnString = returnString.replace("@eoName",eoName);
+            returnString = returnString.replace("@eoName", eoName);
             StringBuilder setParamString = new StringBuilder("");
             StringBuilder addValidationString = new StringBuilder("");
             StringBuilder serviceValidationDupInListB = new StringBuilder("");
@@ -2001,7 +2120,7 @@ public class GenerateService {
 
     private void insertSaveServiceMethod(Long packageNo, String servicePackageName,
         String tableName, String eoName, String serviceClassName, String methodAnnotationName,
-        String method_accessor, String methodParamInstantName,Long masterSeq) {
+        String method_accessor, String methodParamInstantName, Long masterSeq) {
         String methodName =
             "save" + CaseUtils.toCamelCase(tableName.toLowerCase(Locale.ROOT), true, '_')
                 + "List";
@@ -2020,7 +2139,7 @@ public class GenerateService {
 
     private void insertLookupServiceMethod(Long packageNo, String packageName, String
         methodName,
-        String lookupType,Long masterSeq) {
+        String lookupType, Long masterSeq) {
         String servicePackageName = packageName + ".service";
         String serviceClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Service";
         String method_accessor = "public";
@@ -2034,7 +2153,8 @@ public class GenerateService {
                 .servicePackageName(servicePackageName).serviceClassName(serviceClassName)
                 .methodAccessor(method_accessor).methodReturnClassName(methodReturnClassName)
                 .methodName(methodName).methodParamClassName(methodParamClassName)
-                .methodParamInstantName(methodParamInstantName).methodContents(methodContents).masterSeq(masterSeq)
+                .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
+                .masterSeq(masterSeq)
                 .addDatasetParam("Y").build()));
     }
 
@@ -2047,7 +2167,7 @@ public class GenerateService {
     }
 
     private void insertSqlServiceMethod(Long packageNo, String packageName, String voName,
-        String conditionVOName, String methodName,Long masterSeq) {
+        String conditionVOName, String methodName, Long masterSeq) {
         String servicePackageName = packageName + ".service";
         String serviceClassName = upperCaseFirst(lastIndexString(packageName, ".")) + "Service";
         String method_accessor = "public";
@@ -2062,7 +2182,8 @@ public class GenerateService {
                 .servicePackageName(servicePackageName).serviceClassName(serviceClassName)
                 .methodAccessor(method_accessor).methodReturnClassName(methodReturnClassName)
                 .methodName(methodName).methodParamClassName(methodParamClassName)
-                .methodParamInstantName(methodParamInstantName).methodContents(methodContents).masterSeq(masterSeq)
+                .methodParamInstantName(methodParamInstantName).methodContents(methodContents)
+                .masterSeq(masterSeq)
                 .addDatasetParam("Y").build()));
     }
 
@@ -2575,8 +2696,8 @@ public class GenerateService {
         //@mapperInsertMethodName
         String mapperInsertMethodName = getMapperMethodName(packageNo, tableName, "insert",
             eoName);
-        String templateString = getTemplateSqlStmtString("ServiceSaveMethod");
-
+//        String templateString = getTemplateSqlStmtString("ServiceSaveMethod");
+        String templateString = getTemplateSqlStmtString("ServiceSaveMethodNew");
         templateString = templateString.replace("@methodName", methodName);
         templateString = templateString.replace("@methodParamClassName", methodParamClassName);
         templateString = templateString.replace("@methodParamInstantName",
@@ -2802,7 +2923,7 @@ public class GenerateService {
                 controllerMethodName, 0L);
             String fileName = eoClassName + ".java";
 
-            createFile(packageName, fileName, eoString);
+            createFile(packageName, fileName, eoString, "model");
             //file 생성정보
 
             coreGenerateMapper.insertMulti(List.of(
@@ -2820,7 +2941,7 @@ public class GenerateService {
         String voString = getVOString(packageName, resultMap, voClassName);
         String fileName = voClassName + ".java";
 
-        createFile(packageName, fileName, voString);
+        createFile(packageName, fileName, voString, "model");
         //model 정보 생성
 
         List<ConvertDataTypeVO> dataTypeVOList = coreGenerateMapper.getConvertDataType();
@@ -2892,7 +3013,7 @@ public class GenerateService {
                 mapperFullPath);
             xmlMapperTemplateString = xmlMapperTemplateString.replace("@mapperContents",
                 contentsStringBuilder.toString());
-            createFile(packageName, mapperXmlName.get(), xmlMapperTemplateString);
+            createFile(packageName, mapperXmlName.get(), xmlMapperTemplateString, "xml");
             //file 생성정보
             coreGenerateMapper.insertMulti(List.of(
                 TepGenFileInfoEO.builder().fileName(mapperXmlName.get())
@@ -2959,7 +3080,8 @@ public class GenerateService {
                     TepGenMapperMethodInfoConditionVO.builder().packageNo(packageNo).build())
                 .stream()
                 .findFirst().get();
-            String mapperPackage = TepGenMapperMethodInfoVO.getMapperPackageName() + "."
+            String mapperPackage = TepGenMapperMethodInfoVO.getMapperPackageName().toLowerCase(
+                Locale.ROOT) + "."
                 + TepGenMapperMethodInfoVO.getMapperClassName();
             String mapperClassName = TepGenMapperMethodInfoVO.getMapperClassName();
             String mapperInstantName = lowerCaseFirst(mapperClassName);
@@ -2970,7 +3092,7 @@ public class GenerateService {
             serviceImplJavaString = serviceImplJavaString.replace("@mapperInstantName",
                 mapperInstantName);
             createFile(packageName, serviceClassName.get() + "Impl.java",
-                serviceImplJavaString);
+                serviceImplJavaString, "service");
             //file 생성정보
             coreGenerateMapper.insertMulti(List.of(
                 TepGenFileInfoEO.builder().fileName(serviceClassName.get() + "Impl.java")
@@ -3024,7 +3146,7 @@ public class GenerateService {
             serviceJavaString = serviceJavaString.replace("@serviceContents",
                 contentsStringBuilder.toString());
 
-            createFile(packageName, serviceClassName.get() + ".java", serviceJavaString);
+            createFile(packageName, serviceClassName.get() + ".java", serviceJavaString, "service");
             //file 생성정보
             coreGenerateMapper.insertMulti(List.of(
                 TepGenFileInfoEO.builder().fileName(serviceClassName.get() + ".java")
@@ -3074,7 +3196,7 @@ public class GenerateService {
             mapperJavaString = mapperJavaString.replace("@mapperContents",
                 contentsStringBuilder.toString());
 
-            createFile(packageName, mapperClassName.get() + ".java", mapperJavaString);
+            createFile(packageName, mapperClassName.get() + ".java", mapperJavaString, "mapper");
             //file 생성정보
             coreGenerateMapper.insertMulti(List.of(
                 TepGenFileInfoEO.builder().fileName(mapperClassName.get() + ".java")
@@ -3140,15 +3262,29 @@ public class GenerateService {
         }
     }
 
-    public void createFile(String packageName, String fileName, String fileContents) {
+    public void createFile(String packageName, String fileName, String fileContents,
+        String folderName) {
         File mainDir = new File("c:" + File.separatorChar + "chsWorkNew");
         //한폴더에 몰자
         String[] g = packageName.split("[.]");
         String strDir = g[g.length - 1];
-        String dirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir;
         if (!mainDir.isDirectory()) {
             mainDir.mkdir();
         }
+        String prjName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir;
+        File prjDir = new File(prjName);
+        if (!prjDir.isDirectory()) {
+            prjDir.mkdir();
+        }
+        String backDirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir
+            + File.separatorChar + "back";
+        File backDir = new File(backDirName);
+        if (!backDir.isDirectory()) {
+            backDir.mkdir();
+        }
+
+        String dirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir
+            + File.separatorChar + "back" + File.separatorChar + folderName;
         File dir = new File(dirName);
         if (!dir.isDirectory()) {
             dir.mkdir();

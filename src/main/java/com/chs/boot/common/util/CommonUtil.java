@@ -187,6 +187,11 @@ public class CommonUtil {
 				return false;
 			}
 		}
+		else if(obj instanceof Map){
+			if( ((Map<?, ?>) obj).size()==0){
+				return false;
+			}
+		}
     	else
     	{
     		String str = obj.toString();

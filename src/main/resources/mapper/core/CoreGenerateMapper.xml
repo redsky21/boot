@@ -713,6 +713,7 @@
         controller_save_method_seq=#{controllerSaveMethodSeq}
       </if>
     </where>
+    order by controller_dataset_method_seq,controller_save_method_seq
   </select>
   <insert id="insertTepGenControllerUnitMethodList"
     parameterType="com.chs.boot.gerp.core.generate.model.TepGenControllerUnitMethodEO">
