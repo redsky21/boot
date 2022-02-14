@@ -573,8 +573,8 @@ public class GenerateService {
             innerConditionEO.setForReactYN("Y");
             coreGenerateMapper.retrieveTepGenModelInfoListAll(innerConditionEO)
                 .forEach((innerRowEO) -> {
-                    factorNullString.append(getNewLineString()).append("returnVal.")
-                        .append(innerRowEO.getMemberName()).append("=null;");
+                    factorNullString.append(getNewLineString()).append("")
+                        .append(innerRowEO.getMemberName()).append(":null,");
                 });
 
             reactUtilGetInstanceMethod = reactUtilGetInstanceMethod.replace("@getFactorMethodName",
