@@ -6,7 +6,7 @@
   <select id="getTableSchema" resultType="com.chs.boot.gerp.b2b.sync.model.TableVO">
     SELECT *
     FROM INFORMATION_SCHEMA.TABLES
-    where TABLE_SCHEMA = 'espcomd'
+    where TABLE_SCHEMA = 'espsald'
       and TABLE_TYPE in ('BASE TABLE', 'SEQUENCE')
       and table_name not in ('dual', 'batch_job_execution', 'batch_job_execution_context',
                              'batch_job_execution_params', 'batch_job_execution_seq',
@@ -15,7 +15,15 @@
                              'qrtz_blob_triggers', 'qrtz_calendars', 'qrtz_cron_triggers',
                              'qrtz_fired_triggers', 'qrtz_job_details', 'qrtz_locks',
                              'qrtz_paused_trigger_grps', 'qrtz_scheduler_state',
-                             'qrtz_simple_triggers', 'qrtz_simprop_triggers', 'qrtz_triggers','xxcmn_timeanddate_dst_r_if')
+                             'qrtz_simple_triggers', 'qrtz_simprop_triggers', 'qrtz_triggers','xxcmn_timeanddate_dst_r_if','om_so_line'
+                            ,'cmn_user_info'
+                            ,'cmn_lookup_values'
+                            ,'cmd_hr_organization'
+                            ,'om_customer'
+                            ,'bof_project_header'
+                            ,'bof_project_line'
+                            ,'cmd_employee'
+                            )
      and table_name  !='cmn_notice'
     order by table_name
   </select>
