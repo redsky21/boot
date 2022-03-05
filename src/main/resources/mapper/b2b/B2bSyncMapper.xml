@@ -6,7 +6,7 @@
   <select id="getTableSchema" resultType="com.chs.boot.gerp.b2b.sync.model.TableVO">
     SELECT *
     FROM INFORMATION_SCHEMA.TABLES
-    where TABLE_SCHEMA = 'espsald'
+    where TABLE_SCHEMA = 'redsky21_db1'
       and TABLE_TYPE in ('BASE TABLE', 'SEQUENCE')
       and table_name not in ('dual', 'batch_job_execution', 'batch_job_execution_context',
                              'batch_job_execution_params', 'batch_job_execution_seq',
