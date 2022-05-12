@@ -1,18 +1,27 @@
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.chs.boot.pub.mapper.PubMapper">
-    <select id="retrieveTemplateSource" resultType="com.chs.boot.pub.model.PubTemplateDO"
-            parameterType="com.chs.boot.pub.model.PubTemplateDO">
-        SELECT tmp_code
-             , tmp_type
-             , order_seq
-             , html_text
-        FROM pub_template
-        where tmp_type = #{tmpType}
-        order by order_seq
-    </select>
+  <select id="retrieveTemplateSource" resultType="com.chs.boot.pub.model.PubTemplateDO"
+    parameterType="com.chs.boot.pub.model.PubTemplateDO">
+    SELECT tmp_code
+         , tmp_type
+         , order_seq
+         , html_text
+    FROM pub_template
+    where tmp_type = #{tmpType}
+    order by order_seq
+  </select>
+  <select id="retrievePubWord" resultType="com.chs.boot.pub.model.PubWordDO"
+    parameterType="com.chs.boot.pub.model.PubWordDO">
+    select word_seq
+         , label
+         , field_name
+    from pub_word
+    where 1 = 1
+      and replace(label, ' ', '') = replace(#{label}, ' ', '')
+  </select>
 
 
 </mapper>

@@ -6,9 +6,16 @@ import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
 import com.chs.boot.gerp.core.generate.model.SequenceConditionVO;
 import com.chs.boot.gerp.core.generate.service.GenerateService;
+
+import java.io.ByteArrayOutputStream;
 import java.util.List;
+
 import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +46,25 @@ public class GenerateController {
         return"1";
 
     }
+    
+    @PostMapping("/gerp/gen/getEoStringAsZip")
+    public ResponseEntity<ByteArrayResource> getEOStringAsZip(
+    		@RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
+
+    	ByteArrayOutputStream byteArrayOutputStream = generateService.doMainJobAsZip(schemaColumnConditionVO.getPackageNo());
+
+        if (byteArrayOutputStream == null) return ResponseEntity.notFound().build();
+
+        byte[] data = byteArrayOutputStream.toByteArray();
+        ByteArrayResource resource = new ByteArrayResource(data);
+
+    	return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;fileName=" + generateService.getZipFileName())
+                .contentLength(data.length)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+    
     @PostMapping("/gerp/gen/getNewPackageNo")
     public Long getNewPackageNo() {
         return generateService.getNewPackageNo();
@@ -47,6 +73,6 @@ public class GenerateController {
     @PostMapping("/gerp/gen/retrieveColumnSchema")
     public List<SchemaColumnVO> retrieveColumnSchema(
         @RequestBody SchemaColumnConditionVO schemaColumnConditionVO) {
-        return generateService.retrieveColumnSchema(schemaColumnConditionVO);
+    	return generateService.retrieveColumnSchema(schemaColumnConditionVO);
     }
 }

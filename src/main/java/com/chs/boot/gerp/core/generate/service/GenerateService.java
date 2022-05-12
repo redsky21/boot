@@ -36,7 +36,10 @@ import com.chs.boot.gerp.core.generate.model.TepGenModelInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenServiceMethodInfoEO;
 import com.chs.boot.gerp.core.generate.model.TepGenTemplateEO;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -52,10 +55,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.apache.commons.text.CaseUtils;
 import org.apache.ibatis.annotations.Case;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import lombok.Getter;
 
 @Service
 public class GenerateService {
@@ -66,85 +74,115 @@ public class GenerateService {
     @Autowired
     CoreGenerateMapper coreGenerateMapper;
 
+    private boolean isCreateZip = false;
+    private ZipOutputStream zOuts;
+    private ByteArrayOutputStream byteArrayOutputStream;
+    @Getter private String zipFileName = "";
 
     public void doMainJob(Long packageNo) {
-        TepGenMasterInfoEO tepGenMasterInfoConditionEO = new TepGenMasterInfoEO();
-        tepGenMasterInfoConditionEO.setPackageNo(packageNo);
-        List<TepGenMasterInfoEO> mainList = coreGenerateMapper.retrieveTepGenMasterInfoListAll(
-            tepGenMasterInfoConditionEO);
-        if (isNotNullAndEmpty(mainList)) {
-            coreGenerateMapper.clearMetaData(packageNo);
-            String packageName = mainList.stream().findFirst().get().getPackageName();
-            mainList.stream().forEach(tepGenMasterInfoEO -> {
-                if (tepGenMasterInfoEO.getMethodType().equals("Q")) {
-                    doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
-                        tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
-                        tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
-                        tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
-                        tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
-                        tepGenMasterInfoEO.getLookupType(),
-                        tepGenMasterInfoEO.getControllerMethodName(),
-                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
-                        tepGenMasterInfoEO.getMasterSeq());
-                } else if (tepGenMasterInfoEO.getMethodType().equals("T")) {
-                    doTableJob(tepGenMasterInfoEO.getPackageNo(),
-                        tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
-                        tepGenMasterInfoEO.getMasterSeq());
-                } else if (tepGenMasterInfoEO.getMethodType().equals("L")) {
-                    doLookupJob(tepGenMasterInfoEO.getPackageNo(),
-                        tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getMethodType(),
-                        tepGenMasterInfoEO.getMethodName(), tepGenMasterInfoEO.getSqlStmt(),
-                        tepGenMasterInfoEO.getVoName(), tepGenMasterInfoEO.getControllerYn(),
-                        tepGenMasterInfoEO.getServiceYn(), tepGenMasterInfoEO.getInitYn(),
-                        tepGenMasterInfoEO.getInitOrderSeq(), tepGenMasterInfoEO.getLookupType(),
-                        tepGenMasterInfoEO.getControllerMethodName(),
-                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
-                        tepGenMasterInfoEO.getMasterSeq());
-                } else if (tepGenMasterInfoEO.getMethodType().equals("C")) {
-                    doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
-                        tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
-                        tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
-                        tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
-                        tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
-                        tepGenMasterInfoEO.getLookupType(),
-                        tepGenMasterInfoEO.getControllerMethodName(),
-                        tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
-                        tepGenMasterInfoEO.getMasterSeq());
-                    if (isNotEmpty(tepGenMasterInfoEO.getControllerSaveMethodName()) && isNotEmpty(
-                        tepGenMasterInfoEO.getTableName())) {
-                        doComplexJob(tepGenMasterInfoEO);
-                    }
+        try {
+        	TepGenMasterInfoEO tepGenMasterInfoConditionEO = new TepGenMasterInfoEO();
+            tepGenMasterInfoConditionEO.setPackageNo(packageNo);
+            List<TepGenMasterInfoEO> mainList = coreGenerateMapper.retrieveTepGenMasterInfoListAll(
+                tepGenMasterInfoConditionEO);
+            if (isNotNullAndEmpty(mainList)) {
+                coreGenerateMapper.clearMetaData(packageNo);
+                String packageName = mainList.stream().findFirst().get().getPackageName();
+                
+                if (this.isCreateZip) {
+                    byteArrayOutputStream = new ByteArrayOutputStream();
+                	String[] g = packageName.split("[.]");
+                	// this.zipFileName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + g[g.length - 1] + ".zip";
+                    this.zipFileName = g[g.length - 1] + ".zip";
+                	this.zOuts = new ZipOutputStream(byteArrayOutputStream);
                 }
+                
+                mainList.stream().forEach(tepGenMasterInfoEO -> {
+                    if (tepGenMasterInfoEO.getMethodType().equals("Q")) {
+                        doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
+                            tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
+                            tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
+                            tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
+                            tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
+                            tepGenMasterInfoEO.getLookupType(),
+                            tepGenMasterInfoEO.getControllerMethodName(),
+                            tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
+                            tepGenMasterInfoEO.getMasterSeq());
+                    } else if (tepGenMasterInfoEO.getMethodType().equals("T")) {
+                        doTableJob(tepGenMasterInfoEO.getPackageNo(),
+                            tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getTableName(),
+                            tepGenMasterInfoEO.getMasterSeq());
+                    } else if (tepGenMasterInfoEO.getMethodType().equals("L")) {
+                        doLookupJob(tepGenMasterInfoEO.getPackageNo(),
+                            tepGenMasterInfoEO.getPackageName(), tepGenMasterInfoEO.getMethodType(),
+                            tepGenMasterInfoEO.getMethodName(), tepGenMasterInfoEO.getSqlStmt(),
+                            tepGenMasterInfoEO.getVoName(), tepGenMasterInfoEO.getControllerYn(),
+                            tepGenMasterInfoEO.getServiceYn(), tepGenMasterInfoEO.getInitYn(),
+                            tepGenMasterInfoEO.getInitOrderSeq(), tepGenMasterInfoEO.getLookupType(),
+                            tepGenMasterInfoEO.getControllerMethodName(),
+                            tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
+                            tepGenMasterInfoEO.getMasterSeq());
+                    } else if (tepGenMasterInfoEO.getMethodType().equals("C")) {
+                        doSqlJob(tepGenMasterInfoEO.getPackageNo(), tepGenMasterInfoEO.getPackageName(),
+                            tepGenMasterInfoEO.getMethodType(), tepGenMasterInfoEO.getMethodName(),
+                            tepGenMasterInfoEO.getSqlStmt(), tepGenMasterInfoEO.getVoName(),
+                            tepGenMasterInfoEO.getControllerYn(), tepGenMasterInfoEO.getServiceYn(),
+                            tepGenMasterInfoEO.getInitYn(), tepGenMasterInfoEO.getInitOrderSeq(),
+                            tepGenMasterInfoEO.getLookupType(),
+                            tepGenMasterInfoEO.getControllerMethodName(),
+                            tepGenMasterInfoEO.getControllerDatasetMethodSeq(),
+                            tepGenMasterInfoEO.getMasterSeq());
+                        if (isNotEmpty(tepGenMasterInfoEO.getControllerSaveMethodName()) && isNotEmpty(
+                            tepGenMasterInfoEO.getTableName())) {
+                            doComplexJob(tepGenMasterInfoEO);
+                        }
+                    }
 
-            });
-            //sql controller method 처리
-            Map<Long, String> controllerMethodMap = new HashMap<>();
+                });
+                //sql controller method 처리
+                Map<Long, String> controllerMethodMap = new HashMap<>();
 
-            coreGenerateMapper.retrieveTepGenControllerUnitMethodListAll(
-                    TepGenControllerUnitMethodEO.builder().packageNo(packageNo).build()).stream()
-                .forEach(tepGenControllerUnitMethodEO -> controllerMethodMap.put(
-                    tepGenControllerUnitMethodEO.getPackageNo(),
-                    tepGenControllerUnitMethodEO.getControllerMethodName()));
-            if (controllerMethodMap.size() > 0) {
-                controllerMethodMap.forEach(
-                    (mapPackageNo, mapControllerMethodName) -> insertControllerMethodForSql(
-                        mapPackageNo, packageName, mapControllerMethodName));
-                //insertControllerMethodForSql
+                coreGenerateMapper.retrieveTepGenControllerUnitMethodListAll(
+                        TepGenControllerUnitMethodEO.builder().packageNo(packageNo).build()).stream()
+                    .forEach(tepGenControllerUnitMethodEO -> controllerMethodMap.put(
+                        tepGenControllerUnitMethodEO.getPackageNo(),
+                        tepGenControllerUnitMethodEO.getControllerMethodName()));
+                if (controllerMethodMap.size() > 0) {
+                    controllerMethodMap.forEach(
+                        (mapPackageNo, mapControllerMethodName) -> insertControllerMethodForSql(
+                            mapPackageNo, packageName, mapControllerMethodName));
+                    //insertControllerMethodForSql
+                }
+                //complex 작업
+                makeComplexController(packageNo);
+                makeMapperXml(packageNo, packageName);
+                makeMapperJava(packageNo, packageName);
+                makeServiceJava(packageNo, packageName);
+                makeServiceImplJava(packageNo, packageName);
+                makeControllerJava(packageNo, packageName);
+                makeReactTSFile(packageNo, packageName);
+                makeReactUtilFile(packageNo, packageName);
+                makeReactApiFile(packageNo, packageName);
+                makeReactStoreFile(packageNo, packageName);
+                
+                if (this.isCreateZip && this.zOuts != null) {
+                	this.zOuts.close();
+                }
             }
-            //complex 작업
-            makeComplexController(packageNo);
-            makeMapperXml(packageNo, packageName);
-            makeMapperJava(packageNo, packageName);
-            makeServiceJava(packageNo, packageName);
-            makeServiceImplJava(packageNo, packageName);
-            makeControllerJava(packageNo, packageName);
-            makeReactTSFile(packageNo, packageName);
-            makeReactUtilFile(packageNo, packageName);
-            makeReactApiFile(packageNo, packageName);
-            makeReactStoreFile(packageNo, packageName);
+        } catch (Exception e)  {
+        	e.printStackTrace();
         }
     }
 
+    public ByteArrayOutputStream doMainJobAsZip(Long packageNo) {
+    	this.isCreateZip = true;
+    	this.doMainJob(packageNo);
+
+        this.isCreateZip = false;
+
+        return this.byteArrayOutputStream;
+    }
+    
     private void makeComplexController(Long packageNo) {
         //check
         Map<String, TepGenMasterInfoEO> complexMap = new LinkedHashMap<>();
@@ -3539,23 +3577,33 @@ public class GenerateService {
         String dirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir
             + File.separatorChar + "front";
         if (!mainDir.isDirectory()) {
-            mainDir.mkdir();
+        	if (!this.isCreateZip) mainDir.mkdir();
         }
         File dir = new File(dirName);
         if (!dir.isDirectory()) {
-            dir.mkdir();
+        	if (!this.isCreateZip) dir.mkdir();
         }
-        Path filePath = Paths.get(dirName, File.separatorChar + fileName);
-        FileWriter fw = null;
-        BufferedWriter bw = null;
+        
+        if (!this.isCreateZip) {
+        	Path filePath = Paths.get(dirName, File.separatorChar + fileName);
+            FileWriter fw = null;
+            BufferedWriter bw = null;
 
-        try {
-            fw = new FileWriter(filePath.toString(), false);
-            bw = new BufferedWriter(fw);
-            bw.write(fileContents);
-            bw.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                fw = new FileWriter(filePath.toString(), false);
+                bw = new BufferedWriter(fw);
+                bw.write(fileContents);
+                bw.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+        	try {
+                String filePathName = strDir + File.separatorChar + "front" +  File.separatorChar + fileName;
+        		this.addZipFile(filePathName, fileContents);
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
         }
     }
 
@@ -3566,38 +3614,65 @@ public class GenerateService {
         String[] g = packageName.split("[.]");
         String strDir = g[g.length - 1];
         if (!mainDir.isDirectory()) {
-            mainDir.mkdir();
+            if (!this.isCreateZip) mainDir.mkdir();
         }
         String prjName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir;
         File prjDir = new File(prjName);
         if (!prjDir.isDirectory()) {
-            prjDir.mkdir();
+        	if (!this.isCreateZip) prjDir.mkdir();
         }
         String backDirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir
             + File.separatorChar + "back";
         File backDir = new File(backDirName);
         if (!backDir.isDirectory()) {
-            backDir.mkdir();
+        	if (!this.isCreateZip) backDir.mkdir();
         }
 
         String dirName = "c:" + File.separatorChar + "chsWorkNew" + File.separatorChar + strDir
             + File.separatorChar + "back" + File.separatorChar + folderName;
         File dir = new File(dirName);
         if (!dir.isDirectory()) {
-            dir.mkdir();
+        	if (!this.isCreateZip) dir.mkdir();
         }
-        Path filePath = Paths.get(dirName, File.separatorChar + fileName);
-        FileWriter fw = null;
-        BufferedWriter bw = null;
+        
+        if (!this.isCreateZip) {
+        	Path filePath = Paths.get(dirName, File.separatorChar + fileName);
+            FileWriter fw = null;
+            BufferedWriter bw = null;
 
-        try {
-            fw = new FileWriter(filePath.toString(), false);
-            bw = new BufferedWriter(fw);
-            bw.write(fileContents);
-            bw.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                fw = new FileWriter(filePath.toString(), false);
+                bw = new BufferedWriter(fw);
+                bw.write(fileContents);
+                bw.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+        	try {
+                String filePathName = strDir + File.separatorChar + "back" + File.separatorChar + folderName + File.separatorChar + fileName;
+        		this.addZipFile(filePathName, fileContents);
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
         }
+    }
+    
+    public void addZipFile(String fileName, String data) throws IOException {
+    	if (this.zOuts == null) return;
+
+    	ZipEntry zipEntry = new ZipEntry(fileName);
+    	this.zOuts.putNextEntry(zipEntry);
+
+    	ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data.getBytes());
+    	
+    	byte[] buffer = new byte[1024];
+        int len;
+        while ((len = byteArrayInputStream.read(buffer)) > 0) {
+        	this.zOuts.write(buffer, 0, len);
+        }
+    	
+    	this.zOuts.closeEntry();
     }
 
     public String getVOString(String packageName, LinkedHashMap<String, String> resultMap,
