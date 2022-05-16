@@ -5,6 +5,7 @@ import static com.chs.boot.common.util.MyBatisUtil.isEmpty;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnConditionVO;
 import com.chs.boot.gerp.b2b.generate.model.SchemaColumnVO;
 import com.chs.boot.gerp.core.generate.model.SequenceConditionVO;
+import com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO;
 import com.chs.boot.gerp.core.generate.service.GenerateService;
 
 import java.io.ByteArrayOutputStream;
@@ -17,11 +18,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class GenerateController {
 
     @Autowired
@@ -63,6 +63,27 @@ public class GenerateController {
                 .contentLength(data.length)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
+    }
+
+    @GetMapping("/gerp/gen-masters")
+    public ResponseEntity<List<TepGenMasterInfoEO>> getAllTepGenMasterInfo() {
+        List<TepGenMasterInfoEO> result;
+        result = generateService.getAllTepGenMasterInfo(new TepGenMasterInfoEO());
+        if (result != null && result.size() > 0) {
+            return ResponseEntity.ok().body(result);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/gerp/gen-masters")
+    public ResponseEntity<String> createListOfTepGenMasterInfo(
+            @RequestBody List<TepGenMasterInfoEO> listOfTepGenMasterInfo
+    ) {
+        if (listOfTepGenMasterInfo != null && listOfTepGenMasterInfo.size() > 0) {
+            generateService.insertTepGenMasterInfoList(listOfTepGenMasterInfo);
+            return ResponseEntity.ok().body("Created");
+        }
+        return ResponseEntity.badRequest().build();
     }
     
     @PostMapping("/gerp/gen/getNewPackageNo")

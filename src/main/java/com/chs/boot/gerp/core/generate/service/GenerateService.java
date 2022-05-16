@@ -3832,4 +3832,12 @@ public class GenerateService {
         return returnString.toString();
     }
 
+    public List<TepGenMasterInfoEO> getAllTepGenMasterInfo(TepGenMasterInfoEO tepGenMasterInfoEO) {
+        return coreGenerateMapper.retrieveTepGenMasterInfoListAll(tepGenMasterInfoEO);
+    }
+
+    public void insertTepGenMasterInfoList(List<TepGenMasterInfoEO> listOfTepGenMaster) {
+        coreGenerateMapper.insertTepGenMasterInfoList(listOfTepGenMaster);
+    }
+
 }
