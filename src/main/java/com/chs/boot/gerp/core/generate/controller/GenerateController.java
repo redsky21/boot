@@ -61,10 +61,10 @@ public class GenerateController {
     	return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;fileName=" + generateService.getZipFileName())
                 .contentLength(data.length)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentType(MediaType.valueOf("application/zip"))
                 .body(resource);
     }
-
+    
     @GetMapping("/gerp/gen-masters")
     public ResponseEntity<List<TepGenMasterInfoEO>> getAllTepGenMasterInfo() {
         List<TepGenMasterInfoEO> result;
@@ -80,9 +80,22 @@ public class GenerateController {
             @RequestBody List<TepGenMasterInfoEO> listOfTepGenMasterInfo
     ) {
         if (listOfTepGenMasterInfo != null && listOfTepGenMasterInfo.size() > 0) {
-            generateService.insertTepGenMasterInfoList(listOfTepGenMasterInfo);
+            generateService.insertOrUpdateTepGenMasterInfoList(listOfTepGenMasterInfo);
             return ResponseEntity.ok().body("Created");
         }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @DeleteMapping("/gerp/gen-masters")
+    public ResponseEntity<String> deleteListOfTepGenMasterInfo(
+            @RequestBody List<Long> listOfMasterSeq
+    ) {
+        if (listOfMasterSeq != null && listOfMasterSeq.size() > 0) {
+            generateService.deleteTepGenMasterInfoList(listOfMasterSeq.stream().map(masterSeq -> TepGenMasterInfoEO.builder().masterSeq(masterSeq).build()).toList());
+
+            return ResponseEntity.ok().body("Success");
+        }
+
         return ResponseEntity.badRequest().build();
     }
     

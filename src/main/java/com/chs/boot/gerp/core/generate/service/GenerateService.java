@@ -3840,4 +3840,11 @@ public class GenerateService {
         coreGenerateMapper.insertTepGenMasterInfoList(listOfTepGenMaster);
     }
 
+    public void insertOrUpdateTepGenMasterInfoList(List<TepGenMasterInfoEO> listOfTepGenMaster) {
+        coreGenerateMapper.insertOrUpdateTepGenMasterInfoList(listOfTepGenMaster);
+    }
+
+    public void deleteTepGenMasterInfoList(List<TepGenMasterInfoEO> listOfTepGenMaster) {
+        coreGenerateMapper.deleteTepGenMasterInfoList(listOfTepGenMaster);
+    }
 }

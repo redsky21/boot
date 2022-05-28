@@ -566,6 +566,68 @@
       )
     </foreach>
   </insert>
+  <insert id="insertOrUpdateTepGenMasterInfoList"
+          parameterType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO">
+    <foreach separator=";" item="item" collection="list">
+      INSERT INTO tep_gen_master_info
+      (
+      master_seq
+      ,package_no
+      ,package_name
+      ,method_type
+      ,table_name
+      ,method_name
+      ,sql_stmt
+      ,vo_name
+      ,controller_yn
+      ,service_yn
+      ,init_yn
+      ,init_order_seq
+      ,lookup_type
+      ,controller_method_name
+      ,controller_dataset_method_seq
+      ,controller_save_method_name
+      ,controller_save_method_seq
+      )
+      VALUES
+      (
+      #{item.masterSeq}
+      ,#{item.packageNo}
+      ,#{item.packageName}
+      ,#{item.methodType}
+      ,#{item.tableName}
+      ,#{item.methodName}
+      ,#{item.sqlStmt}
+      ,#{item.voName}
+      ,#{item.controllerYn}
+      ,#{item.serviceYn}
+      ,#{item.initYn}
+      ,#{item.initOrderSeq}
+      ,#{item.lookupType}
+      ,#{item.controllerMethodName}
+      ,#{item.controllerDatasetMethodSeq}
+      ,#{item.controllerSaveMethodName}
+      ,#{item.controllerSaveMethodSeq}
+      )
+      ON DUPLICATE KEY UPDATE
+      package_no = #{item.packageNo}
+      ,package_name = #{item.packageName}
+      ,method_type = #{item.methodType}
+      ,table_name = #{item.tableName}
+      ,method_name = #{item.methodName}
+      ,sql_stmt = #{item.sqlStmt}
+      ,vo_name = #{item.voName}
+      ,controller_yn = #{item.controllerYn}
+      ,service_yn = #{item.serviceYn}
+      ,init_yn = #{item.initYn}
+      ,init_order_seq = #{item.initOrderSeq}
+      ,lookup_type = #{item.lookupType}
+      ,controller_method_name = #{item.controllerMethodName}
+      ,controller_dataset_method_seq = #{item.controllerDatasetMethodSeq}
+      ,controller_save_method_name = #{item.controllerSaveMethodName}
+      ,controller_save_method_seq = #{item.controllerSaveMethodSeq}
+    </foreach>
+  </insert>
   <update id="updateTepGenMasterInfoList"
     parameterType="com.chs.boot.gerp.core.generate.model.TepGenMasterInfoEO">
     <foreach separator=";" item="item" collection="list">

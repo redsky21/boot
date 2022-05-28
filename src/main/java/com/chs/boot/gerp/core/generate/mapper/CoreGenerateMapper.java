@@ -49,6 +49,7 @@ public interface CoreGenerateMapper {
     List<TepGenControllerMethodInfoEO> retrieveTepGenControllerMethodInfoListAll(TepGenControllerMethodInfoEO tepGenControllerMethodInfoEOList);
     void insertTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     void updateTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
+    void insertOrUpdateTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     void deleteTepGenMasterInfoList(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListByPk(List<TepGenMasterInfoEO> tepGenMasterInfoEOList);
     List<TepGenMasterInfoEO> retrieveTepGenMasterInfoListAll(TepGenMasterInfoEO tepGenMasterInfoEO);
